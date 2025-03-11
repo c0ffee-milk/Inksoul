@@ -1,0 +1,7 @@
+langchain-core==0.3.0
+langchain-openai==0.1.7
+langchain-community==0.2.1
+pydantic==1.10.13
+zhipuai>=2.0.1
+python-dotenv>=0.19.0
+chromadb>=0.4.24
