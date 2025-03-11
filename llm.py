@@ -1,10 +1,16 @@
 from datetime import datetime, timedelta
 from typing import Literal
 from zhipuai_embedding import ZhipuAIEmbeddings
-from langchain.vectorstores.chroma import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 import json
+import time
+import re
+import os
+
+
+os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
 
 # 配置参数
 ZHIPUAI_API_KEY = "54c07d89321b45a6a917ba058252ab72.XvqOIXx1iXJk8wUe"
@@ -13,22 +19,23 @@ DEEPSEEK_API_KEY = "sk-9d1358520abf4903824290625d7ffdc3"
 # ================== 增强型数据库管理器 ==================
 class VectorDBManager:
     def __init__(self):
-        self.embedding = ZhipuAIEmbeddings()
+        self.embedding = ZhipuAIEmbeddings(zhipuai_api_key=ZHIPUAI_API_KEY)
         
     def get_knowledge_db(self) -> Chroma:
         """心理学知识库（长期存储）"""
         return Chroma(
             persist_directory='./data_base/knowledge_db',
-            embedding_function=self.embedding
+            embedding_function=self.embedding,
+            collection_name="knowledge"
         )
     
     def get_diary_db(self) -> Chroma:
-        """用户日记库（自动清理过期数据）"""
         return Chroma(
             persist_directory='./data_base/diary_db',
             embedding_function=self.embedding,
-            collection_metadata={"hnsw:auto_delete": True}  # 自动清理1周前数据
+            collection_name="diary"
         )
+
 
 # ================== 智能分析引擎 ==================
 class EmotionAnalyzer:
@@ -37,7 +44,7 @@ class EmotionAnalyzer:
         self.llm = ChatOpenAI(
             temperature=0.5,
             openai_api_key=DEEPSEEK_API_KEY,
-            model_name="deepseek-chat",
+            model_name="deepseek-reasoner",
             base_url="https://api.deepseek.com"
         )
         
@@ -81,44 +88,64 @@ class EmotionAnalyzer:
         }
 
     def _get_time_range(self, days: int = 7) -> dict:
-        """生成时间范围过滤器"""
         end = datetime.now()
         start = end - timedelta(days=days)
         return {
-            "date": {
-                "$gte": start.strftime("%Y-%m-%d"),
-                "$lte": end.strftime("%Y-%m-%d")
-            }
+            "$and": [
+                {"date": {"$gte": start.timestamp()}},
+                {"date": {"$lte": end.timestamp()}}
+            ]
         }
 
-    def _retrieve_diaries(self, mode: Literal["daily", "weekly"], query: str = None) -> str:
-        """智能日记检索"""
-        if mode == "daily":
-            # 当日模式：使用当前日记进行相似搜索（发现关联历史记录）
-            docs = self.diary_db.max_marginal_relevance_search(
+    def safe_retrieve(self, collection, query: str, k: int, filter_: dict = None) -> list:
+        """安全检索方法"""
+        try:
+            # 添加类型检查
+            if hasattr(collection, '_collection'):
+                total = collection._collection.count()
+            elif hasattr(collection, 'vectorstore'):
+                # 处理检索器对象的情况
+                total = collection.vectorstore._collection.count()
+            else:
+                raise ValueError("不支持的集合类型")
+
+            adjusted_k = min(k, total) if total > 0 else 0
+            if adjusted_k <= 0:
+                return []
+
+            return collection.max_marginal_relevance_search(
                 query=query,
-                k=3,
-                filter=self._get_time_range(1)  # 当天+相似历史
+                k=adjusted_k,
+                filter=filter_
             )
+        except Exception as e:
+            print(f"检索失败: {str(e)}")
+            return []
+
+
+
+    def _retrieve_diaries(self, mode: Literal["daily", "weekly"], query: str = None) -> str:
+        if mode == "daily":
+            filter_ = self._get_time_range(1)
+            docs = self.safe_retrieve(self.diary_db, query, 3, filter_)
+
+            return "\n".join([d.page_content for d in docs]) if docs else "当日无日记"
         else:
-            # 周模式：获取全部日记（不依赖搜索）
-            docs = self.diary_db.get(
-                where=self._get_time_range(7),
-                include=["metadatas", "documents"]
-            )["documents"]
-            
-        return "\n".join([
-            f"{doc.metadata['date']}: {doc.page_content}" 
-            if mode == "weekly" else doc.page_content
-            for doc in (docs if mode == "daily" else docs)
-        ])
+            # 实现 weekly 逻辑
+            filter_ = self._get_time_range(7)
+            docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, filter_)
+            return "\n".join([d.page_content for d in docs][:15]) if docs else "本周无日记"
+
 
     def analyze(self, mode: Literal["daily", "weekly"], diary: str = None) -> dict:
+
         """执行分析（双模式入口）"""
         # 知识检索（不同模式使用不同查询策略）
         knowledge_query = "情绪识别技巧" if mode == "daily" else "长期情绪管理"
-        knowledge_docs = self.knowledge_db.as_retriever(search_kwargs={"k": 2}).invoke(knowledge_query)
-        knowledge_context = "\n".join([d.page_content for d in knowledge_docs])
+        knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 2})
+        real_knowledge_store = knowledge_retriever.vectorstore
+        knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 2)
+        knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
         
         # 日记处理
         if mode == "daily":
@@ -142,16 +169,30 @@ class EmotionAnalyzer:
             return {"error": "分析结果解析失败"}
 
 # ================== 使用示例 ==================
+
 if __name__ == "__main__":
-    analyzer = EmotionAnalyzer()
+    # 创建存储目录
+    os.makedirs('./data_base/knowledge_db', exist_ok=True)
+    os.makedirs('./data_base/diary_db', exist_ok=True)
     
-    # 当日分析模式
-    daily_result = analyzer.analyze(
-        mode="daily",
-        diary="今天被领导表扬了，但同事似乎不太高兴..."
+    # 初始化空集合
+    db_manager = VectorDBManager()
+    knowledge_db = db_manager.get_knowledge_db()
+    diary_db = db_manager.get_diary_db()
+    time.sleep(1)  # 确保初始化完成
+    
+    # 写入测试数据
+    knowledge_db.add_texts(
+        texts=["情绪识别技巧：通过语言关键词分析情绪倾向..."],
+        metadatas=[{"source": "心理学手册", "date": datetime.now().timestamp()}]
     )
-    print("当日分析结果：", daily_result)
     
-    # 周分析模式（无需输入日记）
-    weekly_result = analyzer.analyze(mode="weekly")
-    print("周度分析报告：", weekly_result)
+    diary_db.add_texts(
+        texts=["测试日记：今天心情平静..."],
+        metadatas=[{"date": datetime.now().timestamp()}]
+    )
+    
+    # 执行分析
+    analyzer = EmotionAnalyzer()
+    daily_result = analyzer.analyze(mode="daily", diary="今天被领导表扬了，但同事似乎不太高兴...")
+    print(daily_result)
