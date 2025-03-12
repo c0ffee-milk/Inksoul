@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册页面</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="register-container">
+        <h2>注册</h2>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <p>{{ form.email.label }} {{ form.email() }}</p>
+            <p>{{ form.captcha.label }} {{ form.captcha() }}</p>
+            <p>{{ form.username.label }} {{ form.username() }}</p>
+            <p>{{ form.password.label }} {{ form.password() }}</p>
+            <p>{{ form.password_confirm.label }} {{ form.password_confirm() }}</p>
+            <button type="submit">注册</button>
+        </form>
+    </div>
+</body>
+</html>
