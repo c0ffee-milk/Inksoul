@@ -37,15 +37,6 @@ class LoginForm(wtforms.Form):
     password = wtforms.StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
 
 
-class BlogForm(wtforms.Form):
-    title = wtforms.StringField(validators=[Length(min=1, max=100, message="标题格式错误！")])
-    content = wtforms.StringField(validators=[Length(min=1, message="内容格式错误！")])
-
-
-class CommentForm(wtforms.Form):
-    content = wtforms.StringField(validators=[Length(min=1, message="内容格式错误！")])
-    blog_id = wtforms.IntegerField(validators=[InputRequired(message="必须要传入博客id！")])
-
 
 #用户级别的资料编辑器
 class EditProfileForm(wtforms.Form):
