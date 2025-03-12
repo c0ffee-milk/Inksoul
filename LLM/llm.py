@@ -24,14 +24,14 @@ class VectorDBManager:
     def get_knowledge_db(self) -> Chroma:
         """心理学知识库（长期存储）"""
         return Chroma(
-            persist_directory='./data_base/knowledge_db',
+            persist_directory='../data_base/knowledge_db',
             embedding_function=self.embedding,
             collection_name="knowledge"
         )
     
     def get_diary_db(self) -> Chroma:
         return Chroma(
-            persist_directory='./data_base/diary_db',
+            persist_directory='../data_base/diary_db',
             embedding_function=self.embedding,
             collection_name="diary"
         )
@@ -172,8 +172,8 @@ class EmotionAnalyzer:
 
 if __name__ == "__main__":
     # 创建存储目录
-    os.makedirs('./data_base/knowledge_db', exist_ok=True)
-    os.makedirs('./data_base/diary_db', exist_ok=True)
+    os.makedirs('../data_base/knowledge_db', exist_ok=True)
+    os.makedirs('../data_base/diary_db', exist_ok=True)
     
     # 初始化空集合
     db_manager = VectorDBManager()
@@ -194,5 +194,5 @@ if __name__ == "__main__":
     
     # 执行分析
     analyzer = EmotionAnalyzer()
-    daily_result = analyzer.analyze(mode="daily", diary="今天被领导表扬了，但同事似乎不太高兴...")
+    daily_result = analyzer.analyze(mode="daily", diary="晨起整理抽屉时，翻出三年前那支蒙尘的钢笔。墨囊早已干涸，玻璃瓶里的永生苔却蔓延出绒毛般的绿意，在瓶底洇出两枚硬币大小的潮痕。窗台的绿萝新抽的卷须垂向地板，在晨光里投下细蛇般的影。午后泡茶总忘记关火，铸铁壶在灶上呜咽了半个钟头。翻开读到第137页的《荒原》，发现夹着的银杏叶碎成了齑粉，像被时间蛀空的蝉蜕。书页间抖落的尘埃悬浮在光束里，慢慢沉降成茶几上浅淡的灰圈。日历停在三月的那页，边角被水汽浸得发皱。鱼缸里的斑马鱼贴着玻璃往复游动，尾鳍在缸壁刮出细不可闻的沙响。阳台晾着的白衬衫在风里鼓胀，忽然又坍缩成空荡的躯壳，纽扣磕碰着栏杆叮当作响。暮色沉降时数了十七遍抽屉里的药片，铝箔板上的凹痕排列成模糊的星座。风掠过楼宇间隙送来孩童断续的琴声，某个降调的和弦卡在窗框间震颤。云层裂开的缝隙里漏下稀薄的天光，正巧落在那盆停止开花的茉莉上。茶凉透时，蜗牛沿着玻璃瓶完成了第五次环游，在苔藓表面拖曳出银亮的轨迹。忽然想起该给钢笔换墨囊，却发现瓶底那团绿意里蜷着蜗牛的空壳，像枚被遗落的逗号。")
     print(daily_result)
