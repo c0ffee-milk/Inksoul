@@ -141,7 +141,7 @@ class EmotionAnalyzer:
 
         """执行分析（双模式入口）"""
         # 知识检索（不同模式使用不同查询策略）
-        knowledge_query = "情绪识别技巧" if mode == "daily" else "长期情绪管理"
+        knowledge_query = "情绪分析" if mode == "daily" else "长期情绪分析与管理"
         knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 2})
         real_knowledge_store = knowledge_retriever.vectorstore
         knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 2)
