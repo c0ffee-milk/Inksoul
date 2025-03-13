@@ -1,25 +1,21 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日记记录网站</title>
+    <title>心灵日记</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <!-- 导航栏 -->
     <div class="sidebar">
-        <!-- 每日记录热力图 -->
         <div class="heatmap">
             <h3>每日记录热力图</h3>
-            <!-- 这里可以使用第三方库来生成热力图，例如 Chart.js -->
-            <div class="heatmap-content">
-                热力图展示区域
-            </div>
+            <div class="heatmap-content"></div>
         </div>
-        <!-- 日记分类 -->
         <div class="category">
-            <h3>日记分类（按情绪）</h3>
+            <h3>情绪分类</h3>
             <ul>
                 <li>开心</li>
                 <li>难过</li>
@@ -27,7 +23,6 @@
                 <li>平静</li>
             </ul>
         </div>
-        <!-- 搜索框 -->
         <div class="search-box">
             <input type="text" placeholder="搜索日记">
             <button>搜索</button>
@@ -36,16 +31,19 @@
 
     <!-- 主内容区域 -->
     <div class="main-content">
-        <!-- 用户注册登录 -->
         <div class="login-register">
-            <a href="{{ url_for('main.register') }}"><button id="register-btn">注册</button></a>
-            <a href="{{ url_for('main.login') }}"><button id="login-btn">登录</button></a>
+            {% if not user %}
+            <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
+            <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
+            {% else %}
+            <span>欢迎回来，{{ user.username }}</span>
+            <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
+            {% endif %}
         </div>
-        <!-- 日记撰写按钮 -->
         <button class="write-diary" id="write-diary-btn">撰写日记</button>
-        <!-- 其他内容... -->
     </div>
 
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
