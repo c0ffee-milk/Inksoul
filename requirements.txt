@@ -4,3 +4,8 @@ langchain_community==0.3.19
 langchain_openai==0.3.8
 WTForms==3.2.1
 zhipuai==2.1.5.20250106
+flask~=3.0.3
+Flask-Login~=0.6.3
+SQLAlchemy~=2.0.39
+Flask-Migrate~=4.1.0
+werkzeug~=3.0.6
