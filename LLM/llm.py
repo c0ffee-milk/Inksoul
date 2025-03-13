@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Literal
-from zhipuai_embedding import ZhipuAIEmbeddings
+from .zhipuai_embedding import ZhipuAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
@@ -89,9 +89,10 @@ class EmotionAnalyzer:
                 {current_diary}
                 
                 请输出JSON包含：
-                1. emotion_type（情绪类型）
-                2. keywords（3个关键词）
-                3. immediate_suggestion（即时建议）"""
+                1.喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                2. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
+                2. 根据情绪种类与原文提炼出跟情绪有关的 （如悲喜交加、遗憾、孤独等）的：keywords（3个关键词）
+                3. 根据原文内容提出一些易懂的可以改善负面情绪，调节心理状况的immediate_suggestion（即时建议）"""
             ),
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
@@ -222,8 +223,10 @@ if __name__ == "__main__":
     
     # 用户A的分析实例
     analyzer_A = EmotionAnalyzer(user_id="U123")
-    print("用户A分析结果:", analyzer_A.analyze(mode="daily", diary="今天感到有些焦虑"))
-    
+    result_A = analyzer_A.analyze(mode="daily", diary="今天感到有些焦虑")
+    print("用户A分析结果:", result_A)
+
     # 用户B的分析实例
     analyzer_B = EmotionAnalyzer(user_id="U456")
-    print("用户B分析结果:", analyzer_B.analyze(mode="daily", diary="今天一切顺利"))
+    result_B = analyzer_A.analyze(mode="daily", diary="今天心情愉快")
+    print("用户B分析结果:", result_B)
