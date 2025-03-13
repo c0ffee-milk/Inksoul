@@ -1,3 +1,4 @@
+#forms.py 主要用来验证前端提交的表单数据是否符合要求，并进行相应的处理。
 import wtforms
 from flask_wtf import FlaskForm  # 使用 FlaskForm 而不是 wtforms.Form
 from wtforms import StringField, SubmitField
@@ -13,6 +14,7 @@ class RegisterForm(FlaskForm):  # 继承 FlaskForm
     password_confirm = StringField(validators=[EqualTo("password", message="两次密码不一致")])
 
     # 自定义验证：邮箱是否已经存在
+    # field：当前输入的字段 captcha self:表单对象
     def validate_email(self, field):
         email = field.data
         user = UserModel.query.filter_by(email=email).first()
@@ -26,6 +28,7 @@ class RegisterForm(FlaskForm):  # 继承 FlaskForm
         captcha_model = EmailCaptchaModel.query.filter_by(email=email, captcha=captcha).first()
         if not captcha_model:
             raise wtforms.ValidationError(message="邮箱或验证码错误！")
+        #后续可以优化为定期清理，现在会影响数据库的性能
         else:
             db.session.delete(captcha_model)
             db.session.commit()

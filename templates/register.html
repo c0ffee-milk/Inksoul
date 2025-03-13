@@ -1,23 +1,61 @@
+<!-- register.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册页面</title>
+    <title>注册 - 心灵日记</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="register-container">
-        <h2>注册</h2>
-        <form method="post">
-            {{ form.hidden_tag() }}
-            <p>{{ form.email.label }} {{ form.email() }}</p>
-            <p>{{ form.captcha.label }} {{ form.captcha() }}</p>
-            <p>{{ form.username.label }} {{ form.username() }}</p>
-            <p>{{ form.password.label }} {{ form.password() }}</p>
-            <p>{{ form.password_confirm.label }} {{ form.password_confirm() }}</p>
-            <button type="submit">注册</button>
-        </form>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 class="auth-title">加入心灵日记</h2>
+            <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    <label class="form-label">邮箱</label>
+                    <div class="input-group">
+                        <input class="form-input" type="email" name="email" placeholder="请输入有效邮箱" required>
+                        <button type="button" class="captcha-btn" id="get-captcha">获取验证码</button>
+                    </div>
+                    <div class="error-msg" id="email-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">验证码</label>
+                    <input class="form-input" type="text" name="captcha" placeholder="请输入邮箱验证码" required>
+                    <div class="error-msg" id="captcha-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input class="form-input" type="text" name="username" placeholder="2-16位字符" required>
+                    <div class="error-msg" id="username-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input class="form-input" type="password" name="password" placeholder="至少6位" required>
+                    <div class="error-msg" id="password-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">确认密码</label>
+                    <input class="form-input" type="password" name="password_confirm" placeholder="再次输入密码" required>
+                    <div class="error-msg" id="password-confirm-error"></div>
+                </div>
+
+                <button type="submit" class="auth-btn">立即注册</button>
+
+                <div class="auth-links">
+                    <a href="{{ url_for('auth.login') }}">已有账号？立即登录</a>
+                </div>
+            </form>
+        </div>
     </div>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>
 </html>
