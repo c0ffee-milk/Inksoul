@@ -24,22 +24,42 @@ class VectorDBManager:
     def get_knowledge_db(self) -> Chroma:
         """心理学知识库（长期存储）"""
         return Chroma(
-            persist_directory='../data_base/knowledge_db',
+            persist_directory='data_base/knowledge_db',
             embedding_function=self.embedding,
             collection_name="knowledge"
         )
     
-    def get_diary_db(self) -> Chroma:
+    def get_diary_db(self, user_id: str) -> Chroma:
+        """用户日记库（基于用户隔离）"""
+        # 创建用户专属目录
+        base_dir = os.path.abspath('data_base/diary_db')
+        user_dir = os.path.join(base_dir, user_id)
+        
+        # 调试输出路径信息
+        print(f"[DEBUG] 正在创建/访问用户目录：{user_dir}")
+
+        os.makedirs(user_dir, exist_ok=True)
+        
+        # 验证目录权限
+        if not os.access(user_dir, os.W_OK):
+            raise PermissionError(f"无写入权限：{user_dir}")
+        
         return Chroma(
-            persist_directory='../data_base/diary_db',
+            persist_directory=user_dir,
             embedding_function=self.embedding,
-            collection_name="diary"
+            collection_name=f"diary_{user_id}"  # 确保集合名称唯一
         )
+
 
 
 # ================== 智能分析引擎 ==================
 class EmotionAnalyzer:
-    def __init__(self):
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        # 验证用户ID格式
+        if not re.match(r"^U\d+$", self.user_id):
+            raise ValueError("用户ID格式应为 U+数字")
+        
         self.db = VectorDBManager()
         self.llm = ChatOpenAI(
             temperature=0.5,
@@ -48,9 +68,13 @@ class EmotionAnalyzer:
             base_url="https://api.deepseek.com"
         )
         
-        # 初始化双数据库连接
+        # 初始化带用户隔离的日记库
         self.knowledge_db = self.db.get_knowledge_db()
-        self.diary_db = self.db.get_diary_db()
+        self.diary_db = self.db.get_diary_db(self.user_id)  # 传入用户ID
+
+        # 添加存在性检查
+        assert os.path.exists(self.diary_db._persist_directory), "用户数据库目录未创建"
+
         
         # 双模式提示模板
         self.templates = {
@@ -125,16 +149,19 @@ class EmotionAnalyzer:
 
 
     def _retrieve_diaries(self, mode: Literal["daily", "weekly"], query: str = None) -> str:
+        # 添加用户过滤条件
+        base_filter = {"user_id": self.user_id}
+        
         if mode == "daily":
-            filter_ = self._get_time_range(1)
-            docs = self.safe_retrieve(self.diary_db, query, 3, filter_)
-
-            return "\n".join([d.page_content for d in docs]) if docs else "当日无日记"
+            time_filter = self._get_time_range(1)
+            combined_filter = {"$and": [base_filter, time_filter]}
+            docs = self.safe_retrieve(self.diary_db, query, 3, combined_filter)
         else:
-            # 实现 weekly 逻辑
-            filter_ = self._get_time_range(7)
-            docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, filter_)
-            return "\n".join([d.page_content for d in docs][:15]) if docs else "本周无日记"
+            time_filter = self._get_time_range(7)
+            combined_filter = {"$and": [base_filter, time_filter]}
+            docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, combined_filter)
+        
+        return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
 
 
     def analyze(self, mode: Literal["daily", "weekly"], diary: str = None) -> dict:
@@ -171,28 +198,32 @@ class EmotionAnalyzer:
 # ================== 使用示例 ==================
 
 if __name__ == "__main__":
-    # 创建存储目录
-    os.makedirs('../data_base/knowledge_db', exist_ok=True)
-    os.makedirs('../data_base/diary_db', exist_ok=True)
+    # 模拟两个用户
+    user_metadata = [
+        {"user_id": "U123", "text": "测试用户A的日记..."},
+        {"user_id": "U456", "text": "测试用户B的日记..."}
+    ]
+    for meta in user_metadata:
+        # 初始化用户专属数据库
+        user_db = VectorDBManager().get_diary_db(meta["user_id"])
+        
+        # 写入带用户ID的元数据
+        user_db.add_texts(
+            texts=[meta["text"]],
+            metadatas=[{
+                "user_id": meta["user_id"],
+                "date": datetime.now().timestamp(),
+                "source": "user_diary"
+            }]
+        )
+
+    user_db.persist()
+    time.sleep(0.5) 
     
-    # 初始化空集合
-    db_manager = VectorDBManager()
-    knowledge_db = db_manager.get_knowledge_db()
-    diary_db = db_manager.get_diary_db()
-    time.sleep(1)  # 确保初始化完成
+    # 用户A的分析实例
+    analyzer_A = EmotionAnalyzer(user_id="U123")
+    print("用户A分析结果:", analyzer_A.analyze(mode="daily", diary="今天感到有些焦虑"))
     
-    # 写入测试数据
-    knowledge_db.add_texts(
-        texts=["情绪识别技巧：通过语言关键词分析情绪倾向..."],
-        metadatas=[{"source": "心理学手册", "date": datetime.now().timestamp()}]
-    )
-    
-    diary_db.add_texts(
-        texts=["测试日记：今天心情平静..."],
-        metadatas=[{"date": datetime.now().timestamp()}]
-    )
-    
-    # 执行分析
-    analyzer = EmotionAnalyzer()
-    daily_result = analyzer.analyze(mode="daily", diary="晨起整理抽屉时，翻出三年前那支蒙尘的钢笔。墨囊早已干涸，玻璃瓶里的永生苔却蔓延出绒毛般的绿意，在瓶底洇出两枚硬币大小的潮痕。窗台的绿萝新抽的卷须垂向地板，在晨光里投下细蛇般的影。午后泡茶总忘记关火，铸铁壶在灶上呜咽了半个钟头。翻开读到第137页的《荒原》，发现夹着的银杏叶碎成了齑粉，像被时间蛀空的蝉蜕。书页间抖落的尘埃悬浮在光束里，慢慢沉降成茶几上浅淡的灰圈。日历停在三月的那页，边角被水汽浸得发皱。鱼缸里的斑马鱼贴着玻璃往复游动，尾鳍在缸壁刮出细不可闻的沙响。阳台晾着的白衬衫在风里鼓胀，忽然又坍缩成空荡的躯壳，纽扣磕碰着栏杆叮当作响。暮色沉降时数了十七遍抽屉里的药片，铝箔板上的凹痕排列成模糊的星座。风掠过楼宇间隙送来孩童断续的琴声，某个降调的和弦卡在窗框间震颤。云层裂开的缝隙里漏下稀薄的天光，正巧落在那盆停止开花的茉莉上。茶凉透时，蜗牛沿着玻璃瓶完成了第五次环游，在苔藓表面拖曳出银亮的轨迹。忽然想起该给钢笔换墨囊，却发现瓶底那团绿意里蜷着蜗牛的空壳，像枚被遗落的逗号。")
-    print(daily_result)
+    # 用户B的分析实例
+    analyzer_B = EmotionAnalyzer(user_id="U456")
+    print("用户B分析结果:", analyzer_B.analyze(mode="daily", diary="今天一切顺利"))
