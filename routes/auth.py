@@ -24,13 +24,6 @@ bp = Blueprint("auth", __name__,url_prefix="/auth")
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    """
-    处理用户登录请求。
-    如果是 GET 请求，返回登录页面。
-    如果是 POST 请求，验证表单数据，检查用户是否存在和密码是否正确。
-
-    :return: 根据验证结果重定向到相应页面或返回登录页面。
-    """
     form = LoginForm(request.form)
     if request.method == "GET":
         return render_template("login.html",form = form)
@@ -61,19 +54,11 @@ def login():
 
 @bp.route("/register", methods=["GET", "POST"])
 def register():
-    """
-    处理用户注册请求。
-    如果是 GET 请求，返回注册页面。
-    如果是 POST 请求，验证表单数据，创建新用户。
-
-    :return: 根据验证结果重定向到相应页面或返回注册页面。
-    """
     form = RegisterForm(request.form)
     if request.method == "GET":
         return render_template("register.html",form=form)
     else:
         # 验证用户提交的邮箱和验证码是否对应且正确
-        # 验证成功，创建用户
         if form.validate():
             email = form.email.data
             username = form.username.data
@@ -81,10 +66,11 @@ def register():
             if not email or not username or not password:
                 flash("邮箱、用户名和密码不能为空")
                 return redirect(url_for("auth.register"))
+            # 验证成功，创建用户
             user = UserModel(username=username, email=email, password=generate_password_hash(password))
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for("auth.register"))
+            return redirect(url_for("auth.login"))
         # 注册失败
         else:
             print(form.errors)
@@ -109,13 +95,14 @@ def get_email_captcha():
         captcha = random.sample(source, 4)
         captcha = "".join(captcha)
         # 发送验证码给注册用户
-        message = Message(subject="您的注册码", recipients=[email], body=f"您的验证码是{captcha}")
+        message = Message(subject="您的InkSoul注册码", recipients=[email], body=f"您的验证码是{captcha}，请妥善保管。")
         mail.send(message)
         print(captcha)
-        # 将验证码存入数据库
+        # 将验证码存入数据库（后续再进行优化，缺陷：存储与提取速度慢）使用memcached/redis
         email_captcha = EmailCaptchaModel(email=email, captcha=captcha)
         db.session.add(email_captcha)
         db.session.commit()
+        #RESTful API规范，返回JSON响应
         return jsonify({"code": 200, "message": "验证码已发送", "data": None})
     except Exception as e:
         return jsonify({"code": 500, "message": str(e), "data": None})
@@ -159,9 +146,3 @@ def change_password():
         else:
             print(form.errors)
             return redirect(url_for("auth.change_password"))
-
-@bp.route("/mail/test")
-def mail_test():
-    message = Message(subject="邮箱测试",recipients=["2838651487@qq.com"],body="这是一封测试邮件")
-    mail.send(message)
-    return "邮件发送成功"
