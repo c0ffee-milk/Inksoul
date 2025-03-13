@@ -1,3 +1,4 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -10,18 +11,18 @@
     <div class="auth-container">
         <div class="auth-card">
             <h2 class="auth-title">欢迎回来</h2>
-            <form method="POST" class="auth-form" id="login-form">
+            <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
                 {{ form.hidden_tag() }}
 
                 <div class="form-group">
-                    {{ form.email.label(class="form-label") }}
-                    {{ form.email(class="form-input", placeholder="请输入注册邮箱") }}
+                    <label class="form-label">邮箱</label>
+                    <input class="form-input" type="email" name="email" placeholder="请输入注册邮箱" required>
                     <div class="error-msg" id="email-error"></div>
                 </div>
 
                 <div class="form-group">
-                    {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-input", placeholder="请输入密码") }}
+                    <label class="form-label">密码</label>
+                    <input class="form-input" type="password" name="password" placeholder="请输入密码" required>
                     <div class="error-msg" id="password-error"></div>
                 </div>
 
@@ -29,7 +30,7 @@
 
                 <div class="auth-links">
                     <a href="{{ url_for('auth.register') }}">没有账号？立即注册</a>
-                    <a href="{{ url_for('auth.forgot_password') }}">忘记密码？</a>
+                    <a href="{{ url_for('auth.change_password') }}">忘记密码？</a>
                 </div>
             </form>
         </div>

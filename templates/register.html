@@ -1,3 +1,4 @@
+<!-- register.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -10,39 +11,39 @@
     <div class="auth-container">
         <div class="auth-card">
             <h2 class="auth-title">加入心灵日记</h2>
-            <form method="POST" class="auth-form" id="register-form">
+            <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
                 {{ form.hidden_tag() }}
 
                 <div class="form-group">
-                    {{ form.email.label(class="form-label") }}
+                    <label class="form-label">邮箱</label>
                     <div class="input-group">
-                        {{ form.email(class="form-input", placeholder="请输入有效邮箱") }}
+                        <input class="form-input" type="email" name="email" placeholder="请输入有效邮箱" required>
                         <button type="button" class="captcha-btn" id="get-captcha">获取验证码</button>
                     </div>
                     <div class="error-msg" id="email-error"></div>
                 </div>
 
                 <div class="form-group">
-                    {{ form.captcha.label(class="form-label") }}
-                    {{ form.captcha(class="form-input", placeholder="请输入邮箱验证码") }}
+                    <label class="form-label">验证码</label>
+                    <input class="form-input" type="text" name="captcha" placeholder="请输入邮箱验证码" required>
                     <div class="error-msg" id="captcha-error"></div>
                 </div>
 
                 <div class="form-group">
-                    {{ form.username.label(class="form-label") }}
-                    {{ form.username(class="form-input", placeholder="请输入用户名（2-16位字符）") }}
+                    <label class="form-label">用户名</label>
+                    <input class="form-input" type="text" name="username" placeholder="2-16位字符" required>
                     <div class="error-msg" id="username-error"></div>
                 </div>
 
                 <div class="form-group">
-                    {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-input", placeholder="请输入密码（至少6位）") }}
+                    <label class="form-label">密码</label>
+                    <input class="form-input" type="password" name="password" placeholder="至少6位" required>
                     <div class="error-msg" id="password-error"></div>
                 </div>
 
                 <div class="form-group">
-                    {{ form.password_confirm.label(class="form-label") }}
-                    {{ form.password_confirm(class="form-input", placeholder="请再次输入密码") }}
+                    <label class="form-label">确认密码</label>
+                    <input class="form-input" type="password" name="password_confirm" placeholder="再次输入密码" required>
                     <div class="error-msg" id="password-confirm-error"></div>
                 </div>
 
