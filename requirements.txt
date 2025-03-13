@@ -1,7 +1,6 @@
-langchain-core==0.3.0
-langchain-openai==0.1.7
-langchain-community==0.2.1
-pydantic==1.10.13
-zhipuai>=2.0.1
-python-dotenv>=0.19.0
-chromadb>=0.4.24
+asposestorage==1.0.2
+langchain==0.3.20
+langchain_community==0.3.19
+langchain_openai==0.3.8
+WTForms==3.2.1
+zhipuai==2.1.5.20250106
