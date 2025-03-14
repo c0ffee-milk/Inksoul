@@ -8,6 +8,8 @@ import json
 import time
 import re
 import os
+import logging
+from logging import Logger
 
 
 os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
@@ -56,15 +58,29 @@ class VectorDBManager:
 class EmotionAnalyzer:
     def __init__(self, user_id: str):
         self.user_id = user_id
+        
         # 验证用户ID格式
         if not re.match(r"^U\d+$", self.user_id):
             raise ValueError("用户ID格式应为 U+数字")
         
+         # 新增日志配置
+        self.logger = logging.getLogger(f"EmotionAnalyzer.{user_id}")
+        self.logger.setLevel(logging.INFO)
+        
+        # 避免重复添加handler
+        if not self.logger.handlers:  
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        
         self.db = VectorDBManager()
         self.llm = ChatOpenAI(
-            temperature=0.5,
+            temperature=0,
             openai_api_key=DEEPSEEK_API_KEY,
-            model_name="deepseek-reasoner",
+            model_name="deepseek-chat",
             base_url="https://api.deepseek.com"
         )
         
@@ -165,16 +181,44 @@ class EmotionAnalyzer:
         return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
 
 
+    def log_diary(self, text: str):
+        """保存单条日记到向量数据库"""
+        try:
+            # 检查是否存在相似日记
+            existing = self.diary_db.similarity_search(text, k=1)
+            if existing and existing[0].page_content == text:
+                self.logger.warning("[WARNING] 检测到重复日记，跳过保存")
+                return
+
+            # 添加日记到数据库
+            self.diary_db.add_texts(
+                texts=[text],
+                metadatas=[{
+                    "user_id": self.user_id,
+                    "date": datetime.now().timestamp(),
+                    "source": "user_diary"
+                }]
+            )
+            self.diary_db.persist()  # 确保立即持久化
+            self.logger.info(f"[SUCCESS] 日记已保存: {text[:20]}...")
+        except Exception as e:
+            self.logger.error(f"[ERROR] 保存失败: {str(e)}")
+
+
     def analyze(self, mode: Literal["daily", "weekly"], diary: str = None) -> dict:
+
 
         """执行分析（双模式入口）"""
         # 知识检索（不同模式使用不同查询策略）
         knowledge_query = "情绪分析" if mode == "daily" else "长期情绪分析与管理"
-        knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 2})
+        knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 5})
         real_knowledge_store = knowledge_retriever.vectorstore
-        knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 2)
+        knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 5)
         knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
         
+        if mode == "daily" and diary:
+            self.log_diary(diary)
+
         # 日记处理
         if mode == "daily":
             diary_context = self._retrieve_diaries("daily", query=diary)
