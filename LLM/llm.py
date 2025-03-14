@@ -108,7 +108,7 @@ class EmotionAnalyzer:
                 1.喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
                 2. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
                 2. 根据情绪种类与原文提炼出跟情绪有关的 （如悲喜交加、遗憾、孤独等）的：keywords（3个关键词）
-                3. 根据原文内容提出一些易懂的可以改善负面情绪，调节心理状况的immediate_suggestion（即时建议）"""
+                3. 根据原文内容提出一些心理建议immediate_suggestion（即时建议）"""
             ),
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
