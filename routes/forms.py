@@ -17,6 +17,7 @@ class RegisterForm(FlaskForm):  # 继承 FlaskForm
     username = StringField(validators=[Length(min=3, max=20, message="用户名格式错误！")])
     password = StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
     password_confirm = StringField(validators=[EqualTo("password", message="两次密码不一致")])
+    submit = SubmitField()
 
     # 自定义验证：邮箱是否已经存在
     # field：当前输入的字段 captcha self:表单对象
@@ -42,6 +43,7 @@ class RegisterForm(FlaskForm):  # 继承 FlaskForm
 class LoginForm(FlaskForm):  # 继承 FlaskForm
     email = StringField(validators=[Email(message="邮箱格式错误！")])
     password = StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
+    submit = SubmitField()
 
 
 class ChangeForm(FlaskForm):  # 继承 FlaskForm
@@ -49,6 +51,7 @@ class ChangeForm(FlaskForm):  # 继承 FlaskForm
     captcha = StringField(validators=[Length(min=4, max=4, message="验证码格式错误！")])
     password = StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
     password_confirm = StringField(validators=[EqualTo("password", message="两次密码不一致")])
+    submit = SubmitField()
 
     def validate_email(self, field):
         email = field.data

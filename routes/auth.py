@@ -29,7 +29,7 @@ def login():
         return render_template("login.html",form = form)
     else:
         # 检查表单格式
-        if form.validate():
+        if form.validate_on_submit():
             email = form.email.data
             password = form.password.data
             if password is None:
@@ -59,7 +59,7 @@ def register():
         return render_template("register.html",form=form)
     else:
         # 验证用户提交的邮箱和验证码是否对应且正确
-        if form.validate():
+        if form.validate_on_submit():
             email = form.email.data
             username = form.username.data
             password = form.password.data
