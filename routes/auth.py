@@ -23,7 +23,7 @@ bp = Blueprint("auth", __name__,url_prefix="/auth")
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('/'))
+        return redirect(url_for('index'))
     form = LoginForm(request.form)
     if request.method == "GET":
         return render_template("login.html",form = form)
@@ -99,6 +99,10 @@ def get_email_captcha():
         db.session.commit()
         #RESTful API规范，返回JSON响应
         return jsonify({"code": 200, "message": "验证码已发送", "data": None})
+    except Exception as e:
+        print(f"发送验证码时出现错误: {e}")
+        return jsonify({"code": 500, "message": "发送验证码时出现错误", "data": None})
+        
 
 
 @bp.route("/logout")
