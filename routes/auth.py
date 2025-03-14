@@ -1,3 +1,4 @@
+#auth.py:主要用于用户认证
 # 标准库导入
 import random
 import string
@@ -13,7 +14,7 @@ from flask_login import current_user,login_user,logout_user
 # 本地模块导入
 from exts import mail, db
 from models import EmailCaptchaModel, UserModel
-from .forms import RegisterForm, LoginForm, ChangeForm
+from forms import RegisterForm, LoginForm, ChangeForm
 
 
 
