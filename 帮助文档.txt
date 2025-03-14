@@ -16,3 +16,7 @@ static--存储css，js，images等
 templates--存储html文件，用来渲染页面
 
 3.项目进度：
+
+4.在局域网下另一个设备访问网站
+   flask run --host 0.0.0.0
+   然后终端会弹出地址，在另一台设备下访问即可
