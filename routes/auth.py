@@ -7,13 +7,10 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_wtf import form
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.sql.functions import current_user
-from sqlalchemy.testing.pickleable import User
 from wtforms.widgets import PasswordInput
+from flask_login import current_user,login_user,logout_user
 
 # 本地模块导入
-# 假设 decorators.py 文件在 InkSoul 目录下
-from decorators import login_required
 from exts import mail, db
 from models import EmailCaptchaModel, UserModel
 from .forms import RegisterForm, LoginForm, ChangeForm
@@ -24,6 +21,8 @@ bp = Blueprint("auth", __name__,url_prefix="/auth")
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('/'))
     form = LoginForm(request.form)
     if request.method == "GET":
         return render_template("login.html",form = form)
@@ -112,25 +111,12 @@ def get_email_captcha():
 
 @bp.route("/logout")
 def logout():
-    """
-    处理用户注销请求。
-    清除用户会话并重定向到首页。
-
-    :return: 重定向到首页。
-    """
-    session.clear()
+    logout_user()
     return redirect("/")
 
 
 @bp.route("/change_password", methods=["GET", "POST"])
 def change_password():
-    """
-    处理用户修改密码请求。
-    如果是 GET 请求，返回修改密码页面。
-    如果是 POST 请求，验证表单数据，更新用户密码。
-
-    :return: 根据验证结果重定向到相应页面或返回修改密码页面。
-    """
     if request.method == "GET":
         return render_template("change_password.html")
     else:
