@@ -81,12 +81,6 @@ def register():
 
 @bp.route("/captcha/email", methods=["GET"])
 def get_email_captcha():
-    """
-    处理获取邮箱验证码的请求。
-    生成验证码，发送到用户邮箱，并将验证码存入数据库。
-
-    :return: JSON 响应，包含状态码、消息和数据。
-    """
     try:
         # 获取注册用户邮箱
         email = request.args.get("email")
@@ -99,15 +93,12 @@ def get_email_captcha():
         # 发送验证码给注册用户
         message = Message(subject="您的InkSoul注册码", recipients=[email], body=f"您的验证码是{captcha}，请妥善保管。")
         mail.send(message)
-        print(captcha)
         # 将验证码存入数据库（后续再进行优化，缺陷：存储与提取速度慢）使用memcached/redis
         email_captcha = EmailCaptchaModel(email=email, captcha=captcha)
         db.session.add(email_captcha)
         db.session.commit()
         #RESTful API规范，返回JSON响应
         return jsonify({"code": 200, "message": "验证码已发送", "data": None})
-    except Exception as e:
-        return jsonify({"code": 500, "message": str(e), "data": None})
 
 
 @bp.route("/logout")
