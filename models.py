@@ -1,6 +1,5 @@
 from exts import db
 from datetime import datetime
-
 # 用户模型
 class UserModel(db.Model):
     __tablename__ = "user"
