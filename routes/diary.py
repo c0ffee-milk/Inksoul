@@ -25,10 +25,10 @@ def add():
             return redirect(url_for('diary.add'))
         else:
             # 创建日记并保存到数据库
-            diary = DiaryModel(title=title, content=content, user_id=current_user.id)
+            diary = DiaryModel(title=title, content=content, author_id=current_user.id) 
             db.session.add(diary)
             db.session.commit()
-    # 更新用户的 diary_count
+            # 更新用户的 diary_count
             user = UserModel.query.get(current_user.id)
             user.diary_count += 1
             db.session.commit()
