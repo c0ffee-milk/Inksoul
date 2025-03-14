@@ -350,3 +350,13 @@ body {
 .auth-links a:hover {
     text-decoration: underline;
 }
+
+.form-input.error {
+    border-color: #ff3860;
+    box-shadow: 0 0 0 2px rgba(255, 56, 96, 0.2);
+}
+
+.captcha-btn:disabled {
+    background-color: #cccccc !important;
+    cursor: not-allowed;
+}
