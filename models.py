@@ -8,8 +8,12 @@ class UserModel(db.Model):
     password = db.Column(db.String(1000), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     join_time = db.Column(db.DateTime, default=datetime.now)
-    diaries = db.relationship('DiaryModel', backref='author_id', lazy='dynamic')
     diary_count = db.Column(db.Integer, default=0)
+    def ping(self):
+        self.last_login = datetime.utcnow()
+        db.session.add(self)
+    
+    diaries = db.relationship('DiaryModel', backref='author_id', lazy='dynamic')
 
 # 邮箱验证码模型
 class EmailCaptchaModel(db.Model):
@@ -26,5 +30,6 @@ class DiaryModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     analyze = db.Column(db.Text, nullable=True)
+
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
