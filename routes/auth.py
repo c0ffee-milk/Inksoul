@@ -70,6 +70,8 @@ def register():
             user = UserModel(username=username, email=email, password=generate_password_hash(password))
             db.session.add(user)
             db.session.commit()
+
+            flash("注册成功，请登录")
             return redirect(url_for("auth.login"))
         # 注册失败
         else:
