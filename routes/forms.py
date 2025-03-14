@@ -1,8 +1,13 @@
-#forms.py 主要用来验证前端提交的表单数据是否符合要求，并进行相应的处理。
+#forms.py : 主要用来验证前端提交的数据是否合法
+# 标准库导入
 import wtforms
+
+# 第三方库导入
 from flask_wtf import FlaskForm  # 使用 FlaskForm 而不是 wtforms.Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Email, Length, EqualTo, InputRequired
+
+# 本地模块导入
 from models import UserModel, EmailCaptchaModel
 from exts import db
 
