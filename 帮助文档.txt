@@ -9,6 +9,7 @@ app.py--工厂函数
 exts.py--扩展函数（避免循环引用）
 models--数据库模型构建函数
 setting.py--项目配置函数（在app.py里引用）
+routes--视图函数
 requirements.txt--整个项目所需要的依赖库信息
    直接执行 pip install -r requirements.txt 便可安装所有依赖库
 static--存储css，js，images等
