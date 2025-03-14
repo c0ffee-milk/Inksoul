@@ -38,7 +38,7 @@ def add():
 @bp.route('/edit/<int:diary_id>', methods=['GET', 'POST'])
 @login_required
 def edit(diary_id):
-    diary = DiaryModel.query.get(diary_id)
+    diary = DiaryModel.query.get_or_404(diary_id)
     if diary.author_id == current_user.id:
         if request.method == 'POST':
             title = request.form['title']
