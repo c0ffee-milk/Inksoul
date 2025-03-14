@@ -1,9 +1,18 @@
 #此文件用来提供协作信息
 
-1.数据库配置：setting.py 里
-   数据库迁移三部曲：flask db init(用来初始化，生成migrations文件夹，只用执行一次)
-                               flask db migrate(进行迁移)
-                               flask db upgrade(进行更新)
+1.数据库配置：setting.py 里进行配置
+   HOSTNAME = "127.0.0.1"        #这里是本机，配置到服务器可以换地址
+   PORT = 3306                   #端口，一般不用修改
+   USERNAME = "root"             #服务器设置的是CAPTAIN
+   PASSWORD = "14618983"         #服务器设置的是14618983
+   DATABASE = "database_inksoul" #服务器的名字（还没有创建）
+   DB_URI = 'mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(USERNAME,PASSWORD,HOSTNAME,PORT,DATABASE)
+   SQLALCHEMY_DATABASE_URI = DB_URI  #最下面这两行不用改
+
+   数据库迁移三部曲：
+      flask db init(用来初始化，生成migrations文件夹，只用执行一次)
+      flask db migrate(进行迁移)
+      flask db upgrade(进行更新)
 2.文件架构：
 app.py--工厂函数
 exts.py--扩展函数（避免循环引用）
@@ -19,8 +28,10 @@ templates--存储html文件，用来渲染页面
 
 
 
-4.期待实现功能：
+4.期待实现功能（有余力完善）：
    邮件发送美化（借助html渲染）
+   确认账户功能（使用itsdangerous AND 发送确认邮件）
+   使用Markdown和Flask-PageDown支持富文本
 
 
 
