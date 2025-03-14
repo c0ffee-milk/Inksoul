@@ -30,7 +30,6 @@ def add():
             db.session.commit()
             # 更新用户的 diary_count
             user = UserModel.query.get(current_user.id)
-            user.diary_count += 1
             db.session.commit()
             flash('日记添加成功', 'success')
             return redirect(url_for('index'))
@@ -62,9 +61,7 @@ def delete(diary_id):
     if diary.author_id == current_user.id:
         db.session.delete(diary)
         db.session.commit()
-        # 更新用户的 diary_count
         user = UserModel.query.get(current_user.id)
-        user.diary_count -= 1
         db.session.commit()
         return redirect(url_for('index'))
     else:
