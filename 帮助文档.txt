@@ -14,3 +14,5 @@ requirements.txt--整个项目所需要的依赖库信息
    直接执行 pip install -r requirements.txt 便可安装所有依赖库
 static--存储css，js，images等
 templates--存储html文件，用来渲染页面
+
+3.项目进度：
