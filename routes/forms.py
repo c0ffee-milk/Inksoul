@@ -44,12 +44,6 @@ class LoginForm(FlaskForm):  # 继承 FlaskForm
     password = StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
 
 
-class EditProfileForm(FlaskForm):  # 继承 FlaskForm
-    location = StringField("Location", validators=[Length(0, 64)])
-    about_me = StringField("About me")
-    submit = SubmitField("Submit")
-
-
 class ChangeForm(FlaskForm):  # 继承 FlaskForm
     email = StringField(validators=[Email(message="邮箱格式错误！")])
     captcha = StringField(validators=[Length(min=4, max=4, message="验证码格式错误！")])
