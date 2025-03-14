@@ -1,0 +1,7 @@
+#此文件用来提供协作信息
+
+1.数据库配置：setting.py 里
+   数据库迁移三部曲：flask db init(用来初始化，生成migrations文件夹，只用执行一次)
+                               flask db migrate(进行迁移)
+                               flask db upgrade(进行更新)
+2.文件架构：
