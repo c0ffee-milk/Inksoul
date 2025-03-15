@@ -16,6 +16,18 @@ app = Flask(__name__)
 app.config.from_pyfile('setting.py')
 moment = Moment(app)
 
+# 初始化 LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# 设置登录视图
+login_manager.login_view = 'auth.login'
+
+# 加载用户的回调函数
+@login_manager.user_loader
+def load_user(user_id):
+    from models import UserModel
+    return UserModel.query.get(int(user_id))
 
 # 注册蓝图到Flask应用，设置URL前缀
 app.register_blueprint(auth_bp)
