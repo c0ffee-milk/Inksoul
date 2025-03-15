@@ -42,7 +42,8 @@ def login():
                 return redirect(url_for("auth.login"))
             # 检查密码
             if check_password_hash(user.password, password):
-                session["user_id"] = user.id
+                login_user(user)
+                flash("成功登录")
                 return redirect(url_for("diary.mine"))
             else:
                 flash("密码错误")
