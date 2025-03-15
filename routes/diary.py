@@ -5,13 +5,11 @@ from flask_login import current_user, login_required
 from exts import db
 bp = Blueprint('diary', __name__, url_prefix='/diary')
 
-@bp.route('/')
-def index():
-    if current_user.is_authenticated:
-        # 获取当前用户的所有日记，按创建时间倒序排列
-        diaries = DiaryModel.query.filter_by(author_id=current_user.id).order_by(DiaryModel.create_time.desc()).all()
-    else:
-        return redirect(url_for('auth.login'))
+@bp.route('/mine')
+@login_required
+def mine():
+    # 获取当前用户的所有日记，按创建时间倒序排列
+    diaries = DiaryModel.query.filter_by(author_id=current_user.id).order_by(DiaryModel.create_time.desc()).all()
     return render_template('index.html', diaries=diaries)
 
 @bp.route('/add', methods=['GET', 'POST'])
