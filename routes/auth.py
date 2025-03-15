@@ -23,7 +23,7 @@ bp = Blueprint("auth", __name__,url_prefix="/auth")
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('diary.mine'))
     form = LoginForm(request.form)
     if request.method == "GET":
         return render_template("login.html",form = form)
@@ -43,7 +43,7 @@ def login():
             # 检查密码
             if check_password_hash(user.password, password):
                 session["user_id"] = user.id
-                return redirect(url_for("index"))
+                return redirect(url_for("diary.mine"))
             else:
                 flash("密码错误")
                 return redirect(url_for("auth.login"))
