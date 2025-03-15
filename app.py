@@ -6,6 +6,7 @@ from exts import db, mail
 from models import UserModel
 from sqlalchemy import text
 from flask_migrate import Migrate
+from flask_mail import Message
 # 导入蓝图
 from routes.auth import bp as auth_bp
 from routes.diary import bp as diary_bp
@@ -15,6 +16,18 @@ app = Flask(__name__)
 app.config.from_pyfile('setting.py')
 moment = Moment(app)
 
+# 初始化 LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# 设置登录视图
+login_manager.login_view = 'auth.login'
+
+# 加载用户的回调函数
+@login_manager.user_loader
+def load_user(user_id):
+    from models import UserModel
+    return UserModel.query.get(int(user_id))
 
 # 注册蓝图到Flask应用，设置URL前缀
 app.register_blueprint(auth_bp)
@@ -56,6 +69,13 @@ def my_before_request():
 @app.context_processor
 def my_context_processor():
     return {'user': g.user}
+
+@app.route("/mail/test")
+def mail_test():
+    message = Message(subject="邮箱测试", recipients=["2561884482@qq.com"], body="这是一条测试邮件")
+    mail.send(message)
+    return "邮件发送成功！"
+
 
 
 # 主程序入口，判断当前模块是否是主模块，如果是则启动Flask应用
