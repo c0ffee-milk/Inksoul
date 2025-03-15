@@ -65,3 +65,24 @@ class ChangeForm(FlaskForm):  # 继承 FlaskForm
         captcha_model = EmailCaptchaModel.query.filter_by(email=email, captcha=captcha).first()
         if not captcha_model:
             raise wtforms.ValidationError(message="邮箱或验证码错误！")
+
+
+class DiaryForm(FlaskForm):  # 继承 FlaskForm
+    title = StringField(validators=[
+        InputRequired(message="标题不能为空！"),
+        Length(max=100, message="标题长度不能超过100个字符！")
+    ])
+    content = StringField(validators=[
+        InputRequired(message="内容不能为空！")
+    ])
+    submit = SubmitField("提交")
+
+    # 自定义验证：标题和内容不能为空
+    def validate_title(self, field):
+        if not field.data.strip():
+            raise wtforms.ValidationError(message="标题不能为空！")
+
+    def validate_content(self, field):
+        if not field.data.strip():
+            raise wtforms.ValidationError(message="内容不能为空！")
+
