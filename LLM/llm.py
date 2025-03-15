@@ -105,7 +105,7 @@ class EmotionAnalyzer:
                 {current_diary}
                 
                 请输出JSON包含：
-                1.喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                1. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
                 2. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
                 2. 根据情绪种类与原文提炼出跟情绪有关的 （如悲喜交加、遗憾、孤独等）的：keywords（3个关键词）
                 3. 根据原文内容提出一些心理建议immediate_suggestion（即时建议）"""
@@ -121,16 +121,17 @@ class EmotionAnalyzer:
                 {diaries}
                 
                 请输出JSON包含：
-                1. dominant_emotion（主导情绪）
-                2. emotion_trend（情绪变化趋势描述）
-                3. weekly_advice（长期建议）
-                4. significant_events（重要事件列表）"""
+                1. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                2. 根据以上的基础情绪含量分析dominant_emotion（主导情绪）
+                3. emotion_trend（情绪变化趋势描述）
+                4. weekly_advice（长期建议）
+                5. 5个key_words（本周的关键词）"""
             )
         }
 
-    def _get_time_range(self, days: int = 7) -> dict:
-        end = datetime.now()
-        start = end - timedelta(days=days)
+    def _get_time_range(self, start: datetime = None, end: datetime = None, days: int = 7) -> dict:
+        end = end or datetime.now()
+        start = start or (end - timedelta(days=days))
         return {
             "$and": [
                 {"date": {"$gte": start.timestamp()}},
@@ -165,25 +166,42 @@ class EmotionAnalyzer:
 
 
 
-    def _retrieve_diaries(self, mode: Literal["daily", "weekly"], query: str = None) -> str:
+    def _retrieve_diaries(self, mode: Literal["daily", "weekly"], 
+                     query: str = None, start: datetime = None, 
+                     end: datetime = None, days: int = None) -> str:
         # 添加用户过滤条件
         base_filter = {"user_id": self.user_id}
         
         if mode == "daily":
-            time_filter = self._get_time_range(1)
-            combined_filter = {"$and": [base_filter, time_filter]}
+            time_filter = self._get_time_range(days=1)
+        else:
+            # 当weekly模式时优先使用自定义参数
+            time_filter = self._get_time_range(
+                start=start, 
+                end=end,
+                days=days if days else 7  # 保持默认7天
+            )
+        
+        combined_filter = {"$and": [base_filter, time_filter]}
+        
+        if mode == "daily":
             docs = self.safe_retrieve(self.diary_db, query, 3, combined_filter)
         else:
-            time_filter = self._get_time_range(7)
-            combined_filter = {"$and": [base_filter, time_filter]}
             docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, combined_filter)
         
         return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
 
 
-    def log_diary(self, text: str):
-        """保存单条日记到向量数据库"""
+    def log_diary(self, text: str, date: datetime = None):
+        """保存单条日记到向量数据库
+        :param date: 可选日期参数，默认为当前时间
+        """
+
         try:
+            if date and not isinstance(date, datetime):
+                raise ValueError("date参数必须是datetime类型")
+            timestamp = date.timestamp() if date else datetime.now().timestamp()
+
             # 检查是否存在相似日记
             existing = self.diary_db.similarity_search(text, k=1)
             if existing and existing[0].page_content == text:
@@ -195,7 +213,7 @@ class EmotionAnalyzer:
                 texts=[text],
                 metadatas=[{
                     "user_id": self.user_id,
-                    "date": datetime.now().timestamp(),
+                    "date": timestamp,
                     "source": "user_diary"
                 }]
             )
@@ -205,7 +223,32 @@ class EmotionAnalyzer:
             self.logger.error(f"[ERROR] 保存失败: {str(e)}")
 
 
-    def analyze(self, mode: Literal["daily", "weekly"], diary: str = None) -> dict:
+    def get_diary_dates(self) -> list:
+        """获取用户所有日记的日期列表（按时间排序）"""
+        try:
+            # 获取所有元数据
+            collection = self.diary_db.get()
+            metadatas = collection.get('metadatas', [])
+            
+            # 提取并转换时间戳
+            dates = []
+            for meta in metadatas:
+                if 'date' in meta:
+                    dt = datetime.fromtimestamp(meta['date'])
+                    dates.append(dt.strftime("%Y-%m-%d"))  # 格式化为日期字符串
+                    
+            # 去重并排序
+            unique_dates = sorted(list(set(dates)), 
+                                key=lambda x: datetime.strptime(x, "%Y-%m-%d"))
+            return unique_dates
+            
+        except Exception as e:
+            self.logger.error(f"[ERROR] 获取日期失败: {str(e)}")
+            return []
+
+
+    def analyze(self, mode: Literal["daily", "weekly"], diary: str = None, date: datetime = None, start_date: datetime = None, end_date: datetime = None) -> dict:
+    
 
 
         """执行分析（双模式入口）"""
@@ -217,7 +260,7 @@ class EmotionAnalyzer:
         knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
         
         if mode == "daily" and diary:
-            self.log_diary(diary)
+            self.log_diary(diary, date=date)
 
         # 日记处理
         if mode == "daily":
@@ -227,7 +270,11 @@ class EmotionAnalyzer:
                 current_diary=diary
             )
         else:
-            diary_context = self._retrieve_diaries("weekly")
+            diary_context = self._retrieve_diaries(
+                "weekly", 
+                start=start_date,
+                end=end_date
+            )
             prompt = self.templates["weekly"].format(
                 knowledge=knowledge_context,
                 diaries=diary_context
@@ -239,38 +286,3 @@ class EmotionAnalyzer:
             return json.loads(response.content.strip("```json").strip())
         except:
             return {"error": "分析结果解析失败"}
-
-# ================== 使用示例 ==================
-
-if __name__ == "__main__":
-    # 模拟两个用户
-    user_metadata = [
-        {"user_id": "U123", "text": "测试用户A的日记..."},
-        {"user_id": "U456", "text": "测试用户B的日记..."}
-    ]
-    for meta in user_metadata:
-        # 初始化用户专属数据库
-        user_db = VectorDBManager().get_diary_db(meta["user_id"])
-        
-        # 写入带用户ID的元数据
-        user_db.add_texts(
-            texts=[meta["text"]],
-            metadatas=[{
-                "user_id": meta["user_id"],
-                "date": datetime.now().timestamp(),
-                "source": "user_diary"
-            }]
-        )
-
-    user_db.persist()
-    time.sleep(0.5) 
-    
-    # 用户A的分析实例
-    analyzer_A = EmotionAnalyzer(user_id="U123")
-    result_A = analyzer_A.analyze(mode="daily", diary="今天感到有些焦虑")
-    print("用户A分析结果:", result_A)
-
-    # 用户B的分析实例
-    analyzer_B = EmotionAnalyzer(user_id="U456")
-    result_B = analyzer_A.analyze(mode="daily", diary="今天心情愉快")
-    print("用户B分析结果:", result_B)
