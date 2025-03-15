@@ -6,6 +6,7 @@ from exts import db, mail
 from models import UserModel
 from sqlalchemy import text
 from flask_migrate import Migrate
+from flask_mail import Message
 # 导入蓝图
 from routes.auth import bp as auth_bp
 from routes.diary import bp as diary_bp
@@ -56,6 +57,13 @@ def my_before_request():
 @app.context_processor
 def my_context_processor():
     return {'user': g.user}
+
+@app.route("/mail/test")
+def mail_test():
+    message = Message(subject="邮箱测试", recipients=["2561884482@qq.com"], body="这是一条测试邮件")
+    mail.send(message)
+    return "邮件发送成功！"
+
 
 
 # 主程序入口，判断当前模块是否是主模块，如果是则启动Flask应用

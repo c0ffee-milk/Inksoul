@@ -1,19 +1,35 @@
+from flask_login import UserMixin
 from exts import db
 from datetime import datetime
 # 用户模型
-class UserModel(db.Model):
+class UserModel(db.Model,UserMixin):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(1000), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     join_time = db.Column(db.DateTime, default=datetime.now)
-    diary_count = db.Column(db.Integer, default=0)
     def ping(self):
         self.last_login = datetime.utcnow()
         db.session.add(self)
     
-    diaries = db.relationship('DiaryModel', backref='author_id', lazy='dynamic')
+    diaries = db.relationship('DiaryModel', backref='author', lazy='dynamic')
+
+    # Flask-Login 需要的方法
+    def get_id(self):
+        return str(self.id)
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
 
 # 邮箱验证码模型
 class EmailCaptchaModel(db.Model):
@@ -31,13 +47,9 @@ class DiaryModel(db.Model):
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
     analyze = db.Column(db.Text, nullable=True)
+    category = db.Column(db.String(100), nullable=True)
+
 
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
-class Category(db.Model):
-    __tablename__ = "category"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(100), nullable=False)
-
-    diaries = db.relationship('DiaryModel', backref='category_id', lazy='dynamic')
