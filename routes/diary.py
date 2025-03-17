@@ -68,7 +68,7 @@ def add():
 @login_required
 def delete(diary_id):
     diary = DiaryModel.query.get(diary_id)
-    if diary.author_id == current_user.id:
+    if diary and diary.author_id == current_user.id:
         db.session.delete(diary)
         db.session.commit()
         user = UserModel.query.get(current_user.id)
