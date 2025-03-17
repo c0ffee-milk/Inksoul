@@ -127,6 +127,7 @@ class EmotionAnalyzer:
                 4. 针对这段时间的情绪提出专业心理建议：weekly_advice（长期建议）
                 5. 总结这段时间的主导事件找出5-10个事件关键词：event_key_words
                 6. 总结这段时间的主导情绪找出5-10个情绪关键词：emotion_key_words
+                7. 找一段名人的名言，作为总结的引言：famous_quote
                 """
             )
         }
