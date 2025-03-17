@@ -33,24 +33,6 @@ def add():
             return redirect(url_for('index'))
     return render_template('index.html')
 
-@bp.route('/edit/<int:diary_id>', methods=['GET', 'POST'])
-@login_required
-def edit(diary_id):
-    diary = DiaryModel.query.get_or_404(diary_id)
-    if diary.author_id == current_user.id:
-        if request.method == 'POST':
-            title = request.form['title']
-            content = request.form['content']
-            if not title or not content:
-                return redirect(url_for('diary.edit', diary_id=diary_id))
-            else:
-                diary.title = title
-                diary.content = content
-                db.session.commit()
-                return redirect(url_for('index'))
-        return render_template('edit.html', diary=diary)
-    else:
-        return redirect(url_for('index'))
 
 @bp.route('/delete/<int:diary_id>', methods=['GET', 'POST'])
 @login_required
