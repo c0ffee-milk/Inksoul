@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_pagination import Pagination
-from models import DiaryModel, UserModel
+from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
 from exts import db
 from LLM.llm import EmotionAnalyzer  # 新增导入
@@ -76,3 +76,9 @@ def delete(diary_id):
         return redirect(url_for('index'))
     else:
         return redirect(url_for('index'))
+
+@bp.route('/weekly_report')
+@login_required
+def week_report():
+    report = WeeklyModel.query.filter_by(author_id=current_user.id).order_by(WeeklyModel.create_time.desc()).all()
+    return render_template('index.html', report=report)
