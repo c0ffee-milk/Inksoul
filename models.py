@@ -1,4 +1,5 @@
 from flask_login import UserMixin
+from sqlalchemy.engine import create
 from exts import db
 from datetime import datetime
 # 用户模型
@@ -52,4 +53,11 @@ class DiaryModel(db.Model):
 
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+class WeeklyModel(db.Model):
+    __tablename__ = "weekly"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    content = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
 
