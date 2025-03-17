@@ -107,8 +107,8 @@ class EmotionAnalyzer:
                 请输出JSON包含：
                 1. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
                 2. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
-                2. 根据情绪种类与原文提炼出跟情绪有关的 （如悲喜交加、遗憾、孤独等）的：keywords（3个关键词）
-                3. 根据原文内容提出一些心理建议immediate_suggestion（即时建议）"""
+                3. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
+                4. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）"""
             ),
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
@@ -122,10 +122,12 @@ class EmotionAnalyzer:
                 
                 请输出JSON包含：
                 1. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
-                2. 根据以上的基础情绪含量分析dominant_emotion（主导情绪）
-                3. emotion_trend（情绪变化趋势描述）
-                4. weekly_advice（长期建议）
-                5. 5个key_words（本周的关键词）"""
+                2. 提取这段时间内每天（不用给出日期）的主导事件和主导情绪：domain_event(主导事件)、domain_emotion(主导情绪)
+                3. 这段时间的情绪变化趋势：emotion_trend（情绪变化趋势描述）
+                4. 针对这段时间的情绪提出专业心理建议：weekly_advice（长期建议）
+                5. 总结这段时间的主导事件找出5-10个事件关键词：event_key_words
+                6. 总结这段时间的主导情绪找出5-10个情绪关键词：emotion_key_words
+                """
             )
         }
 
