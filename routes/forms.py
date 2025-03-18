@@ -3,6 +3,7 @@
 import wtforms
 
 # 第三方库导入
+from wtforms import BooleanField 
 from flask_wtf import FlaskForm  # 使用 FlaskForm 而不是 wtforms.Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Email, Length, EqualTo, InputRequired
@@ -41,6 +42,7 @@ class RegisterForm(FlaskForm):  # 继承 FlaskForm
 
 
 class LoginForm(FlaskForm):  # 继承 FlaskForm
+    remember_me = BooleanField('记住我')
     email = StringField(validators=[Email(message="邮箱格式错误！")])
     password = StringField(validators=[Length(min=6, max=20, message="密码格式错误！")])
     submit = SubmitField()

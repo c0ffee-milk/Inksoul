@@ -21,17 +21,34 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-        user = UserModel.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('index.index_page'))
+    if current_user.is_authenticated:
+        return redirect(url_for('diary.mine'))
+    form = LoginForm(request.form)
+    if request.method == "GET":
+        return render_template("login.html",form = form)
+    else:
+        if form.validate_on_submit():
+            email = form.email.data
+            password = form.password.data
+            if password is None:
+                    flash("密码不能为空")
+                    return redirect(url_for("auth.login"))
+            user = UserModel.query.filter_by(email=email).first()
+            if not user:
+                flash("用户未找到")
+                return redirect(url_for("auth.login"))
+            if check_password_hash(user.password, password):
+                # 添加remember参数
+                remember = form.remember_me.data if hasattr(form, 'remember_me') else False
+                login_user(user, remember=remember)
+                flash("成功登录")
+                return redirect(url_for("diary.mine"))
+            else:
+                flash("密码错误")
+                return redirect(url_for("auth.login"))
         else:
-            flash('邮箱或密码错误', 'error')
-    return render_template('login.html', form=form)
+            flash("表单错误：" + str(form.errors))
+            return redirect(url_for("auth.login"))
 
 @bp.route("/register", methods=["GET", "POST"])
 def register():
