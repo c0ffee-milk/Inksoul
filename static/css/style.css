@@ -1,67 +1,88 @@
 /* 全局样式 */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', sans-serif; /* 使用更现代的字体，可根据需要替换 */
     margin: 0;
     padding: 0;
     display: flex;
     height: 100vh;
-    background-color: #f9f9f9;
+    background-color: #f5f0ff; /* 浅紫色背景 */
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased; /* 字体抗锯齿 */
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* 导航栏样式 */
 .sidebar {
     width: 25%;
-    background-color: #f4f4f4;
+    background-color: #e9e1f9; /* 淡紫色背景 */
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid #d6c7f7; /* 紫色边框 */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease; /* 侧边栏过渡效果 */
+}
+
+.sidebar:hover {
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* 鼠标悬停时增强阴影 */
 }
 
 .heatmap {
-    background-color: #fff;
+    background-color: #f9f6ff;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* 增加阴影 */
 }
 
 .heatmap:hover {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px); /* 鼠标悬停时上移 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .heatmap-content {
     height: 200px;
     background-color: #eee;
     margin-top: 10px;
+    border-radius: 5px;
+    overflow: hidden; /* 防止内容溢出 */
 }
 
 .category {
-    background-color: #fff;
+    background-color: #f9f6ff;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .category:hover {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .category ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 .category li {
     margin-bottom: 5px;
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    padding: 5px;
 }
 
 .category li:hover {
-    color: #007BFF;
+    color: #6f42c1; /* 紫色 */
+    background-color: #e9e1f9;
+    border-radius: 3px;
 }
 
 .search-box {
@@ -71,23 +92,32 @@ body {
 
 .search-box input {
     flex: 1;
-    padding: 5px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    border: none;
     border-radius: 5px 0 0 5px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    outline: none; /* 去除默认聚焦边框 */
+    transition: box-shadow 0.3s ease;
+}
+
+.search-box input:focus {
+    box-shadow: 0 0 5px rgba(111, 66, 193, 0.5); /* 聚焦时的阴影效果 */
 }
 
 .search-box button {
-    padding: 5px 10px;
-    background-color: #007BFF;
+    padding: 10px 15px;
+    background-color: #6f42c1; /* 紫色 */
     color: #fff;
     border: none;
     border-radius: 0 5px 5px 0;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    outline: none;
 }
 
 .search-box button:hover {
-    background-color: #0056b3;
+    background-color: #5a32a3; /* 深紫色 */
 }
 
 /* 主内容区域样式 */
@@ -100,46 +130,52 @@ body {
 
 .login-register {
     align-self: flex-end;
+    margin-bottom: 20px;
 }
 
 .login-register button {
     margin-left: 10px;
-    padding: 5px 10px;
-    background-color: #007BFF;
+    padding: 10px 15px;
+    background-color: #6f42c1; /* 紫色 */
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
 }
 
 .login-register button:hover {
-    background-color: #0056b3;
+    background-color: #5a32a3; /* 深紫色 */
+    transform: translateY(-2px); /* 鼠标悬停时上移 */
 }
 
 .write-diary {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #28a745;
+    background-color: #6f42c1; /* 紫色 */
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     align-self: flex-start;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
 }
 
 .write-diary:hover {
-    background-color: #218838;
+    background-color: #5a32a3; /* 深紫色 */
+    transform: translateY(-2px);
 }
 
 .diary-write {
     display: none;
     margin-top: 20px;
-    background-color: #fff;
+    background-color: #f9f6ff;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 .diary-write input,
@@ -148,22 +184,34 @@ body {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #ccc;
+    border: none;
     border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+.diary-write input:focus,
+.diary-write textarea:focus,
+.diary-write select:focus {
+    box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
 }
 
 .diary-write button {
     padding: 10px 20px;
-    background-color: #007BFF;
+    background-color: #6f42c1; /* 紫色 */
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
 }
 
 .diary-write button:hover {
-    background-color: #0056b3;
+    background-color: #5a32a3; /* 深紫色 */
+    transform: translateY(-2px);
 }
 
 .diary-slider {
@@ -177,186 +225,132 @@ body {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: #fff;
+    background-color: #f9f6ff;
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .diary-slide.active {
     opacity: 1;
 }
 
-.pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-}
-
-.pagination button {
-    margin: 0 10px;
-    padding: 5px 10px;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.pagination button:hover {
-    background-color: #0056b3;
-}
-
-.emotion {
-    background-color: #ffc107;
-    color: #fff;
-    padding: 3px 5px;
-    border-radius: 3px;
-    font-size: 12px;
-}
-
-.emotion-analysis {
-    margin-top: 20px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-/* 认证页面通用样式 */
+/* 认证容器样式 */
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.auth-card {
-    background: #fff;
-    padding: 2.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    height: 100vh;
     width: 100%;
-    max-width: 450px;
-    margin: 1rem;
 }
 
+/* 认证卡片样式 */
+.auth-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* 鼠标悬停时增强阴影 */
+}
+
+/* 认证标题样式 */
 .auth-title {
     text-align: center;
-    color: #2c3e50;
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #6f42c1;
 }
 
-.auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
+/* 表单组样式 */
 .form-group {
-    position: relative;
+    margin-bottom: 15px;
 }
 
+/* 表单标签样式 */
 .form-label {
     display: block;
-    margin-bottom: 0.5rem;
-    color: #4a5568;
-    font-weight: 500;
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
+/* 表单输入框样式 */
 .form-input {
     width: 100%;
-    padding: 0.8rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+    padding: 8px;
+    border: 1px solid #d6c7f7;
+    border-radius: 3px;
+    box-sizing: border-box;
+    /* 添加或修改 box-shadow 属性 */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* 这里设置阴影的大小和颜色 */
+    transition: box-shadow 0.3s ease; /* 可选：添加过渡效果 */
 }
 
-.form-input:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66,153,225,0.1);
+/* 鼠标悬停时的阴影效果 */
+.form-input:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2); /* 可选：悬停时阴影效果变化 */
 }
 
-.input-group {
-    display: flex;
-    gap: 0.5rem;
-}
-
+/* 验证码按钮样式 */
 .captcha-btn {
-    flex-shrink: 0;
-    padding: 0.8rem 1rem;
-    background: #4299e1;
-    color: white;
+    padding: 10px;
+    background-color: #6f42c1;
+    color: #fff;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
 }
 
 .captcha-btn:hover {
-    background: #3182ce;
+    background-color: #5a32a3;
+    transform: translateY(-2px);
 }
 
-.captcha-btn:disabled {
-    background: #cbd5e0;
-    cursor: not-allowed;
+/* 错误消息样式 */
+.error-msg {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
+/* 认证按钮样式 */
 .auth-btn {
     width: 100%;
-    padding: 1rem;
-    background: #48bb78;
-    color: white;
+    padding: 10px;
+    background-color: #6f42c1;
+    color: #fff;
     border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
 }
 
 .auth-btn:hover {
-    background: #38a169;
+    background-color: #5a32a3;
+    transform: translateY(-2px);
 }
 
-.error-msg {
-    color: #e53e3e;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    height: 1.25rem;
-}
-
+/* 认证链接样式 */
 .auth-links {
+    margin-top: 15px;
     text-align: center;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 .auth-links a {
-    color: #4299e1;
+    color: #6f42c1;
     text-decoration: none;
-    font-size: 0.875rem;
+    transition: color 0.3s ease;
 }
 
 .auth-links a:hover {
     text-decoration: underline;
-}
-
-.form-input.error {
-    border-color: #ff3860;
-    box-shadow: 0 0 0 2px rgba(255, 56, 96, 0.2);
-}
-
-.captcha-btn:disabled {
-    background-color: #cccccc !important;
-    cursor: not-allowed;
+    color: #5a32a3;
 }
