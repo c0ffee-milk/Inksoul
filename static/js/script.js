@@ -50,7 +50,6 @@ writeDiaryBtn.addEventListener('click', () => {
 saveDiaryBtn.addEventListener('click', () => {
     const title = document.getElementById('diary-title').value;
     const content = document.getElementById('diary-content').value;
-    const emotion = document.getElementById('diary-emotion').value;
 
     if (title && content) {
         const newSlide = document.createElement('div');
@@ -58,10 +57,10 @@ saveDiaryBtn.addEventListener('click', () => {
         newSlide.innerHTML = `
             <h3>${title}</h3>
             <p>${content}</p>
-            <span class="emotion">${emotion}</span>
         `;
         document.querySelector('.diary-slider').appendChild(newSlide);
-        slides.push(newSlide);
+        // 这里需要更新 slides 变量，不过原始代码中 slides 是 NodeList 类型，需要重新获取
+        slides = document.querySelectorAll('.diary-slide');
         diaryWrite.style.display = 'none';
         document.getElementById('diary-title').value = '';
         document.getElementById('diary-content').value = '';
