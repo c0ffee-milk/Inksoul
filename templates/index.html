@@ -48,6 +48,26 @@
             {% endif %}
         </div>
         <button class="write-diary" id="write-diary-btn">撰写日记</button>
+        <!-- 日记输入框 -->
+        <div class="diary-write" id="diary-write">
+            <input type="text" id="diary-title" placeholder="日记标题">
+            <textarea id="diary-content" placeholder="日记内容"></textarea>
+            <button id="save-diary">保存日记</button>
+        </div>
+        <!-- 日记历史区域 -->
+        <div class="diary-slider">
+            {% if diaries %}
+                {% for diary in diaries %}
+                    <div class="diary-slide">
+                        <h3>{{ diary.title }}</h3>
+                        <p>{{ diary.content }}</p>
+                        <span class="emotion">{{ diary.analyze.emotion if diary.analyze else '' }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>暂无日记记录</p>
+            {% endif %}
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
