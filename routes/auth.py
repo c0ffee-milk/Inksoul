@@ -92,7 +92,21 @@ def get_email_captcha():
         captcha = random.sample(source, 4)
         captcha = "".join(captcha)
         # 发送验证码给注册用户
-        message = Message(subject="您的InkSoul注册码", recipients=[email], body=f"您的验证码是{captcha}，请妥善保管。")
+        message = Message(
+            subject="您的InkSoul注册码",
+            recipients=[email],
+            html=f"""
+            <html>
+                <body>
+                    <h2 style="color: #4CAF50;">欢迎使用InkSoul</h2>
+                    <p>您的验证码是：<strong style="font-size: 18px; color: #2196F3;">{captcha}</strong></p>
+                    <p>请妥善保管，该验证码将在15分钟后失效。</p>
+                    <hr style="border: 1px solid #ddd;">
+                    <p style="color: #888; font-size: 12px;">此为系统自动发送邮件，请勿直接回复。</p>
+                </body>
+            </html>
+            """
+        )
         mail.send(message)
         # 将验证码存入数据库（后续再进行优化，缺陷：存储与提取速度慢）使用memcached/redis
         email_captcha = EmailCaptchaModel(email=email, captcha=captcha)
