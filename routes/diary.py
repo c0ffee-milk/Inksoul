@@ -11,7 +11,7 @@ import json
 bp = Blueprint('diary', __name__, url_prefix='/diary')
 
 # 在应用启动时初始化加密器
-cipher = AESCipher(key=b'your-32-byte-secret-key')  # 使用固定密钥或从配置中读取
+cipher = AESCipher(key=b'aB3x9pLmQw7zC1vRfTnY8sXoIjK2dE4h')  # 使用固定密钥或从配置中读取
 
 @bp.route('/mine')
 @login_required

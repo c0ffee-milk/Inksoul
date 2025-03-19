@@ -1,26 +1,28 @@
-#入口文件
-from flask import Flask,g,session
+# 入口文件
+from flask import Flask, g, session
+from flask_login import LoginManager
+from flask_mail import Message
+from flask_migrate import Migrate
 from flask_moment import Moment
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import text
+
+# 导入自定义模块
 from exts import db, mail
 from models import UserModel
-from sqlalchemy import text
-from flask_migrate import Migrate
-from flask_mail import Message
-# 导入蓝图
 from routes.auth import bp as auth_bp
 from routes.diary import bp as diary_bp
 from routes.index import bp as index_bp
-#实例化Flask应用并配置应用参数
+
+# 实例化 Flask 应用并配置应用参数
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config.from_pyfile('setting.py')
 moment = Moment(app)
 
 # 初始化 LoginManager
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-# 设置登录视图
 login_manager.login_view = 'auth.login'
 
 # 加载用户的回调函数
@@ -29,33 +31,25 @@ def load_user(user_id):
     from models import UserModel
     return UserModel.query.get(int(user_id))
 
-# 注册蓝图到Flask应用，设置URL前缀
+# 注册蓝图到 Flask 应用，设置 URL 前缀
 app.register_blueprint(auth_bp)
 app.register_blueprint(diary_bp)
 app.register_blueprint(index_bp)
 
-#初始化db，先创建，再绑定，避免循环引用
+# 初始化 db，先创建，再绑定，避免循环引用
 db.init_app(app)
 mail.init_app(app)
 
-#创建Migrate对象
+# 创建 Migrate 对象
 migrate = Migrate(app, db)
-#flask db init  #初始化迁移环境
-#flask db migrate  #生成迁移脚本
-#flask db upgrade  #执行迁移
-#flask db downgrade  #回滚迁移
 
-
-
-
-#检测数据库是否连接
+# 检测数据库是否连接
 with app.app_context():
     with db.engine.connect() as conn:
-        rs = conn.execute(text('select 1'))#运行后终端输出1
+        rs = conn.execute(text('select 1'))  # 运行后终端输出 1
         print(rs.fetchone())
 
-
-
+# 请求前处理
 @app.before_request
 def my_before_request():
     user_id = session.get('user_id')
@@ -65,19 +59,22 @@ def my_before_request():
     else:
         setattr(g, "user", None)
 
-
+# 上下文处理器
 @app.context_processor
 def my_context_processor():
     return {'user': g.user}
 
+# 邮件测试路由
 @app.route("/mail/test")
 def mail_test():
-    message = Message(subject="邮箱测试", recipients=["2561884482@qq.com"], body="这是一条测试邮件")
+    message = Message(
+        subject="邮箱测试",
+        recipients=["2561884482@qq.com"],
+        body="这是一条测试邮件"
+    )
     mail.send(message)
     return "邮件发送成功！"
 
-
-
-# 主程序入口，判断当前模块是否是主模块，如果是则启动Flask应用
+# 主程序入口
 if __name__ == '__main__':
     app.run(debug=True)
