@@ -3,6 +3,7 @@ from Cryptodome.Util.Padding import pad, unpad
 import base64
 import os
 
+
 class AESCipher:
     def __init__(self, key=None):
         self.key = key or os.urandom(32)  # 32字节的密钥
