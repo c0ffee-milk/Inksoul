@@ -96,7 +96,9 @@ class EmotionAnalyzer:
         self.templates = {
             "daily": PromptTemplate(
                 input_variables=["knowledge", "current_diary"],
-                template="""作为心理分析师，请结合专业知识和当前日记进行分析：
+
+                template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对用户日记进行结构化心理分析：
+
                 
                 【专业知识】
                 {knowledge}
@@ -104,12 +106,16 @@ class EmotionAnalyzer:
                 【用户当日日记】
                 {current_diary}
                 
-                请输出JSON包含：
-                1. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
-                2. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
-                3. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
-                4. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）"""
+<<<<<<< HEAD
+                请输出JSON格式包含：
+                1. 综合分析用户当日日记：overall_analysis(综合分析)
+                2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                3. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
+                4. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
+                5. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）
+                """
             ),
+
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
                 template="""基于过去一周的日记进行周期性分析：
