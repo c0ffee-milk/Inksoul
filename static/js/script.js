@@ -52,18 +52,41 @@ saveDiaryBtn.addEventListener('click', () => {
     const content = document.getElementById('diary-content').value;
 
     if (title && content) {
-        const newSlide = document.createElement('div');
-        newSlide.classList.add('diary-slide');
-        newSlide.innerHTML = `
-            <h3>${title}</h3>
-            <p>${content}</p>
-        `;
-        document.querySelector('.diary-slider').appendChild(newSlide);
-        // 这里需要更新 slides 变量，不过原始代码中 slides 是 NodeList 类型，需要重新获取
-        slides = document.querySelectorAll('.diary-slide');
-        diaryWrite.style.display = 'none';
-        document.getElementById('diary-title').value = '';
-        document.getElementById('diary-content').value = '';
+        // 获取 CSRF Token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        // 发送 POST 请求
+        fetch('/diary/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'title': title,
+                'content': content
+            })
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url; // 处理重定向
+            } else {
+                return response.json();
+            }
+        })
+        .then(data => {
+            if (data && data.success) {
+                window.location.reload(); // 成功则刷新页面
+            } else if (data) {
+                alert(data.message || "保存失败");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("请求失败，请检查网络");
+        });
+    } else {
+        alert("标题和内容不能为空！");
     }
 });
 
