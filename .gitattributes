@@ -1,2 +1,3 @@
+data_base/knowledge_db/fb8197f8-5ba7-4932-8ab1-f45644f752f7/data_level0.bin filter=lfs diff=lfs merge=lfs -text
 data_base/knowledge_db/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
 data_base/knowledge_db/**/data_level0.bin filter=lfs diff=lfs merge=lfs -text
