@@ -7,12 +7,14 @@ from models import UserModel
 from sqlalchemy import text
 from flask_migrate import Migrate
 from flask_mail import Message
+from flask_wtf.csrf import CSRFProtect
 # 导入蓝图
 from routes.auth import bp as auth_bp
 from routes.diary import bp as diary_bp
 from routes.index import bp as index_bp
 #实例化Flask应用并配置应用参数
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config.from_pyfile('setting.py')
 moment = Moment(app)
 
