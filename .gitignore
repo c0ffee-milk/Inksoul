@@ -1,0 +1,12 @@
+
+# Python
+__pycache__/
+*.pyc
+# macOS
+.DS_Store
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+# 数据库文件
+data_base/knowledge_db/
+
