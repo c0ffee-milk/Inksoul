@@ -1,16 +1,29 @@
 /* 全局样式 */
 body {
-    font-family: 'Inter', sans-serif; /* 使用更现代的字体，可根据需要替换 */
+    font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
     height: 100vh;
     background-color: #f5f0ff; /* 浅紫色背景 */
     color: #333;
     font-size: 16px;
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased; /* 字体抗锯齿 */
+    -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* 主容器样式 */
+.main-container {
+    display: flex;
+    width: 80%; /* 可以根据需要调整宽度，留出两边的空白 */
+    max-width: 1200px; /* 最大宽度 */
+    height: 90%; /* 可以根据需要调整高度 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 给容器添加阴影 */
+    border-radius: 5px; /* 圆角 */
+    overflow: hidden; /* 防止内容溢出 */
 }
 
 /* 导航栏样式 */
@@ -353,4 +366,17 @@ body {
 .auth-links a:hover {
     text-decoration: underline;
     color: #5a32a3;
+}
+
+/* 在现有样式基础上添加 */
+#diary-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#diary-form input:invalid,
+#diary-form textarea:invalid {
+    border: 1px solid #ff4444;
+    box-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
 }
