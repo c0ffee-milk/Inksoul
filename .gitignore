@@ -10,3 +10,11 @@ __pycache__/
 # 数据库文件
 data_base/knowledge_db/
 
+.idea/
+*.iml
+*.ipr
+*.iws
+
+.gitignore
+
+check_sqlite_version.py
