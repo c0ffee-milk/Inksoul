@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 *.pyc
 *~
 __pycache__
@@ -14,7 +13,6 @@ target/
 .idea/
 __pycache__/
 env/
-=======
 
 # Python
 __pycache__/
@@ -37,4 +35,3 @@ data_base/knowledge_db/
 # 忽略 diary_db 目录
 data_base/diary_db/
 
->>>>>>> 54f94925b937c9a951f7f23f2fe5eb76d4a3e9d7
