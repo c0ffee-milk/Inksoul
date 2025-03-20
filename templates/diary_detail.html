@@ -1,0 +1,23 @@
+<!-- 新增 diary_detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ diary.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="main-container">
+        <div class="main-content">
+            <a href="/">返回首页</a>
+            <h1>{{ diary.title }}</h1>
+            <div class="diary-meta">
+                <span>创建时间：{{ diary.create_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="emotion-tag">{{ diary.analyze.emotion }}</span>
+            </div>
+            <div class="diary-content">
+                {{ diary.content|safe }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

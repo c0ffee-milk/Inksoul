@@ -30,6 +30,7 @@ def mine():
             'analyze': decrypted_analysis,
             'create_time': diary.create_time
         })
+        print(decrypted_analysis)
     return render_template('index.html', diaries=decrypted_diaries)
 
 
@@ -52,7 +53,12 @@ def add():
             )
             db.session.add(diary)
 
-            # 情感分析逻辑...
+            # 新增AI情感分析
+            user_id = f"U{current_user.id}"  # 确保用户ID格式正确
+            analyzer = EmotionAnalyzer(user_id)
+            analysis_result = analyzer.analyze("daily", content)
+            encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
+            diary.analyze = encrypted_analysis
 
             db.session.commit()
             return jsonify(success=True, message="日记添加成功", redirect=url_for('diary.mine'))
