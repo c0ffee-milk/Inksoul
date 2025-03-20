@@ -30,6 +30,7 @@ def mine():
             'analyze': decrypted_analysis,
             'create_time': diary.create_time
         })
+        print(decrypted_analysis)
     return render_template('index.html', diaries=decrypted_diaries)
 
 

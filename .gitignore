@@ -17,4 +17,6 @@ data_base/knowledge_db/
 
 .gitignore
 
-check_sqlite_version.py
+# 忽略 diary_db 目录
+data_base/diary_db/
+
