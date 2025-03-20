@@ -59,20 +59,39 @@
                 </form>
             </div>
 
-            <!-- 日记历史区域 -->
-            <div class="diary-slider">
+            <!-- 新的日记网格区域 -->
+            <div class="diary-grid">
                 {% if diaries %}
                     {% for diary in diaries %}
-                        <div class="diary-slide">
-                            <h3>{{ diary.title }}</h3>
-                            <p>{{ diary.content }}</p>
-                            <span class="emotion">{{ diary.analyze.emotion if diary.analyze else '' }}</span>
+                        <div class="diary-card" data-id="{{ diary.id }}">
+                            <div class="card-content">
+                                <h3>{{ diary.title }}</h3>
+                                <p class="excerpt">{{ diary.content|truncate(100) }}</p>
+                                <div class="meta-info">
+                                    <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+                                    <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
+                                        {{ diary.analyze.emotion if diary.analyze else '待分析' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="analyze-btn">
+                                分析报告
+                            </button>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p>暂无日记记录</p>
+                    <p class="no-diary">暂无日记记录</p>
                 {% endif %}
             </div>
+        </div>
+    </div>
+
+    <!-- 分析报告模态框 -->
+    <div id="report-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📊 情绪分析报告</h3>
+            <div id="report-content"></div>
         </div>
     </div>
 
