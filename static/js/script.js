@@ -1,42 +1,48 @@
-// 实现日记翻动效果
-const slides = document.querySelectorAll('.diary-slide');
-let currentSlide = 0;
+// 日记卡片交互
+document.querySelectorAll('.diary-card').forEach(card => {
+    // 点击卡片主体
+    card.querySelector('.card-content').addEventListener('click', function(e) {
+        const diaryId = card.dataset.id;
+        window.location.href = `/diary/${diaryId}`;
+    });
 
-/**
- * 显示指定索引的日记幻灯片
- * @param {number} index 幻灯片的索引
- */
-function showSlide(index) {
-    slides.forEach((slide, i) => {
-        if (i === index) {
-            slide.classList.add('active');
-        } else {
-            slide.classList.remove('active');
+    // 点击分析按钮
+    card.querySelector('.analyze-btn').addEventListener('click', async function(e) {
+        e.stopPropagation();
+        const diaryId = card.dataset.id;
+
+        try {
+            const response = await fetch(`/diary/${diaryId}/analyze`);
+            const report = await response.json();
+
+            const modal = document.getElementById('report-modal');
+            const content = document.getElementById('report-content');
+            content.innerHTML = `
+                <p><strong>情绪状态：</strong>${report.emotion}</p>
+                <p><strong>关键词：</strong>${report.keywords.join(', ')}</p>
+                <p><strong>建议：</strong>${report.suggestion}</p>
+            `;
+            modal.style.display = 'flex';
+        } catch (error) {
+            console.error('获取分析报告失败:', error);
+            alert('无法获取分析报告，请稍后重试');
         }
     });
-}
+});
 
-/**
- * 切换到下一张日记幻灯片
- */
-function nextSlide() {
-    currentSlide = (currentSlide + 1) % slides.length;
-    showSlide(currentSlide);
-}
+// 模态框控制
+document.querySelectorAll('.close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', () => {
+        document.getElementById('report-modal').style.display = 'none';
+    });
+});
 
-/**
- * 切换到上一张日记幻灯片
- */
-function prevSlide() {
-    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-    showSlide(currentSlide);
-}
-
-// 每隔 5 秒切换一次日记
-setInterval(nextSlide, 5000);
-
-// 初始化显示第一个日记
-showSlide(currentSlide);
+window.onclick = function(event) {
+    const modal = document.getElementById('report-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
 
 // 日记撰写功能
 const writeDiaryBtn = document.getElementById('write-diary-btn');
