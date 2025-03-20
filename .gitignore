@@ -13,6 +13,7 @@ target/
 .idea/
 __pycache__/
 env/
+.venv
 
 # Python
 __pycache__/

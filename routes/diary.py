@@ -92,14 +92,16 @@ def week_report():
 def diary_detail(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
-        # 解密日记内容
+        # 解密日记内容和分析结果
         decrypted_content = cipher.decrypt(diary.content)
+        decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
         return render_template('diary_detail.html', 
             diary={
                 'id': diary.id,
                 'title': diary.title,
                 'content': decrypted_content,
-                'create_time': diary.create_time
+                'create_time': diary.create_time,
+                'analyze': decrypted_analysis  # 确保传递 analyze 数据
             })
     else:
         flash('日记不存在或无权访问')
