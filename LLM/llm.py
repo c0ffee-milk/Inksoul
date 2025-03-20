@@ -106,7 +106,6 @@ class EmotionAnalyzer:
                 【用户当日日记】
                 {current_diary}
                 
-<<<<<<< HEAD
                 请输出JSON格式包含：
                 1. 综合分析用户当日日记：overall_analysis(综合分析)
                 2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
