@@ -85,3 +85,46 @@ def delete(diary_id):
 def week_report():
     report = WeeklyModel.query.filter_by(author_id=current_user.id).order_by(WeeklyModel.create_time.desc()).all()
     return render_template('index.html', report=report)
+
+
+@bp.route('/<int:diary_id>')
+@login_required
+def diary_detail(diary_id):
+    diary = DiaryModel.query.get(diary_id)
+    if diary and diary.author_id == current_user.id:
+        # 解密日记内容和分析结果
+        decrypted_content = cipher.decrypt(diary.content)
+        decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
+        return render_template('diary_detail.html', 
+            diary={
+                'id': diary.id,
+                'title': diary.title,
+                'content': decrypted_content,
+                'create_time': diary.create_time,
+                'analyze': decrypted_analysis  # 确保传递 analyze 数据
+            })
+    else:
+        flash('日记不存在或无权访问')
+        return redirect(url_for('diary.mine'))
+
+@bp.route('/<int:diary_id>/analyze')
+@login_required
+def diary_analyze(diary_id):
+    diary = DiaryModel.query.get(diary_id)
+    if diary and diary.author_id == current_user.id:
+        # 解密分析结果
+        if diary.analyze:
+            decrypted_analysis = json.loads(cipher.decrypt(diary.analyze))
+            return render_template('diary_detail.html', 
+                diary={
+                    'id': diary.id,
+                    'title': diary.title,
+                    'create_time': diary.create_time
+                },
+                analysis=decrypted_analysis)
+        else:
+            flash('该日记暂无分析数据')
+            return redirect(url_for('diary.diary_detail', diary_id=diary_id))
+    else:
+        flash('日记不存在或无权访问')
+        return redirect(url_for('diary.mine'))

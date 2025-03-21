@@ -6,4 +6,4 @@ bp = Blueprint('index', __name__,url_prefix="/")
 def index_page():
     if current_user.is_authenticated:
         return redirect(url_for('diary.mine'))
-    return render_template('index.html')
+    return render_template('intro.html')
