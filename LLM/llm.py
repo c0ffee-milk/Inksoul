@@ -81,7 +81,7 @@ class EmotionAnalyzer:
         self.llm = ChatOpenAI(
             temperature=0,
             openai_api_key=TONGYI_API_KEY,
-            model_name="deepseek-v3",
+            model_name="deepseek-r1",
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
         )
         
