@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
-from flask_pagination import Pagination
 from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
 from exts import db
