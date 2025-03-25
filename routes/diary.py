@@ -8,6 +8,7 @@ from datetime import datetime  # 新增导入
 from utils.crypto import AESCipher
 import json
 
+
 bp = Blueprint('diary', __name__, url_prefix='/diary')
 
 # 在应用启动时初始化加密器
@@ -124,3 +125,63 @@ def diary_analyze(diary_id):
             return jsonify(success=False, message=str(e)), 500
     else:
         return jsonify(success=False, message="日记不存在或无权访问"), 403
+
+
+
+@bp.route('/search_by_emotion/<emotion_type>', methods=['GET'])
+@login_required
+def search_by_emotion(emotion_type):
+    try:
+        # 获取当前用户的所有日记
+        diaries = DiaryModel.query.filter_by(author_id=current_user.id).all()
+        
+        # 过滤出包含指定情绪类型的日记
+        filtered_diaries = []
+        for diary in diaries:
+            if diary.analyze and emotion_type in diary.analyze.get('emotion_type', []):
+                decrypted_content = cipher.decrypt(diary.content)
+                decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
+                filtered_diaries.append({
+                    'id': diary.id,
+                    'title': diary.title,
+                    'content': decrypted_content,
+                    'analyze': decrypted_analysis,
+                    'create_time': diary.create_time
+                })
+        
+        return jsonify(success=True, diaries=filtered_diaries)
+    except Exception as e:
+        return jsonify(success=False, message=str(e)), 500
+
+
+@bp.route('/search', methods=['GET'])
+@login_required
+def search():
+    keyword = request.args.get('keyword')
+    if not keyword:
+        return jsonify(success=False, message="请输入搜索关键词"), 400
+
+    try:
+        # 获取当前用户的所有日记
+        diaries = DiaryModel.query.filter_by(author_id=current_user.id).all()
+        
+        # 过滤出包含关键词的日记
+        filtered_diaries = []
+        for diary in diaries:
+            # 解密日记内容
+            decrypted_content = cipher.decrypt(diary.content)
+            
+            # 检查标题或正文是否包含关键词
+            if keyword.lower() in diary.title.lower() or keyword.lower() in decrypted_content.lower():
+                decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
+                filtered_diaries.append({
+                    'id': diary.id,
+                    'title': diary.title,
+                    'content': decrypted_content,
+                    'analyze': decrypted_analysis,
+                    'create_time': diary.create_time
+                })
+        
+        return jsonify(success=True, diaries=filtered_diaries)
+    except Exception as e:
+        return jsonify(success=False, message=str(e)), 500
