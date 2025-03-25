@@ -52,14 +52,6 @@ def add():
                 author_id=current_user.id
             )
             db.session.add(diary)
-
-            # 新增AI情感分析
-            user_id = f"U{current_user.id}"  # 确保用户ID格式正确
-            analyzer = EmotionAnalyzer(user_id)
-            analysis_result = analyzer.analyze("daily", content)
-            encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
-            diary.analyze = encrypted_analysis
-
             db.session.commit()
             return jsonify(success=True, message="日记添加成功", redirect=url_for('diary.mine'))
         except Exception as e:
@@ -107,24 +99,28 @@ def diary_detail(diary_id):
         flash('日记不存在或无权访问')
         return redirect(url_for('diary.mine'))
 
-@bp.route('/<int:diary_id>/analyze')
+@bp.route('/<int:diary_id>/analyze', methods=['POST'])
 @login_required
 def diary_analyze(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
-        # 解密分析结果
-        if diary.analyze:
-            decrypted_analysis = json.loads(cipher.decrypt(diary.analyze))
-            return render_template('diary_detail.html', 
-                diary={
-                    'id': diary.id,
-                    'title': diary.title,
-                    'create_time': diary.create_time
-                },
-                analysis=decrypted_analysis)
-        else:
-            flash('该日记暂无分析数据')
-            return redirect(url_for('diary.diary_detail', diary_id=diary_id))
+        try:
+            # 解密日记内容
+            decrypted_content = cipher.decrypt(diary.content)
+            
+            # 进行情感分析
+            user_id = f"U{current_user.id}"
+            analyzer = EmotionAnalyzer(user_id)
+            analysis_result = analyzer.analyze("daily", decrypted_content)
+            
+            # 加密并保存分析结果
+            encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
+            diary.analyze = encrypted_analysis
+            db.session.commit()
+            
+            return jsonify(success=True, analysis=analysis_result)
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(success=False, message=str(e)), 500
     else:
-        flash('日记不存在或无权访问')
-        return redirect(url_for('diary.mine'))
+        return jsonify(success=False, message="日记不存在或无权访问"), 403
