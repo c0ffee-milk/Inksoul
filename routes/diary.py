@@ -95,7 +95,9 @@ def diary_detail(diary_id):
                 'content': decrypted_content,
                 'create_time': diary.create_time,
                 'analyze': decrypted_analysis  # 确保传递 analyze 数据
-            })
+            },
+            analysis=decrypted_analysis  # 添加 analysis 变量
+        )
     else:
         flash('日记不存在或无权访问')
         return redirect(url_for('diary.mine'))
