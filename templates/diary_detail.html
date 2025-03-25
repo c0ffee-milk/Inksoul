@@ -1,9 +1,10 @@
-<!-- 新增 diary_detail.html -->
+<!-- diary_detail.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ diary.title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{{ diary.title }} - 分析报告</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
@@ -18,6 +19,80 @@
                 {{ diary.content|safe }}
             </div>
         </div>
+            <!-- 新增分析报告 -->
+            <div class="analysis-report animated fadeIn">
+                <h2 class="report-header">
+                    <i class="fas fa-chart-pie"></i>
+                    深度情绪分析报告
+                    <span class="report-date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+                </h2>
+
+                <!-- 图表区 -->
+                <div class="report-grid">
+                    <!-- 情绪雷达图 -->
+                    <div class="report-card chart-card">
+                        <h3><i class="fas fa-brain"></i> 情绪构成</h3>
+                        <div class="chart-container">
+                            <canvas id="emotionRadar"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 词云 -->
+                    <div class="report-card">
+                        <h3><i class="fas fa-cloud"></i> 关键词云</h3>
+                        <div id="wordcloud" data-keywords="{{ analysis.keywords|join(',') }}"></div>
+                    </div>
+                </div>
+
+                <!-- 综合分析区 -->
+                <div class="report-grid">
+                    <!-- 文字分析 -->
+                    <div class="report-card">
+                        <h3><i class="fas fa-comment-dots"></i> 综合分析</h3>
+                        <div class="analysis-text">{{ analysis.overall_analysis }}</div>
+                        <div class="emotion-flow">
+                            {% for emotion in analysis.emotion_type %}
+                            <span class="emotion-tag">{{ emotion }}</span>
+                            {% if not loop.last %}<i class="fas fa-arrow-right"></i>{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 历史故事 -->
+                    <div class="report-card historical-card">
+                        <h3><i class="fas fa-landmark"></i> 历史回响</h3>
+                        <div class="history-content">
+                            <div class="quote-mark">“</div>
+                            {{ analysis.history_moment }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 推荐区 -->
+                <div class="recommendation-section">
+                    <h3><i class="fas fa-lightbulb"></i> 每日推荐</h3>
+                    <div class="recommend-grid">
+                        <div class="recommend-card music">
+                            <i class="fas fa-music"></i>
+                            <div class="recommend-content">
+                                {{ analysis.immediate_suggestion.music|default("暂无音乐推荐") }}
+                            </div>
+                        </div>
+                        <div class="recommend-book recommend-card">
+                            <i class="fas fa-book-open"></i>
+                            <div class="recommend-content">
+                                {{ analysis.immediate_suggestion.book|default("暂无书籍推荐") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+    <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
 </body>
 </html>
