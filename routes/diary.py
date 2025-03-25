@@ -100,7 +100,7 @@ def diary_detail(diary_id):
         flash('日记不存在或无权访问')
         return redirect(url_for('diary.mine'))
 
-@bp.route('/<int:diary_id>/analyze', methods=['POST'])
+@bp.route('/<int:diary_id>/analyze', methods=['POST','GET'])
 @login_required
 def diary_analyze(diary_id):
     diary = DiaryModel.query.get(diary_id)
