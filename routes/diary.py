@@ -7,12 +7,18 @@ from LLM.llm import EmotionAnalyzer  # 新增导入
 from datetime import datetime  # 新增导入
 from utils.crypto import AESCipher
 import json
+import os
+from dotenv import load_dotenv
 
+# 加载.env文件
+load_dotenv()
 
 bp = Blueprint('diary', __name__, url_prefix='/diary')
 
-# 在应用启动时初始化加密器
-cipher = AESCipher(key=b'aB3x9pLmQw7zC1vRfTnY8sXoIjK2dE4h')  # 使用固定密钥或从配置中读取
+# 在应用启动时初始化加密器，从环境变量读取密钥
+cipher = AESCipher(key=os.getenv("AES_KEY").encode())
+
+
 
 @bp.route('/mine')
 @login_required
