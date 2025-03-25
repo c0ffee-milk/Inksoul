@@ -18,8 +18,6 @@ MAIL_PASSWORD = "gzmjslyhaintdheg"
 MAIL_DEFAULT_SENDER = "2838651487@qq.com"
 MAIL_USE_SSL = True
 
-# 分页配置
-PER_PAGE_COUNT = 10
 
 # 设置记住我功能的cookie有效期，单位为秒（默认365天）
 REMEMBER_COOKIE_DURATION = 30 * 24 * 60 * 60  # 30天
