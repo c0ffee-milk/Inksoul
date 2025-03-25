@@ -4,6 +4,8 @@ from sqlalchemy.engine import create
 from exts import db
 from datetime import datetime
 # 用户模型
+from sqlalchemy import JSON
+
 class UserModel(db.Model,UserMixin):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -48,7 +50,7 @@ class DiaryModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
-    analyze = db.Column(json)
+    analyze = db.Column(JSON)
     category = db.Column(db.String(100), nullable=True)
 
 
