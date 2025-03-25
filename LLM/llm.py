@@ -10,14 +10,16 @@ import re
 import os
 import logging
 from logging import Logger
+from dotenv import load_dotenv
 
 
+load_dotenv()  # 加载.env文件
 os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
 
 # 配置参数
-ZHIPUAI_API_KEY = "54c07d89321b45a6a917ba058252ab72.XvqOIXx1iXJk8wUe"
-DEEPSEEK_API_KEY = "sk-9d1358520abf4903824290625d7ffdc3"
-TONGYI_API_KEY = "sk-598c8876bd4844a6a37a3b579965bc0c"
+ZHIPUAI_API_KEY = os.getenv("ZHIPUAI_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")
 
 # ================== 增强型数据库管理器 ==================
 class VectorDBManager:
@@ -111,9 +113,10 @@ class EmotionAnalyzer:
                 1. 综合分析用户当日日记：overall_analysis(综合分析)
                 2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
                 3. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_type（情绪类型）
-                4. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
-                5. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）
-                6. 根据用户的经历，从百年文学/电影/历史中抓取相似瞬间，结构类似："1926年海明威在巴黎的雨天同样丢失手稿，他喝了三杯威士忌后继续写作"（强调"也、同样"等表达相似的词，禁止直接引用前面的例子）：history_moment
+                4. 根据用户日记体现的情绪，将本日记分为以下六种中的一种(振奋、愉悦、平和、焦虑、低落、烦闷)：emotion_label（情绪类型）
+                5. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
+                6. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）
+                7. 根据用户的经历，从百年文学/电影/历史中抓取相似瞬间，结构类似："1926年海明威在巴黎的雨天同样丢失手稿，他喝了三杯威士忌后继续写作"（强调"也、同样"等表达相似的词，禁止直接引用前面的例子）：history_moment
                 
                 输出要求：
                 1.面向用户输出，注意人称用词必须用您
