@@ -1,3 +1,4 @@
+import json
 from flask_login import UserMixin
 from sqlalchemy.engine import create
 from exts import db
@@ -47,7 +48,7 @@ class DiaryModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
-    analyze = db.Column(db.Text, nullable=True)
+    analyze = db.Column(json)
     category = db.Column(db.String(100), nullable=True)
 
 
