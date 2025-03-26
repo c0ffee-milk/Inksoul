@@ -15,7 +15,16 @@ from flask_login import current_user, login_user, logout_user
 from exts import mail, db
 from models import EmailCaptchaModel, UserModel
 from .forms import RegisterForm, LoginForm, ChangeForm
+from models import DiaryModel
+from utils.crypto import AESCipher
+import os
+from dotenv import load_dotenv
 
+# 加载.env文件
+load_dotenv()
+
+# 初始化加密器
+cipher = AESCipher(key=os.getenv("AES_KEY").encode())
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -59,10 +68,33 @@ def register():
         password = form.password.data
         hashed_password = generate_password_hash(password)
         user = UserModel(email=email, username=username, password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
-        flash('注册成功，请登录', 'success')
-        return redirect(url_for('auth.login'))
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+            
+            # 创建欢迎日记
+            welcome_diary = DiaryModel(
+                title="欢迎使用心灵日记",
+                content=cipher.encrypt("""欢迎使用心灵日记应用！
+
+在这里，您可以：
+- 记录每日心情和想法
+- 获得AI情绪分析报告
+- 查看每周情绪趋势
+- 通过关键词搜索过往日记
+
+开始记录您的第一份心情吧！"""),
+                author_id=user.id
+            )
+            db.session.add(welcome_diary)
+            db.session.commit()
+            
+            flash('注册成功，请登录', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'注册失败: {str(e)}', 'error')
     return render_template('register.html', form=form)
 
 @bp.route("/captcha/email", methods=["GET"])
