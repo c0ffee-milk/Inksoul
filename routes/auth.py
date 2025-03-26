@@ -77,14 +77,6 @@ def register():
             db.session.add(user)
             db.session.commit()
             
-            # 创建欢迎日记
-            welcome_diary = DiaryModel(
-                title="欢迎使用心灵日记",
-                content=cipher.encrypt("""欢迎使用心灵日记应用！..."""),
-                author_id=user.id
-            )
-            db.session.add(welcome_diary)
-            
             # 添加季羡林日记
             for diary_data in JI_XIANLIN_DIARIES:
                 diary = DiaryModel(
