@@ -20,6 +20,9 @@ from utils.crypto import AESCipher
 import os
 from dotenv import load_dotenv
 
+from datetime import datetime
+from data.auto_create_diaries import AUTO_CREATE_DIARIES
+
 # 加载.env文件
 load_dotenv()
 
@@ -59,9 +62,7 @@ def login():
             flash("表单错误：" + str(form.errors))
             return redirect(url_for("auth.login"))
 
-# 在文件顶部添加导入
-from datetime import datetime
-from data.ji_xianlin_diaries import JI_XIANLIN_DIARIES
+
 
 @bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -78,7 +79,7 @@ def register():
             db.session.commit()
             
             # 添加季羡林日记
-            for diary_data in JI_XIANLIN_DIARIES:
+            for diary_data in AUTO_CREATE_DIARIES:
                 diary = DiaryModel(
                     title=diary_data["title"],
                     content=cipher.encrypt(diary_data["content"]),

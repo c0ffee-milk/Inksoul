@@ -1,4 +1,4 @@
-JI_XIANLIN_DIARIES = [
+AUTO_CREATE_DIARIES = [
     {
         "title": "1935年9月2日",
         "content": """今天开始整理行装，准备赴德留学。心情既兴奋又忐忑，不知异国他乡会是怎样一番景象。""",
