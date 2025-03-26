@@ -59,6 +59,10 @@ def login():
             flash("表单错误：" + str(form.errors))
             return redirect(url_for("auth.login"))
 
+# 在文件顶部添加导入
+from datetime import datetime
+from data.ji_xianlin_diaries import JI_XIANLIN_DIARIES
+
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -76,18 +80,21 @@ def register():
             # 创建欢迎日记
             welcome_diary = DiaryModel(
                 title="欢迎使用心灵日记",
-                content=cipher.encrypt("""欢迎使用心灵日记应用！
-
-在这里，您可以：
-- 记录每日心情和想法
-- 获得AI情绪分析报告
-- 查看每周情绪趋势
-- 通过关键词搜索过往日记
-
-开始记录您的第一份心情吧！"""),
+                content=cipher.encrypt("""欢迎使用心灵日记应用！..."""),
                 author_id=user.id
             )
             db.session.add(welcome_diary)
+            
+            # 添加季羡林日记
+            for diary_data in JI_XIANLIN_DIARIES:
+                diary = DiaryModel(
+                    title=diary_data["title"],
+                    content=cipher.encrypt(diary_data["content"]),
+                    author_id=user.id,
+                    create_time=datetime.strptime(diary_data["create_time"], "%Y-%m-%d")
+                )
+                db.session.add(diary)
+            
             db.session.commit()
             
             flash('注册成功，请登录', 'success')
