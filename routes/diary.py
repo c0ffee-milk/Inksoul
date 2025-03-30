@@ -156,9 +156,10 @@ def search_by_emotion(emotion_type):
                     'create_time': diary.create_time
                 })
         
-        return jsonify(success=True, diaries=filtered_diaries)
+        return render_template('index.html', diaries=filtered_diaries)  # 改为渲染模板
     except Exception as e:
-        return jsonify(success=False, message=str(e)), 500
+        flash(str(e))
+        return redirect(url_for('diary.mine'))
 
 
 @bp.route('/search', methods=['GET'])
@@ -166,7 +167,8 @@ def search_by_emotion(emotion_type):
 def search():
     keyword = request.args.get('keyword')
     if not keyword:
-        return jsonify(success=False, message="请输入搜索关键词"), 400
+        flash("请输入搜索关键词")
+        return redirect(url_for('diary.mine'))
 
     try:
         # 获取当前用户的所有日记
@@ -189,6 +191,7 @@ def search():
                     'create_time': diary.create_time
                 })
         
-        return jsonify(success=True, diaries=filtered_diaries)
+        return render_template('index.html', diaries=filtered_diaries)  # 改为渲染模板
     except Exception as e:
-        return jsonify(success=False, message=str(e)), 500
+        flash(str(e))
+        return redirect(url_for('diary.mine'))
