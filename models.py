@@ -51,7 +51,7 @@ class DiaryModel(db.Model):
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
     analyze = db.Column(JSON)
-    category = db.Column(db.String(100), nullable=True)
+    emotion_type = db.Column(db.String(100), nullable=True)
 
 
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
