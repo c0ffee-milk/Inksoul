@@ -18,7 +18,7 @@ bp = Blueprint('diary', __name__, url_prefix='/diary')
 cipher = AESCipher(key=os.getenv("AES_KEY").encode())
 
 
-
+#查看我的日记的路由
 @bp.route('/mine')
 @login_required
 def mine():
@@ -39,7 +39,7 @@ def mine():
         print(decrypted_analysis)
     return render_template('index.html', diaries=decrypted_diaries)
 
-
+#撰写日记的路由
 @bp.route('/add', methods=['POST'])
 @login_required
 def add():
@@ -64,7 +64,7 @@ def add():
             db.session.rollback()
             return jsonify(success=False, message=str(e)), 500
 
-
+#删除日记的路由
 @bp.route('/delete/<int:diary_id>', methods=['GET', 'POST'])
 @login_required
 def delete(diary_id):
@@ -84,29 +84,42 @@ def week_report():
     report = WeeklyModel.query.filter_by(author_id=current_user.id).order_by(WeeklyModel.create_time.desc()).all()
     return render_template('index.html', report=report)
 
-
+#查看日记详情的路由
 @bp.route('/<int:diary_id>')
 @login_required
 def diary_detail(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
-        # 解密日记内容和分析结果
+        # 解密日记内容
         decrypted_content = cipher.decrypt(diary.content)
-        decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
-        return render_template('diary_detail.html', 
-            diary={
-                'id': diary.id,
-                'title': diary.title,
-                'content': decrypted_content,
-                'create_time': diary.create_time,
-                'analyze': decrypted_analysis  # 确保传递 analyze 数据
-            },
-            analysis=decrypted_analysis  # 添加 analysis 变量
-        )
+        
+        # 检查是否有分析结果
+        if diary.analyze:
+            decrypted_analysis = json.loads(cipher.decrypt(diary.analyze))
+            return render_template('diary_detail.html', 
+                diary={
+                    'id': diary.id,
+                    'title': diary.title,
+                    'content': decrypted_content,
+                    'create_time': diary.create_time,
+                    'analyze': decrypted_analysis
+                },
+                analysis=decrypted_analysis
+            )
+        else:
+            return render_template('diary.html',  # 假设这是只显示日记内容的模板
+                diary={
+                    'id': diary.id,
+                    'title': diary.title,
+                    'content': decrypted_content,
+                    'create_time': diary.create_time
+                }
+            )
     else:
         flash('日记不存在或无权访问')
         return redirect(url_for('diary.mine'))
 
+#分析单篇指定日记的路由
 @bp.route('/<int:diary_id>/analyze', methods=['POST','GET'])
 @login_required
 def diary_analyze(diary_id):
@@ -134,7 +147,7 @@ def diary_analyze(diary_id):
         return jsonify(success=False, message="日记不存在或无权访问"), 403
 
 
-
+#按情绪类型搜索日记
 @bp.route('/search_by_emotion/<emotion_type>', methods=['GET'])
 @login_required
 def search_by_emotion(emotion_type):
@@ -161,7 +174,7 @@ def search_by_emotion(emotion_type):
         flash(str(e))
         return redirect(url_for('diary.mine'))
 
-
+#按关键词搜索日记
 @bp.route('/search', methods=['GET'])
 @login_required
 def search():
@@ -195,3 +208,39 @@ def search():
     except Exception as e:
         flash(str(e))
         return redirect(url_for('diary.mine'))
+
+#按日期搜索日记
+@bp.route('/search_by_date/<date_str>', methods=['GET'])
+@login_required
+def search_by_date(date_str):
+    try:
+        # 解析日期字符串
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        # 获取当前用户在指定日期创建的日记
+        diaries = DiaryModel.query.filter(
+            DiaryModel.author_id == current_user.id,
+            db.func.date(DiaryModel.create_time) == target_date
+        ).order_by(DiaryModel.create_time.desc()).all()
+        
+        # 解密日记内容
+        filtered_diaries = []
+        for diary in diaries:
+            decrypted_content = cipher.decrypt(diary.content)
+            decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
+            filtered_diaries.append({
+                'id': diary.id,
+                'title': diary.title,
+                'content': decrypted_content,
+                'analyze': decrypted_analysis,
+                'create_time': diary.create_time
+            })
+        
+        return render_template('index.html', diaries=filtered_diaries)
+    except ValueError:
+        flash("日期格式无效，请使用YYYY-MM-DD格式")
+        return redirect(url_for('diary.mine'))
+    except Exception as e:
+        flash(f"查询失败: {str(e)}")
+        return redirect(url_for('diary.mine'))
+
