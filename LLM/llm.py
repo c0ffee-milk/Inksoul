@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Literal
 from .zhipuai_embedding import ZhipuAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 import json
