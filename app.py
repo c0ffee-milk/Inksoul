@@ -14,6 +14,10 @@ from routes.auth import bp as auth_bp
 from routes.diary import bp as diary_bp
 from routes.index import bp as index_bp
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # 实例化 Flask 应用并配置应用参数
 app = Flask(__name__)
 csrf = CSRFProtect(app)
@@ -77,4 +81,4 @@ def mail_test():
 
 # 主程序入口
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=80)
