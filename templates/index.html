@@ -7,6 +7,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>心灵日记</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 为按钮添加悬停效果 */
+        button:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        /* 为模态框添加过渡效果 */
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </head>
 <body>
     <div class="main-container">
@@ -36,17 +48,17 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="{{ category }}">{{ message }}</div>
+                        <div class="{{ category }} flash-message-fixed">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
             <div class="login-register">
                 {% if not current_user.is_authenticated %}
-                <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
-                <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
+                    <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
+                    <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
                 {% else %}
-                <span>欢迎回来，{{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
+                    <span>欢迎回来，{{ current_user.username }}</span>
+                    <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
                 {% endif %}
             </div>
             <button class="write-diary" id="write-diary-btn">撰写日记</button>
@@ -56,6 +68,7 @@
                     <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
                     <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
                     <button id="save-diary" type="submit">保存日记</button>
+                    <div id="form-error" style="color: red;"></div>
                 </form>
             </div>
 
@@ -95,6 +108,29 @@
         </div>
     </div>
 
+    <script>
+        // 获取所有消息元素
+        const flashMessages = document.querySelectorAll('.flash-message-fixed');
+        flashMessages.forEach(message => {
+            // 设置定时器，5 秒后自动隐藏消息
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        });
+
+        // 简单的表单错误处理
+        const diaryForm = document.getElementById('diary-form');
+        const formError = document.getElementById('form-error');
+        diaryForm.addEventListener('submit', function() {
+            const title = document.getElementById('diary-title').value;
+            const content = document.getElementById('diary-content').value;
+            if (title.trim() === '' || content.trim() === '') {
+                formError.textContent = '标题和内容不能为空';
+            } else {
+                console.log('保存日记:', title, content);
+            }
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
