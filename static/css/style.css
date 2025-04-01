@@ -436,3 +436,8 @@ body {
     text-decoration: underline;
     color: #5a32a3;
 }
+/* 让提示消息居中显示 */
+.flash-message {
+    text-align: center;
+    margin: 10px 0;
+}
