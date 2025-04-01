@@ -25,6 +25,8 @@ TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")
 class VectorDBManager:
     def __init__(self):
         self.embedding = ZhipuAIEmbeddings(zhipuai_api_key=ZHIPUAI_API_KEY)
+        self.logger = logging.getLogger("VectorDBManager")
+        self.logger.addHandler(logging.NullHandler())
         
     def get_knowledge_db(self) -> Chroma:
         """心理学知识库（长期存储）"""
@@ -54,6 +56,45 @@ class VectorDBManager:
             embedding_function=self.embedding,
             collection_name=f"diary_{user_id}"  # 确保集合名称唯一
         )
+    
+    def delete_diary_by_timestamp(self, user_id: str, timestamp: float) -> bool:
+        """根据精确时间戳删除日记（精确到秒）
+        Args:
+            user_id: 用户ID
+            timestamp: 精确到秒的时间戳
+        Returns:
+            bool: 是否删除成功
+        """
+        try:
+            diary_db = self.get_diary_db(user_id)
+            collection = diary_db._collection
+            
+            # 精确匹配查询
+            query = {
+                "$and": [
+                    {"user_id": user_id},
+                    {"date": int(timestamp)}
+                ]
+            }
+
+            existing = collection.get(where=query)
+            if not existing.get('ids'):
+                return False
+            
+            # 在查询后添加调试日志
+            if self.logger.isEnabledFor(logging.DEBUG):
+                self.logger.debug(f"查询条件：{query}, 找到记录：{len(existing.get('ids', []))}条")
+            
+            ids_to_delete = existing.get('ids', [])
+            if ids_to_delete:
+                collection.delete(ids=ids_to_delete)  # 使用 ids 而不是 where 查询
+                diary_db.persist()
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"删除日记失败: {str(e)}", exc_info=True)
+            return False
+
 
 
 
@@ -152,8 +193,8 @@ class EmotionAnalyzer:
         start = start or (end - timedelta(days=days))
         return {
             "$and": [
-                {"date": {"$gte": start.timestamp()}},
-                {"date": {"$lte": end.timestamp()}}
+                {"date": {"$gte": int(start.timestamp())}},
+                {"date": {"$lte": int(end.timestamp())}}
             ]
         }
 
@@ -200,7 +241,12 @@ class EmotionAnalyzer:
                 days=days if days else 7  # 保持默认7天
             )
         
-        combined_filter = {"$and": [base_filter, time_filter]}
+        combined_filter = {
+            "$and": [
+                {"user_id": self.user_id},
+                time_filter  # time_filter 本身已经是带有 $gte/$lte 的条件
+            ]
+        }
         
         if mode == "daily":
             docs = self.safe_retrieve(self.diary_db, query, 3, combined_filter)
@@ -210,20 +256,30 @@ class EmotionAnalyzer:
         return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
 
 
-    def log_diary(self, text: str, date: datetime = None):
-        """保存单条日记到向量数据库
-        :param date: 可选日期参数，默认为当前时间
+    def log_diary(self, text: str, timestamp: float = None):
+        """保存单条日记到向量数据库（时间戳由后端精确控制）
+        Args:
+            text: 日记内容
+            timestamp: 精确到秒的时间戳（可选，不传则使用当前时间戳）
         """
-
         try:
-            if date and not isinstance(date, datetime):
-                raise ValueError("date参数必须是datetime类型")
-            timestamp = date.timestamp() if date else datetime.now().timestamp()
-
-            # 检查是否存在相似日记
-            existing = self.diary_db.similarity_search(text, k=1)
+            # 强制时间戳精确到秒（去掉毫秒部分）
+            timestamp = int(timestamp if timestamp is not None else time.time())
+            
+            # 检查是否存在相似日记（相同时间戳+相同用户视为重复）
+            existing = self.diary_db.similarity_search(
+                query=text,
+                k=1,
+                filter={
+                    "$and": [
+                        {"user_id": {"$eq": self.user_id}},
+                        {"date": {"$eq": timestamp}}
+                    ]
+                }
+            )
+            
             if existing and existing[0].page_content == text:
-                self.logger.warning("[WARNING] 检测到重复日记，跳过保存")
+                self.logger.warning(f"[WARNING] 检测到重复日记（时间戳：{timestamp}），跳过保存")
                 return
 
             # 添加日记到数据库
@@ -231,15 +287,15 @@ class EmotionAnalyzer:
                 texts=[text],
                 metadatas=[{
                     "user_id": self.user_id,
-                    "date": timestamp,
-                    "source": "user_diary"
+                    "source": "user_diary",
+                    "date": int(timestamp)
                 }]
             )
-            self.diary_db.persist()  # 确保立即持久化
-            self.logger.info(f"[SUCCESS] 日记已保存: {text[:20]}...")
+            # self.diary_db.persist()
+            self.logger.info(f"[SUCCESS] 日记已保存（时间：{datetime.fromtimestamp(timestamp)}）")
         except Exception as e:
             self.logger.error(f"[ERROR] 保存失败: {str(e)}")
-
+            raise
 
     def get_diary_dates(self) -> list:
         """获取用户所有日记的日期列表（按时间排序）"""
@@ -265,10 +321,7 @@ class EmotionAnalyzer:
             return []
 
 
-    def analyze(self, mode: Literal["daily", "weekly"], diary: str = None, date: datetime = None, start_date: datetime = None, end_date: datetime = None) -> dict:
-    
-
-
+    def analyze(self, mode: Literal["daily", "weekly"], diary: str = None, timestamp: float = None, start_date: datetime = None, end_date: datetime = None) -> dict:
         """执行分析（双模式入口）"""
         # 知识检索（不同模式使用不同查询策略）
         knowledge_query = "情绪分析" if mode == "daily" else "长期情绪分析与管理"
@@ -278,7 +331,7 @@ class EmotionAnalyzer:
         knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
         
         if mode == "daily" and diary:
-            self.log_diary(diary, date=date)
+            self.log_diary(diary, timestamp=timestamp)
 
         # 日记处理
         if mode == "daily":
@@ -304,3 +357,69 @@ class EmotionAnalyzer:
             return json.loads(response.content.strip("```json").strip())
         except:
             return {"error": "分析结果解析失败"}
+        
+    def delete_diary(self, target_datetime: datetime) -> dict:
+        """删除指定精确时间的日记（支持到秒）
+        Args:
+            target_datetime: 包含具体时间的datetime对象
+        Returns:
+            dict: 操作结果
+        """
+        
+        try:
+            
+            if not isinstance(target_datetime, datetime):
+                raise ValueError("target_datetime 必须是 datetime 类型")
+                
+            timestamp = int(target_datetime.timestamp())
+
+            
+            
+            # 验证日记存在
+            collection = self.diary_db._collection
+            query = {
+                "$and": [
+                    {"user_id": {"$eq": self.user_id}},
+                    {"date": {"$eq": timestamp}}
+                ]
+            }
+
+            existing = collection.get(where=query)
+            ids_to_delete = existing.get('ids', [])
+            
+            if not ids_to_delete:
+                return {
+                    "status": "error",
+                    "message": "指定时间的日记不存在"
+                }
+            
+            # 使用 ids 执行删除
+            result = collection.delete(ids=ids_to_delete)
+            # self.diary_db.persist()  # 确保持久化
+            
+            if result is None or (isinstance(result, dict) and not result.get('ids')):
+                # 在这种情况下，我们假设删除已经成功，因为先前已确认了 ids_to_delete 非空
+                self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {ids_to_delete})")
+                return {
+                    "status": "success",
+                    "message": "日记删除成功",
+                    "deleted_time": target_datetime.isoformat(),
+                    "deleted_ids": ids_to_delete  # 添加删除的 ID 信息以便跟踪
+                }
+            else:
+                # 如果 result 中有 ids 信息，使用它们
+                deleted_ids = result.get('ids', []) if isinstance(result, dict) else []
+                self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {deleted_ids})")
+                return {
+                    "status": "success",
+                    "message": "日记删除成功",
+                    "deleted_time": target_datetime.isoformat(),
+                    "deleted_ids": deleted_ids
+                }
+                    
+        except Exception as e:
+            self.logger.error(f"[ERROR] 删除日记失败: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"删除操作异常: {str(e)}"
+            }
