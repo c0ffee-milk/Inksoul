@@ -1,18 +1,19 @@
 /* 全局样式 */
-body {
-    font-family: 'Inter', sans-serif;
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center; /* 水平居中 */
-    align-items: center; /* 垂直居中 */
-    height: 100vh;
-    background-color: #f5f0ff; /* 浅紫色背景 */
+    overflow: hidden; /* 禁止 body 滚动 */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
     color: #333;
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #f5f0ff; /* 浅紫色背景 */
 }
 
 /* 主容器样式 */
@@ -24,6 +25,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 给容器添加阴影 */
     border-radius: 5px; /* 圆角 */
     overflow: hidden; /* 防止内容溢出 */
+    margin: 5vh auto; /* 垂直居中 */
 }
 
 /* 导航栏样式 */
@@ -236,6 +238,8 @@ body {
     padding: 15px;
     background: #f9f6ff;
     border-radius: 8px;
+    max-height: calc(100vh - 250px); /* 根据实际情况调整最大高度 */
+    overflow-y: auto; /* 内容超出时滚动 */
 }
 
 .diary-card {
@@ -342,7 +346,6 @@ body {
 .close:hover {
     color: #333;
 }
-
 /* 认证容器样式 */
 .auth-container {
     display: flex;
@@ -360,10 +363,6 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 300px;
     transition: all 0.3s ease;
-}
-
-.auth-card:hover {
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* 鼠标悬停时增强阴影 */
 }
 
 /* 认证标题样式 */
@@ -392,14 +391,8 @@ body {
     border: 1px solid #d6c7f7;
     border-radius: 3px;
     box-sizing: border-box;
-    /* 添加或修改 box-shadow 属性 */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* 这里设置阴影的大小和颜色 */
-    transition: box-shadow 0.3s ease; /* 可选：添加过渡效果 */
-}
-
-/* 鼠标悬停时的阴影效果 */
-.form-input:hover {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2); /* 可选：悬停时阴影效果变化 */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
 /* 验证码按钮样式 */
@@ -414,18 +407,6 @@ body {
     outline: none;
 }
 
-.captcha-btn:hover {
-    background-color: #5a32a3;
-    transform: translateY(-2px);
-}
-
-/* 错误消息样式 */
-.error-msg {
-    color: red;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
 /* 认证按钮样式 */
 .auth-btn {
     width: 100%;
@@ -437,11 +418,6 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
     outline: none;
-}
-
-.auth-btn:hover {
-    background-color: #5a32a3;
-    transform: translateY(-2px);
 }
 
 /* 认证链接样式 */
@@ -459,17 +435,4 @@ body {
 .auth-links a:hover {
     text-decoration: underline;
     color: #5a32a3;
-}
-
-/* 在现有样式基础上添加 */
-#diary-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#diary-form input:invalid,
-#diary-form textarea:invalid {
-    border: 1px solid #ff4444;
-    box-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
 }
