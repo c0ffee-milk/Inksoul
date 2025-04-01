@@ -70,6 +70,12 @@ def register():
         email = form.email.data
         username = form.username.data
         password = form.password.data
+        
+        # 检查邮箱是否已存在
+        if UserModel.query.filter_by(email=email).first():
+            flash('该邮箱已被注册', 'error')
+            return render_template('register.html', form=form)
+            
         hashed_password = generate_password_hash(password)
         user = UserModel(email=email, username=username, password=hashed_password)
         
