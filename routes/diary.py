@@ -137,6 +137,7 @@ def diary_analyze(diary_id):
             # 加密并保存分析结果
             encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
             diary.analyze = encrypted_analysis
+            diary.emotion_type = analysis_result.get('emotion_type', [])
             db.session.commit()
             
             return jsonify(success=True, analysis=analysis_result)
