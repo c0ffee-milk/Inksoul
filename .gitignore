@@ -42,3 +42,5 @@ gunicorn.pid
 gunicorn_conf.py
 
 sqlite-autoconf-3460000
+
+migrations/
