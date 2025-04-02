@@ -142,7 +142,6 @@ class EmotionAnalyzer:
                 input_variables=["knowledge", "current_diary"],
 
                 template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对用户日记进行结构化心理分析：
-
                 
                 【专业知识】
                 {knowledge}
@@ -162,6 +161,41 @@ class EmotionAnalyzer:
                 输出要求：
                 1.面向用户输出，注意人称用词必须用您
                 2.提出的建议要基于现实，容易实现
+
+                输出格式：
+                {{
+                    "overall_analysis": "分析内容",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "emotion_label": [
+                        "label1",
+                        "label2",
+                        ...
+                    ],
+                    "emotion_type": "type",
+                    "keywords": [
+                        "关键词1",
+                        "关键词2",
+                        "关键词3",
+                        "关键词4",
+                        "关键词5"
+                    ],
+                    "immediate_suggestion": {{
+                        "music":"音乐推荐与推荐理由1", "音乐推荐与推荐理由2",
+                        "books":"书籍推荐与推荐理由",
+                        "activities":"活动建议",
+                        "techniques":"心理调节技巧"
+                    }},
+                    "history_moment": "历史回响内容"
+                }}
                 """
             ),
 
