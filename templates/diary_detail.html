@@ -3,23 +3,37 @@
 <html>
 <head>
     <title>{{ diary.title }} - 分析报告</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 覆盖样式确保图表可见 */
+        .chart-container {
+            min-height: 400px;
+            position: relative;
+        }
+        #wordcloud {
+            min-height: 300px;
+            border-radius: 12px;
+            background: #f9f6ff;
+        }
+    </style>
 </head>
 <body>
     <div class="main-container">
         <div class="main-content">
-            <a href="/">返回首页</a>
-            <h1>{{ diary.title }}</h1>
+            <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> 返回首页</a>
+            <h1 class="diary-title">{{ diary.title }}</h1>
             <div class="diary-meta">
                 <span>创建时间：{{ diary.create_time.strftime('%Y-%m-%d %H:%M') }}</span>
-                <span class="emotion-tag">{{ diary.analyze.emotion }}</span>
+                <span class="emotion-tag {{ diary.analyze.emotion_type|lower }}">{{ diary.analyze.emotion_type }}</span>
             </div>
             <div class="diary-content">
                 {{ diary.content|safe }}
             </div>
         </div>
-        <!-- 新增分析报告 -->
+
+        <!-- 分析报告区域 -->
         <div class="analysis-report animated fadeIn">
             <h2 class="report-header">
                 <i class="fas fa-chart-pie"></i>
@@ -27,21 +41,19 @@
                 <span class="report-date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
             </h2>
 
-            <!-- 图表区 -->
             <div class="report-grid">
-                <!-- 情绪雷达图 -->
                 <div class="report-card chart-card">
                     <h3><i class="fas fa-brain"></i> 情绪构成</h3>
                     <div class="chart-container">
-                        <!-- 添加 data-emotional-basis 属性 -->
-                        <canvas id="emotionRadar" data-emotional-basis="{{ analysis.emotional_basis|tojson }}"></canvas>
+                        <canvas id="emotionRadar"
+                                data-emotional-basis="{{ analysis.emotional_basis|tojson|forceescape }}"></canvas>
                     </div>
                 </div>
 
-                <!-- 词云 -->
                 <div class="report-card">
                     <h3><i class="fas fa-cloud"></i> 关键词云</h3>
-                    <div id="wordcloud" data-keywords="{{ analysis.keywords|join(',') }}"></div>
+                    <div id="wordcloud"
+                         data-keywords="{{ analysis.keywords|join(',')|forceescape }}"></div>
                 </div>
             </div>
 
@@ -87,12 +99,13 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- 图表库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
     <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
 </body>
 </html>
+
