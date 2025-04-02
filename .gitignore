@@ -1,0 +1,46 @@
+*.pyc
+*~
+__pycache__
+.DS_Store
+
+.idea/
+*.iml
+out/
+target/
+
+*.log
+*.tmp
+.idea/
+__pycache__/
+env/
+.venv
+.env
+
+# Python
+__pycache__/
+*.pyc
+# macOS
+.DS_Store
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+# 数据库文件
+data_base/knowledge_db/
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+.gitignore
+
+# 忽略 diary_db 目录
+data_base/diary_db/
+
+uwsgi.ini
+gunicorn.pid
+gunicorn_conf.py
+
+sqlite-autoconf-3460000
+
+migrations/

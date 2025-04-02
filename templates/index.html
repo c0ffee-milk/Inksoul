@@ -1,0 +1,137 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>心灵日记</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 为按钮添加悬停效果 */
+        button:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        /* 为模态框添加过渡效果 */
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 导航栏 -->
+        <div class="sidebar">
+            <div class="heatmap">
+                <h3>每日记录热力图</h3>
+                <div class="heatmap-content"></div>
+            </div>
+            <div class="category">
+                <h3>情绪分类</h3>
+                <ul>
+                    <li>开心</li>
+                    <li>难过</li>
+                    <li>愤怒</li>
+                    <li>平静</li>
+                </ul>
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="搜索日记">
+                <button>搜索</button>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{{ category }} flash-message-fixed">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="login-register">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
+                    <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
+                {% else %}
+                    <span>欢迎回来，{{ current_user.username }}</span>
+                    <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
+                {% endif %}
+            </div>
+            <button class="write-diary" id="write-diary-btn">撰写日记</button>
+            <!-- 修改日记输入表单为 Flask 表单 -->
+            <div class="diary-write" id="diary-write">
+                <form id="diary-form" onsubmit="return false;">
+                    <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
+                    <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
+                    <button id="save-diary" type="submit">保存日记</button>
+                    <div id="form-error" style="color: red;"></div>
+                </form>
+            </div>
+
+            <!-- 新的日记网格区域 -->
+            <div class="diary-grid">
+                {% if diaries %}
+                    {% for diary in diaries %}
+                        <div class="diary-card" data-id="{{ diary.id }}">
+                            <div class="card-content">
+                                <h3>{{ diary.title }}</h3>
+                                <p class="excerpt">{{ diary.content|truncate(100) }}</p>
+                                <div class="meta-info">
+                                    <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+                                    <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
+                                        {{ diary.analyze.emotion if diary.analyze else '待分析' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="analyze-btn">
+                                分析报告
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-diary">暂无日记记录</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 分析报告模态框 -->
+    <div id="report-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📊 情绪分析报告</h3>
+            <div id="report-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // 获取所有消息元素
+        const flashMessages = document.querySelectorAll('.flash-message-fixed');
+        flashMessages.forEach(message => {
+            // 设置定时器，5 秒后自动隐藏消息
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        });
+
+        // 简单的表单错误处理
+        const diaryForm = document.getElementById('diary-form');
+        const formError = document.getElementById('form-error');
+        diaryForm.addEventListener('submit', function() {
+            const title = document.getElementById('diary-title').value;
+            const content = document.getElementById('diary-content').value;
+            if (title.trim() === '' || content.trim() === '') {
+                formError.textContent = '标题和内容不能为空';
+            } else {
+                console.log('保存日记:', title, content);
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
