@@ -114,7 +114,7 @@
                         <div class="diary-card" data-id="{{ diary.id }}">
                             <div class="card-content">
                                 <h3>{{ diary.title }}</h3>
-                                <p class="excerpt">{{ diary.content|truncate(100) }}</p>
+                                <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
                                 <div class="meta-info">
                                     <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
                                     <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
