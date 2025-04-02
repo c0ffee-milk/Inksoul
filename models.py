@@ -1,11 +1,10 @@
-import json
 from flask_login import UserMixin
 from sqlalchemy.engine import create
 from exts import db
 from datetime import datetime
-# 用户模型
 from sqlalchemy import JSON
 
+# 用户模型
 class UserModel(db.Model,UserMixin):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -57,10 +56,14 @@ class DiaryModel(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class WeeklyModel(db.Model):
-    __tablename__ = "weekly"
+    __tablename__ = "weekly_report"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_time = db.Column(db.DateTime, default=datetime.now)
-    content = db.Column(db.Text, nullable=False)
+    content = db.Column(JSON)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    diary_nums = db.Column(db.Integer)
+
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
 
