@@ -1,4 +1,5 @@
 # 1. 基础配置和工具函数
+from nt import times
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
@@ -101,7 +102,8 @@ def delete(diary_id):
     if diary and diary.author_id == current_user.id:
         if diary.analyze:
             analyze = EmotionAnalyzer(f"U{current_user.id}")
-            delete_analysis = analyze.delete_diary(diary.datetime)
+            timestamp = int(diary.create_time.timestamp())
+            delete_analysis = analyze.delete_diary(timestamp)
         db.session.delete(diary)
         db.session.commit()
         
