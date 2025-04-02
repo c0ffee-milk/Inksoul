@@ -190,7 +190,10 @@ class EmotionAnalyzer:
                         ...
                     }},
                     "immediate_suggestion": {{
-                        "music":"音乐推荐与推荐理由1", "音乐推荐与推荐理由2",
+                        "music":{{
+                            "music_suggestion1":"音乐推荐与推荐理由1",
+                            "music_suggestion2":"音乐推荐与推荐理由2"
+                        }}, 
                         "books":"书籍推荐与推荐理由",
                         "activities":"活动建议",
                         "techniques":"心理调节技巧"
