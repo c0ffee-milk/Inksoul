@@ -1,0 +1,158 @@
+/* 全局样式 */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* 导航栏样式 */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #f5f0ff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #6f42c1;
+}
+
+.nav-buttons button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background-color: #6f42c1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.nav-buttons button:hover {
+    background-color: #5a32a3;
+}
+
+/* 英雄区域样式 */
+.hero {
+    background-color: #f5f0ff;
+    text-align: center;
+    padding: 100px 0;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #6f42c1;
+}
+
+.hero p {
+    font-size: 20px;
+    margin-bottom: 40px;
+}
+
+.cta-button {
+    padding: 15px 30px;
+    background-color: #6f42c1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #5a32a3;
+}
+
+/* 特色区域样式 */
+.feature-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px;
+    box-sizing: border-box;
+}
+
+.feature-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.feature-title h2 {
+    font-size: 36px;
+}
+
+.feature-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left-content {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-subtitle {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.feature-text {
+    font-size: 16px;
+}
+
+.right-image {
+    width: 40%;
+    text-align: center;
+}
+
+.right-image img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 页脚样式 */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #f5f0ff;
+    border-top: 1px solid #d6c7f7;
+}
+/* 承诺区域样式 */
+.promise-section {
+    text-align: center;
+    padding: 50px 0;
+    background-color: #f5f0ff;
+}
+
+.promise-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.promise-content p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* 末尾注册按钮区域样式 */
+.end-register {
+    text-align: center;
+    padding: 50px 0;
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心灵墨迹 - 介绍页</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/intro.css') }}">
+    <!-- 引入更优美的字体，这里以 Google Fonts 的 Lobster 为例，你可以按需替换 -->
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <style>
+        /* 设置标题使用更优美的字体 */
+        h1, h2 {
+            font-family: 'Lobster', cursive;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="logo">心灵墨迹</div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('auth.register') }}"><button>注册</button></a>
+            <a href="{{ url_for('auth.login') }}"><button>登录</button></a>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>开启心灵之旅，记录每一刻✨</h1>
+            <p>自主记录生活，AI 剖析内心。</p>
+            <a href="{{ url_for('auth.register') }}"><button class="cta-button">立即注册</button></a>
+        </div>
+    </section>
+
+    <!-- 特色区域 -->
+    <section class="feature-section">
+        <div class="feature-title">
+            <h2>自主记录🌟</h2>
+        </div>
+        <div class="feature-content">
+            <div class="left-content">
+                <div class="feature-subtitle">特色</div>
+                <div class="feature-text">
+                    <p>自由挥洒笔墨，记录生活点滴🎨。简洁界面，轻松输入文字、添加图片和附件，打造专属心灵画卷🖼️。</p>
+                    <p>自主记录，与内心深度对话💬，洞察情绪变化，见证成长历程📈。</p>
+                </div>
+            </div>
+            <div class="right-image">
+                <img src="{{ url_for('static', filename='images/self-record.png') }}" alt="自主记录">
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-section">
+        <div class="feature-title">
+            <h2>AI 生成分析报告🧠</h2>
+        </div>
+        <div class="feature-content">
+            <div class="left-content">
+                <div class="feature-subtitle">特色</div>
+                <div class="feature-text">
+                    <p>AI 智慧剖析，生成精准报告📊。识别情绪倾向、关键词和主题，助你理解内心世界🧐。</p>
+                    <p>分析报告提供建议启示💡，助你调整心态，保持心理健康🌈。</p>
+                </div>
+            </div>
+            <div class="right-image">
+                <img src="{{ url_for('static', filename='images/ai-analysis.png') }}" alt="AI 分析">
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-section">
+        <div class="feature-title">
+            <h2>综合周报📊</h2>
+        </div>
+        <div class="feature-content">
+            <div class="left-content">
+                <div class="feature-subtitle">特色</div>
+                <div class="feature-text">
+                    <p>每周自动总结，呈现情绪波动曲线📈、关键词和主题变化。助你回顾成长，发现改进方向🔍。</p>
+                    <p>周报提供个性化建议💡，助你优化生活方式，提升生活质量🥰。</p>
+                </div>
+            </div>
+            <div class="right-image">
+                <img src="{{ url_for('static', filename='images/weekly-report.png') }}" alt="周报">
+            </div>
+        </div>
+    </section>
+
+    <!-- 承诺区域 -->
+    <section class="promise-section">
+        <div class="promise-content">
+            <p>我们承诺，保护用户隐私🔒，为你提供安全可靠的记录环境。</p>
+            <p>开启心灵川流，伴你畅享自由的心灵之旅🌊。</p>
+        </div>
+    </section>
+
+
+    <!-- 末尾注册按钮 -->
+    <section class="end-register">
+        <a href="{{ url_for('auth.register') }}"><button class="cta-button">立即注册</button></a>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>&copy; 2024 心灵墨迹. 保留所有权利.</p>
+    </footer>
+</body>
+
+</html>
