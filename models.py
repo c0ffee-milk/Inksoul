@@ -1,3 +1,5 @@
+from email.policy import default
+
 from flask_login import UserMixin
 from sqlalchemy.engine import create
 from exts import db
@@ -49,11 +51,15 @@ class DiaryModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
+    mood = db.Column(db.Integer,default=50)  # 新增字段 0-100值
     analyze = db.Column(JSON)
     emotion_type = db.Column(db.String(100), nullable=True)
-
-
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # 添加日期访问器（兼容原热力图逻辑）
+    @property
+    def date(self):
+        return self.create_time.date()
 
 class WeeklyModel(db.Model):
     __tablename__ = "weekly_report"

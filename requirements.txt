@@ -50,7 +50,7 @@ MarkupSafe==2.1.5
 marshmallow==3.22.0
 multidict==6.1.0
 mypy-extensions==1.0.0
-numpy==1.24.4
+
 openai==1.66.3
 orjson==3.10.15
 packaging==24.2
