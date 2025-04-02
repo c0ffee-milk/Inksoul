@@ -10,6 +10,9 @@ from utils.crypto import AESCipher
 import json
 import os
 from dotenv import load_dotenv
+import calendar
+from collections import defaultdict
+
 
 # 初始化
 load_dotenv()
@@ -46,10 +49,13 @@ def add():
 @bp.route('/mine')
 @login_required
 def mine():
+    # 获取所有日记（保持原有逻辑）
     diaries = DiaryModel.query.filter_by(author_id=current_user.id).order_by(DiaryModel.create_time.desc()).all()
+
+    # 解密日记内容（保持原有逻辑）
     decrypted_diaries = []
     for diary in diaries:
-        decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>')  
+        decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>')
         decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
         decrypted_diaries.append({
             'id': diary.id,
@@ -57,8 +63,52 @@ def mine():
             'content': decrypted_content,
             'analyze': decrypted_analysis,
             'create_time': diary.create_time
-        })  
-    return render_template('index.html', diaries=decrypted_diaries)
+        })
+
+    # ========== 新增热力图数据生成逻辑 ==========
+    # 获取当前月份信息
+    now = datetime.now()
+    current_year = now.year
+    current_month = now.month
+    _, days_in_month = calendar.monthrange(current_year, current_month)
+
+    # 统计每日日记数量
+    daily_counts = defaultdict(int)
+    for diary in diaries:
+        if diary.create_time.year == current_year and diary.create_time.month == current_month:
+            day = diary.create_time.day
+            daily_counts[day] += 1
+
+    # 计算颜色梯度（浅紫#e6e6fa -> 深紫#4b0082）
+    max_count = max(daily_counts.values()) if daily_counts else 1
+    heatmap_data = []
+
+    for day in range(1, days_in_month + 1):
+        count = daily_counts.get(day, 0)
+        # 计算颜色强度（0~1）
+        intensity = count / max_count if max_count > 0 else 0
+
+        # RGB分量计算
+        base_r, base_g, base_b = 230, 230, 250  # #e6e6fa
+        target_r, target_g, target_b = 75, 0, 130  # #4b0082
+
+        r = int(base_r + (target_r - base_r) * intensity)
+        g = int(base_g + (target_g - base_g) * intensity)
+        b = int(base_b + (target_b - base_b) * intensity)
+
+        heatmap_data.append({
+            "day": day,
+            "count": count,
+            "color": f"rgb({r}, {g}, {b})",
+            "tooltip": f"{day}日：{count}篇日记"
+        })
+
+    # ========== 结束新增逻辑 ==========
+
+    return render_template('index.html',
+                           diaries=decrypted_diaries,
+                           heatmap=heatmap_data,  # 新增参数
+                           current_month=f"{current_year}-{current_month:02d}")
 
 @bp.route('/<int:diary_id>')
 @login_required

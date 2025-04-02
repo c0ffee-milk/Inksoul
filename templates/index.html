@@ -17,8 +17,7 @@
         /* 为模态框添加过渡效果 */
         .modal {
             transition: opacity 0.3s ease;
-        }
-        /* 新增按钮状态样式 */
+        }        /* 新增按钮状态样式 */
         .analyze-btn {
             transition: all 0.3s ease;
             position: relative;
@@ -53,16 +52,79 @@
         @keyframes spin {
             to { transform: translateY(-50%) rotate(360deg); }
         }
+        .heatmap-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.15);
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.heatmap-legend {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.gradient-bar {
+    flex: 1;
+    height: 10px;
+    margin: 0 8px;
+    background: linear-gradient(to right, #e6e6fa, #4b0082);
+    border-radius: 5px;
+}
     </style>
 </head>
 <body>
     <div class="main-container">
         <!-- 导航栏 -->
         <div class="sidebar">
-            <div class="heatmap">
-                <h3>每日记录热力图</h3>
-                <div class="heatmap-content"></div>
+            <div class="heatmap-section">
+        <h3>{{ current_month }} 写作热力</h3>
+        <div class="heatmap-grid">
+            {% for entry in heatmap %}
+            <div class="heatmap-cell"
+                 style="background-color: {{ entry.color }};"
+                 data-toggle="tooltip"
+                 title="{{ entry.tooltip }}">
+                {{ entry.day }}
             </div>
+            {% endfor %}
+        </div>
+        <div class="heatmap-legend">
+            <span>篇数少</span>
+            <div class="gradient-bar"></div>
+            <span>篇数多</span>
+        </div>
+    </div>
             <div class="category">
                 <h3>情绪分类</h3>
                 <ul>
