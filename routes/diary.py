@@ -143,62 +143,7 @@ def diary_analyze(diary_id):
 
 
 # 4. 周报相关功能
-# 4.1 生成周报
-@bp.route('/generate_weekly_report', methods=['POST','GET'])
-@login_required
-def generate_weekly_report():
-    if request.method == 'POST':
-        try:
-            # 解析日期参数
-            start_date = request.form.get('start_time')
-            end_date = request.form.get('end_time')
-            
-            if not start_date or not end_date:
-                return jsonify(success=False, message="必须提供开始和结束日期"), 400
-                
-            if start_date > end_date:
-                return jsonify(success=False, message="开始日期不能晚于结束日期"), 400
-
-            # 统一使用相同的日期格式
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
-
-            # 获取该时间范围内的日记数量
-            diary_count = DiaryModel.query.filter(
-                DiaryModel.author_id == current_user.id,
-                DiaryModel.create_time >= start_date,
-                DiaryModel.create_time <= end_date
-            ).count()
-
-            # 生成周报内容
-            analyzer = EmotionAnalyzer(f"U{current_user.id}")
-            report_data = analyzer.analyze('weekly', start_date, end_date)  
-            
-            # 加密存储到数据库
-            encrypted_report = cipher.encrypt(json.dumps(report_data))
-            new_report = WeeklyModel(
-                author_id=current_user.id,  # 修正字段名
-                content=encrypted_report,
-                start_date=start_date.date(),  
-                end_date=end_date.date(), 
-                diary_nums=diary_count     
-            )
-            db.session.add(new_report)
-            db.session.commit()
-
-            return jsonify(
-                success=True,
-                message="周报生成成功",
-                redirect=url_for('diary.weekly_report_detail', report_id=new_report.id)
-            )
-            
-        except ValueError:
-            return jsonify(success=False, message="日期格式应为YYYY-MM-DD"), 400
-        except Exception as e:
-            db.session.rollback()
-            return jsonify(success=False, message=str(e)), 500
-
-# 4.2 查看周报
+# 4.1 查看周报
 # 获取当前用户的所有阶段性总结报告，按创建时间倒序排列
 @bp.route('/weekly_reports')
 @login_required
@@ -218,7 +163,7 @@ def weekly_report_detail(report_id):
     else:
         flash('报告不存在或无权访问')
         return redirect(url_for('diary.weekly_reports'))
-
+#4.2 生成周报
 # 生成阶段性总结报告的路由
 @bp.route('/generate_weekly_report', methods=['POST','GET'])
 @login_required
@@ -384,4 +329,3 @@ def search_by_date(date_str):
     except Exception as e:
         flash(f"查询失败: {str(e)}")
         return redirect(url_for('diary.mine'))
-
