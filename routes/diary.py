@@ -1,4 +1,5 @@
 # 1. 基础配置和工具函数
+from nt import times
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
@@ -149,15 +150,19 @@ def diary_detail(diary_id):
 def delete(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
+        if diary.analyze:
+            analyze = EmotionAnalyzer(f"U{current_user.id}")
+            timestamp = int(diary.create_time.timestamp())
+            delete_analysis = analyze.delete_diary(timestamp)
         db.session.delete(diary)
         db.session.commit()
-        analyze = EmotionAnalyzer(f"U{current_user.id}")
-        delete_analysis = analyze.delete_diary(diary.datetime)
+        
+        
         flash('日记删除成功')
         
-        return redirect(url_for('index'))
+        return redirect(url_for('diary.mine'))
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('diary.mine'))
 
 # 3. 日记分析功能
 @bp.route('/<int:diary_id>/analyze', methods=['POST','GET'])
@@ -250,6 +255,11 @@ def generate_weekly_report():
                 DiaryModel.create_time >= start_date,
                 DiaryModel.create_time <= end_date
             ).count()
+
+            # 检查是否有日记记录
+            if diary_count == 0:
+                return jsonify(success=False, message="该时间段内没有日记记录"), 400
+
 
             # 生成周报内容
             analyzer = EmotionAnalyzer(f"U{current_user.id}")

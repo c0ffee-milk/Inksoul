@@ -10,11 +10,28 @@ document.querySelectorAll('.diary-card').forEach(card => {
     card.querySelector('.analyze-btn').addEventListener('click', async function(e) {
         e.stopPropagation();
         const diaryId = card.dataset.id;
+        const analyzeBtn = this;
 
         try {
+            // 设置加载状态
+            analyzeBtn.classList.add('loading');
+            analyzeBtn.innerHTML = '分析中&nbsp;';
+
             const response = await fetch(`/diary/${diaryId}/analyze`);
+
+            if (!response.ok) {
+                throw new Error(`分析失败: ${response.status}`);
+            }
+
             const report = await response.json();
 
+            // 更新按钮状态
+            analyzeBtn.classList.remove('loading');
+            analyzeBtn.classList.add('disabled');
+            analyzeBtn.innerHTML = '已分析';
+            analyzeBtn.disabled = true;
+
+            // 更新模态框内容
             const modal = document.getElementById('report-modal');
             const content = document.getElementById('report-content');
             content.innerHTML = `
@@ -23,9 +40,23 @@ document.querySelectorAll('.diary-card').forEach(card => {
                 <p><strong>建议：</strong>${report.suggestion}</p>
             `;
             modal.style.display = 'flex';
+
         } catch (error) {
+            // 恢复按钮状态
+            analyzeBtn.classList.remove('loading');
+            analyzeBtn.innerHTML = '分析报告';
             console.error('获取分析报告失败:', error);
-            alert('无法获取分析报告，请稍后重试');
+
+            // 更友好的错误提示
+            const modal = document.getElementById('report-modal');
+            modal.style.display = 'flex';
+            document.getElementById('report-content').innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>分析失败，请稍后重试</p>
+                    <small>错误详情：${error.message}</small>
+                </div>
+            `;
         }
     });
 });

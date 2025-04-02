@@ -17,6 +17,40 @@
         /* 为模态框添加过渡效果 */
         .modal {
             transition: opacity 0.3s ease;
+        }        /* 新增按钮状态样式 */
+        .analyze-btn {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .analyze-btn.loading {
+            background: #8a63d2 !important;
+            padding-right: 40px !important;
+            pointer-events: none;
+        }
+
+        .analyze-btn.loading::after {
+            content: "";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        .analyze-btn.disabled {
+            background: #c5a8e4 !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
         }
         .heatmap-section {
     background: white;
@@ -142,7 +176,7 @@
                         <div class="diary-card" data-id="{{ diary.id }}">
                             <div class="card-content">
                                 <h3>{{ diary.title }}</h3>
-                                <p class="excerpt">{{ diary.content|truncate(100) }}</p>
+                                <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
                                 <div class="meta-info">
                                     <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
                                     <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
@@ -162,14 +196,26 @@
         </div>
     </div>
 
-    <!-- 分析报告模态框 -->
+    <!-- 修改index.html中的分析报告模态框 -->
     <div id="report-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>📊 情绪分析报告</h3>
-            <div id="report-content"></div>
+            <div id="report-content">
+                <!-- 动态内容 -->
+            </div>
+            <!-- 新增加载状态 -->
+            <div class="loading-state" style="display: none;">
+                <div class="loader"></div>
+                <p>正在生成深度分析报告...</p>
+            </div>
         </div>
     </div>
+
+    <button class="analyze-btn">
+        分析报告
+    </button>
+
 
     <script>
         // 获取所有消息元素
