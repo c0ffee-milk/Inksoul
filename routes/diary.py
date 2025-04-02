@@ -84,7 +84,7 @@ def diary_detail(diary_id):
                 analysis=decrypted_analysis
             )
         else:
-            return render_template('diary.html',  # 假设这是只显示日记内容的模板
+            return render_template('diary_only_content.html',  
                 diary={
                     'id': diary.id,
                     'title': diary.title,
