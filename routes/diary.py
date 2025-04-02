@@ -1,5 +1,5 @@
 # 1. 基础配置和工具函数
-from nt import times
+from time import time as times
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
