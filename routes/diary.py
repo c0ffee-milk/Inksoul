@@ -116,33 +116,43 @@ def delete(diary_id):
 @bp.route('/<int:diary_id>/analyze', methods=['POST','GET'])
 @login_required
 def diary_analyze(diary_id):
-    diary = DiaryModel.query.get(diary_id)
-    if diary is None:
-        return "日记不存在", 404
-    if diary and diary.author_id == current_user.id:
-        try:
-            # 解密日记内容
-            decrypted_content = cipher.decrypt(diary.content)
+    import time
+    max_retries = 3
+    retry_delay = 0.5  # 0.5秒
+    
+    for attempt in range(max_retries):
+        diary = DiaryModel.query.get(diary_id)
+        if diary is None:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                continue
+            return "日记不存在", 404
             
-            # 进行情感分析
-            user_id = f"U{current_user.id}"
-            analyzer = EmotionAnalyzer(user_id)
-            timestamp = int(diary.create_time.timestamp())
-            analysis_result = analyzer.analyze("daily", decrypted_content, timestamp)
-            
-            
-            # 加密并保存分析结果
-            encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
-            diary.analyze = encrypted_analysis
-            diary.emotion_type = analysis_result.get('emotion_type', [])
-            db.session.commit()
-            
-            return jsonify(success=True, analysis=analysis_result)
-        except Exception as e:
-            db.session.rollback()
-            return jsonify(success=False, message=str(e)), 500
-    else:
-        return jsonify(success=False, message="日记不存在或无权访问"), 403
+        if diary and diary.author_id == current_user.id:
+            try:
+                # 解密日记内容
+                decrypted_content = cipher.decrypt(diary.content)
+                
+                # 进行情感分析
+                user_id = f"U{current_user.id}"
+                analyzer = EmotionAnalyzer(user_id)
+                timestamp = int(diary.create_time.timestamp())
+                analysis_result = analyzer.analyze("daily", decrypted_content, timestamp)
+                
+                # 加密并保存分析结果
+                encrypted_analysis = cipher.encrypt(json.dumps(analysis_result))
+                diary.analyze = encrypted_analysis
+                diary.emotion_type = analysis_result.get('emotion_type', [])
+                db.session.commit()
+                
+                return jsonify(success=True, analysis=analysis_result),200
+            except Exception as e:
+                db.session.rollback()
+                return jsonify(success=False, message=str(e)), 500
+        else:
+            return jsonify(success=False, message="日记不存在或无权访问"), 403
+    
+    return jsonify(success=False, message="日记数据尚未准备好，请稍后再试"), 503
 
 
 # 4. 周报相关功能
