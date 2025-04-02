@@ -45,7 +45,7 @@
     <div class="container">
         <h1>{{ diary.title }}</h1>
         <p class="create-time">创建时间: {{ diary.create_time }}</p>
-        <p>{{ diary.content }}</p>
+        <p>{{ diary.content | safe }}</p>
     </div>
 </body>
 
