@@ -45,12 +45,10 @@ def add():
 @bp.route('/mine')
 @login_required
 def mine():
-    # 获取当前用户的所有日记，按创建时间倒序排列
     diaries = DiaryModel.query.filter_by(author_id=current_user.id).order_by(DiaryModel.create_time.desc()).all()
-    # 解密日记内容
     decrypted_diaries = []
     for diary in diaries:
-        decrypted_content = cipher.decrypt(diary.content)
+        decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>')  
         decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
         decrypted_diaries.append({
             'id': diary.id,
@@ -58,8 +56,7 @@ def mine():
             'content': decrypted_content,
             'analyze': decrypted_analysis,
             'create_time': diary.create_time
-        })
-        print(decrypted_analysis)
+        })  
     return render_template('index.html', diaries=decrypted_diaries)
 
 @bp.route('/<int:diary_id>')
@@ -68,7 +65,7 @@ def diary_detail(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
         # 解密日记内容
-        decrypted_content = cipher.decrypt(diary.content)
+        decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>') 
         
         # 检查是否有分析结果
         if diary.analyze:
