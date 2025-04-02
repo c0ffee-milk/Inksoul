@@ -117,6 +117,8 @@ def delete(diary_id):
 @login_required
 def diary_analyze(diary_id):
     diary = DiaryModel.query.get(diary_id)
+    if diary is None:
+        return "日记不存在", 404
     if diary and diary.author_id == current_user.id:
         try:
             # 解密日记内容
@@ -125,7 +127,8 @@ def diary_analyze(diary_id):
             # 进行情感分析
             user_id = f"U{current_user.id}"
             analyzer = EmotionAnalyzer(user_id)
-            analysis_result = analyzer.analyze("daily", decrypted_content, diary.create_time)
+            timestamp = int(diary.create_time.timestamp())
+            analysis_result = analyzer.analyze("daily", decrypted_content, timestamp)
             
             
             # 加密并保存分析结果
