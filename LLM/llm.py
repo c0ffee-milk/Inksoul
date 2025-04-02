@@ -181,13 +181,13 @@ class EmotionAnalyzer:
                         ...
                     ],
                     "emotion_type": "type",
-                    "keywords": [
-                        "关键词1",
-                        "关键词2",
-                        "关键词3",
-                        "关键词4",
-                        "关键词5"
-                    ],
+                    "keywords": {{
+                        "keyword1":"关键词1",
+                        "keyword2":"关键词2",
+                        "keyword3":"关键词3",
+                        "keyword4":"关键词4",
+                        "keyword5":"关键词5"
+                    }},
                     "immediate_suggestion": {{
                         "music":"音乐推荐与推荐理由1", "音乐推荐与推荐理由2",
                         "books":"书籍推荐与推荐理由",
