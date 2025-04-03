@@ -360,7 +360,13 @@ def search():
                     'create_time': diary.create_time
                 })
         
-        return render_template('index.html', diaries=filtered_diaries, is_search=True, kerword=keyword)  # 改为渲染模板
+        # 计算搜索结果数量
+        result_count = len(filtered_diaries)
+        return render_template('index.html', 
+                           diaries=filtered_diaries, 
+                           is_search=True, 
+                           keyword=keyword,
+                           result_count=result_count)  # 新增结果数量参数
     except Exception as e:
         flash(str(e))
         return redirect(url_for('diary.mine'))
