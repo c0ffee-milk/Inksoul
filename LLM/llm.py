@@ -227,6 +227,7 @@ class EmotionAnalyzer:
                 1.面向用户输出，注意人称用词必须用您
                 2.提出的建议要基于现实，容易实现
 
+                输出格式：
                 {{
                     "diary_review": "日记回顾",
                     "emotional_basis": {{
