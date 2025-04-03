@@ -137,8 +137,10 @@
     </ul>
 </div>
             <div class="search-box">
-                <input type="text" placeholder="搜索日记">
-                <button>搜索</button>
+                <form action="{{ url_for('diary.search') }}" method="GET">
+                    <input type="text" name="keyword" placeholder="搜索日记" required>
+                    <button type="submit">搜索</button>
+                </form>
             </div>
         </div>
 
