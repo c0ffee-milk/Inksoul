@@ -51,7 +51,6 @@ class DiaryModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
-    mood = db.Column(db.Integer,default=50)  # 新增字段 0-100值
     analyze = db.Column(JSON)
     emotion_type = db.Column(db.String(100), nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
