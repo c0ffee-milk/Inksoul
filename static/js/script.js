@@ -127,6 +127,22 @@ saveDiaryBtn.addEventListener('click', () => {
     }
 });
 
+
+// 获取日记输入框和日记网格元素
+const diaryContent = document.getElementById('diary-content');
+const diaryGrid = document.querySelector('.diary-grid');
+
+// 监听输入事件
+diaryContent.addEventListener('input', function() {
+    // 动态调整输入框的高度
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+
+    // 确保日记网格跟随下移
+    // 由于输入框高度变化，页面布局会自动调整
+});
+
+
 // 分页功能
 const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
@@ -149,6 +165,8 @@ searchBtn.addEventListener('click', () => {
         }
     });
 });
+
+
 
 // 注册登录弹窗功能
 const registerBtn = document.getElementById('register-btn');
