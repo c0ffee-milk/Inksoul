@@ -3,7 +3,7 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* 禁止 body 滚动 */
+
 }
 
 body {
@@ -21,11 +21,21 @@ body {
     display: flex;
     width: 80%; /* 可以根据需要调整宽度，留出两边的空白 */
     max-width: 1200px; /* 最大宽度 */
-    height: 90%; /* 可以根据需要调整高度 */
+    min-height: 90vh; /* 使用 min-height 确保容器可以自适应高度 */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 给容器添加阴影 */
     border-radius: 5px; /* 圆角 */
-    overflow: hidden; /* 防止内容溢出 */
     margin: 5vh auto; /* 垂直居中 */
+
+}
+
+/* 主内容区域样式 */
+.main-content {
+    width: 75%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* 让主内容区域可以自适应高度 */
+    overflow-y: auto; /* 内容超出时滚动 */
 }
 
 /* 导航栏样式 */
@@ -39,8 +49,10 @@ body {
     border-right: 1px solid #d6c7f7; /* 紫色边框 */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease; /* 侧边栏过渡效果 */
+    position: sticky; /* 粘性定位 */
+    top: 5vh; /* 距离顶部 5vh */
+    overflow-y: hidden;
 }
-
 .sidebar:hover {
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* 鼠标悬停时增强阴影 */
 }
@@ -135,13 +147,6 @@ body {
     background-color: #5a32a3; /* 深紫色 */
 }
 
-/* 主内容区域样式 */
-.main-content {
-    width: 75%;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
 
 .login-register {
     align-self: flex-end;
@@ -176,6 +181,7 @@ body {
     align-self: flex-start;
     transition: background-color 0.3s ease, transform 0.3s ease;
     outline: none;
+
 }
 
 .write-diary:hover {
@@ -191,6 +197,7 @@ body {
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+
 }
 
 .diary-write input,
@@ -205,6 +212,8 @@ body {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     outline: none;
     transition: box-shadow 0.3s ease;
+    max-height:50vh;
+    overflow-y: auto; /* 新增：使日记输入框内容超出时可滚动 */
 }
 
 .diary-write input:focus,
