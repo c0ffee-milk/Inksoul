@@ -221,7 +221,49 @@ class EmotionAnalyzer:
                 5. 针对这段时间的情绪提出给用户下一周的建议：weekly_advice（长期建议）
                 6. 总结这段时间的主导事件找出5-10个事件关键词：event_key_words
                 7. 总结这段时间的主导情绪找出5-10个情绪关键词：emotion_key_words
-                8. 结合用户这段时间的心理情绪找一段名人的名言，作为总结的引言：famous_quote
+                8. 结合用户这段时间的心理情绪找一段名人或名著的名言，作为总结的引言：famous_quote
+
+                输出要求：
+                1.面向用户输出，注意人称用词必须用您
+                2.提出的建议要基于现实，容易实现
+
+                {{
+                    "diary_review": "日记回顾",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "domain_event": {{
+                        "day1": {{"event": "事件1", "emotion": "情绪1"}},
+                        "day2": {{"event": "事件2", "emotion": "情绪2"}},
+                        "day3": {{"event": "事件3", "emotion": "情绪3"}},
+                        "day4": {{"event": "事件4", "emotion": "情绪4"}},
+                        ...
+                    }},
+                    "emotion_trend": "情绪变化趋势",
+                    
+                    "weekly_advice": "本周长期建议";
+                    
+                    "event_key_words": {{
+                        "event_keyword1": "关键词1",
+                        "event_keyword2": "关键词2", 
+                        "event_keyword3": "关键词3",
+                        ...
+                    }},
+                    "emotion_key_words": {{
+                        "emotion_keyword1": "关键词1",
+                        "emotion_keyword2": "关键词2", 
+                        "emotion_keyword3": "关键词3",
+                        ...
+                    }},
+                    "famous_quote": "名言引文"
+                }}
                 """
             )
         }
