@@ -108,23 +108,30 @@
         <!-- 导航栏 -->
         <div class="sidebar">
             <div class="heatmap-section">
-        <h3 style="text-align: center; margin: 0 0 10px 0;">{{ current_month }} 日记热力图</h3>
-        <div class="heatmap-grid">
-            {% for entry in heatmap %}
-            <div class="heatmap-cell"
-                 style="background-color: {{ entry.color }};"
-                 data-toggle="tooltip"
-                 title="{{ entry.tooltip }}">
-                 <span style="color: #ffffff">{{ entry.day }}</span>
+                {% if not is_search %}
+                    <h3 style="text-align: center; margin: 0 0 10px 0;">{{ current_month }} 日记热力图</h3>
+                    <div class="heatmap-grid">
+                        {% for entry in heatmap %}
+                        <div class="heatmap-cell"
+                             style="background-color: {{ entry.color }};"
+                             data-toggle="tooltip"
+                             title="{{ entry.tooltip }}">
+                             <span style="color: #ffffff">{{ entry.day }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="heatmap-legend">
+                        <span>篇数少</span>
+                        <div class="gradient-bar"></div>
+                        <span>篇数多</span>
+                    </div>
+                {% else %}
+                    <h3 style="text-align: center; margin: 0 0 10px 0;">搜索结果不显示热力图</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="{{ url_for('diary.mine') }}" class="back-btn" style="padding: 8px 16px; background: #8a63d2; color: white; border-radius: 4px; text-decoration: none;">返回全部日记</a>
+                    </div>
+                {% endif %}
             </div>
-            {% endfor %}
-        </div>
-        <div class="heatmap-legend">
-            <span>篇数少</span>
-            <div class="gradient-bar"></div>
-            <span>篇数多</span>
-        </div>
-    </div>
            <div class="category">
     <h3>情绪分类</h3>
     <ul>
