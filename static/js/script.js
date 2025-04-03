@@ -35,9 +35,9 @@ document.querySelectorAll('.diary-card').forEach(card => {
             const modal = document.getElementById('report-modal');
             const content = document.getElementById('report-content');
             content.innerHTML = `
-                <p><strong>情绪状态：</strong>${report.emotion}</p>
-                <p><strong>关键词：</strong>${report.keywords.join(', ')}</p>
-                <p><strong>建议：</strong>${report.suggestion}</p>
+                <p><strong>情绪类型：</strong>${report.analysis.emotion_type || '未知'}</p>
+                <p><strong>综合分析：</strong>${report.analysis.overall_analysis || '未知'}</p>
+                <p>${'请点击日记框查看情绪分析报告详情！'}</p>
             `;
             modal.style.display = 'flex';
 
