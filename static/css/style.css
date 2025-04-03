@@ -243,7 +243,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
-    margin-top: 30px;
+    margin-top: 60px;
     padding: 15px;
     background: #f9f6ff;
     border-radius: 8px;
