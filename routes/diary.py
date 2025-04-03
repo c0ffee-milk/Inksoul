@@ -360,7 +360,7 @@ def search():
                     'create_time': diary.create_time
                 })
         
-        return render_template('index.html', diaries=filtered_diaries)  # 改为渲染模板
+        return render_template('index.html', diaries=filtered_diaries, is_search=True, kerword=keyword)  # 改为渲染模板
     except Exception as e:
         flash(str(e))
         return redirect(url_for('diary.mine'))
