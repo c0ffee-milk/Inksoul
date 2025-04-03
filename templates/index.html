@@ -126,13 +126,31 @@
                         <span>篇数多</span>
                     </div>
                 {% else %}
-                    <div class="search-result-header">
-                        <h3 style="text-align: center; margin: 0 0 10px 0;">
-                            <i class="fas fa-search" style="margin-right: 8px;"></i>
-                            搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>" 
-                            共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
-                        </h3>
-                    </div>
+                    {% if search_type == 'keyword' %} 
+                        <div class="search-result-header">
+                            <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                <i class="fas fa-search" style="margin-right: 8px;"></i>
+                                搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>" 
+                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                            </h3>
+                        </div>
+                    {% elif search_type == 'date' %}
+                        <div class="search-result-header">
+                            <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                <i class="fas fa-calendar" style="margin-right: 8px;"></i>
+                                日期: <span class="highlight-keyword"> {{ target_date }}</span>
+                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                            </h3>
+                        </div>
+                    {% elif search_type == 'emotion' %}
+                        <div class="search-result-header">
+                            <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                <i class="fas fa-smile" style="margin-right: 8px;"></i>
+                                情绪类型: <span class="highlight-keyword">{{ emotion_type }}</span>
+                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                            </h3>
+                        </div>
+                    {% endif %}
                     <div style="text-align: center; margin-top: 20px;">
                         <a href="{{ url_for('diary.mine') }}" class="back-btn">
                             <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
@@ -141,17 +159,19 @@
                     </div>
                 {% endif %}
             </div>
+           {% if not is_search %}
            <div class="category">
-    <h3>情绪分类</h3>
-    <ul>
-        <li>振奋</li>
-        <li>愉悦</li>
-        <li>平和</li>
-        <li>焦虑</li>
-        <li>低落</li>
-        <li>烦闷</li>
-    </ul>
-</div>
+               <h3>情绪分类</h3>
+               <ul>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='振奋') }}">✨ 振奋</a></li>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='愉悦') }}">😊 愉悦</a></li>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='平和') }}">🧘‍♂️ 平和</a></li>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='焦虑') }}">😰 焦虑</a></li>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='低落') }}">😔 低落</a></li>
+                   <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='烦闷') }}">😤 烦闷</a></li>
+               </ul>
+           </div>
+           {% endif %}
             <div class="search-box">
                 <form action="{{ url_for('diary.search') }}" method="GET">
                     <input type="text" name="keyword" placeholder="搜索日记" required>
@@ -178,7 +198,9 @@
                     <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
                 {% endif %}
             </div>
-            <button class="write-diary" id="write-diary-btn">撰写日记</button>
+            {% if not is_search %}
+                <button class="write-diary" id="write-diary-btn">撰写日记</button>
+            {% endif %}
             <!-- 修改日记输入表单为 Flask 表单 -->
             <div class="diary-write" id="diary-write">
                 <form id="diary-form" onsubmit="return false;">

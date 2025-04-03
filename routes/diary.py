@@ -1,4 +1,5 @@
 # 1. 基础配置和工具函数
+import re
 from time import time as times
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import DiaryModel, UserModel, WeeklyModel
@@ -314,18 +315,24 @@ def search_by_emotion(emotion_type):
         # 过滤出包含指定情绪类型的日记
         filtered_diaries = []
         for diary in diaries:
-            if diary.analyze and emotion_type in diary.analyze.get('emotion_type', []):
-                decrypted_content = cipher.decrypt(diary.content)
-                decrypted_analysis = json.loads(cipher.decrypt(diary.analyze)) if diary.analyze else None
-                filtered_diaries.append({
-                    'id': diary.id,
-                    'title': diary.title,
-                    'content': decrypted_content,
-                    'analyze': decrypted_analysis,
-                    'create_time': diary.create_time
-                })
-        
-        return render_template('index.html', diaries=filtered_diaries)  # 改为渲染模板
+            if diary.analyze:
+                # 确保先解密并解析JSON
+                analysis = json.loads(cipher.decrypt(diary.analyze))
+                if emotion_type in analysis.get('emotion_type', []):
+                    decrypted_content = cipher.decrypt(diary.content)
+                    filtered_diaries.append({
+                        'id': diary.id,
+                        'title': diary.title,
+                        'content': decrypted_content,
+                        'analyze': analysis,  # 使用已解析的分析结果
+                        'create_time': diary.create_time
+                    })
+        result_count = len(filtered_diaries)
+        return render_template('index.html', diaries=filtered_diaries,
+                                             is_search = True,
+                                             search_type = 'emotion',
+                                             emotion_type = emotion_type,
+                                             result_count = result_count)                                           # 改为渲染模板
     except Exception as e:
         flash(str(e))
         return redirect(url_for('diary.mine'))
@@ -365,6 +372,7 @@ def search():
         return render_template('index.html', 
                            diaries=filtered_diaries, 
                            is_search=True, 
+                           search_type='keyword',  # 新增搜索类型参数
                            keyword=keyword,
                            result_count=result_count)  # 新增结果数量参数
     except Exception as e:
@@ -397,8 +405,12 @@ def search_by_date(date_str):
                 'analyze': decrypted_analysis,
                 'create_time': diary.create_time
             })
-        
-        return render_template('index.html', diaries=filtered_diaries)
+        result_count = len(filtered_diaries)
+        return render_template('index.html', diaries=filtered_diaries,
+                                             is_search = True,
+                                             search_type = 'date',
+                                             target_date = target_date,
+                                             result_count = result_count )
     except ValueError:
         flash("日期格式无效，请使用YYYY-MM-DD格式")
         return redirect(url_for('diary.mine'))
