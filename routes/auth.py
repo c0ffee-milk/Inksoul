@@ -71,10 +71,6 @@ def register():
         username = form.username.data
         password = form.password.data
         
-        # 检查邮箱是否已存在
-        if UserModel.query.filter_by(email=email).first():
-            flash('该邮箱已被注册', 'error')
-            return render_template('register.html', form=form)
             
         hashed_password = generate_password_hash(password)
         user = UserModel(email=email, username=username, password=hashed_password)
@@ -107,6 +103,11 @@ def get_email_captcha():
     email = request.args.get('email')
     if not email:
         return jsonify({"code": 400, "message": "请提供邮箱地址"})
+    
+    # 检查邮箱是否已注册
+    if UserModel.query.filter_by(email=email).first():
+        return jsonify({"code": 400, "message": "该邮箱已注册"})
+        
     captcha = ''.join(random.choices(string.digits, k=4))
     message = Message(subject="心灵日记验证码", recipients=[email], body=f"您的验证码是: {captcha}")
     try:
