@@ -126,9 +126,18 @@
                         <span>篇数多</span>
                     </div>
                 {% else %}
-                    <h3 style="text-align: center; margin: 0 0 10px 0;">搜索结果不显示热力图</h3>
+                    <div class="search-result-header">
+                        <h3 style="text-align: center; margin: 0 0 10px 0;">
+                            <i class="fas fa-search" style="margin-right: 8px;"></i>
+                            搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>" 
+                            共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                        </h3>
+                    </div>
                     <div style="text-align: center; margin-top: 20px;">
-                        <a href="{{ url_for('diary.mine') }}" class="back-btn" style="padding: 8px 16px; background: #8a63d2; color: white; border-radius: 4px; text-decoration: none;">返回全部日记</a>
+                        <a href="{{ url_for('diary.mine') }}" class="back-btn">
+                            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+                            返回全部日记
+                        </a>
                     </div>
                 {% endif %}
             </div>

@@ -445,6 +445,65 @@ body {
     text-decoration: underline;
     color: #5a32a3;
 }
+/* 搜索结果标题样式 - 更新版 */
+.search-result-header {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f3f0ff 0%, #e9e1f9 100%);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.15);
+    border: 1px solid #d6c7f7;
+}
+
+/* 关键词高亮样式 - 更新版 */
+.highlight-keyword {
+    color: #6f42c1;
+    font-weight: 600;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(111, 66, 193, 0.2);
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+/* 结果数量高亮样式 - 更新版 */
+.highlight-count {
+    color: #ff4757;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(255, 71, 87, 0.2);
+}
+
+/* 返回按钮样式 - 更新版 */
+.back-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #8a63d2 0%, #6f42c1 100%);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(111, 66, 193, 0.3);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #7a52c2 0%, #5a32a3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+}
+
+/* 搜索图标样式 */
+.search-result-header i {
+    color: #8a63d2;
+    font-size: 1.1em;
+}
+
 /* 让提示消息居中显示 */
 .flash-message {
     text-align: center;
