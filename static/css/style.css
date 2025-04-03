@@ -81,12 +81,70 @@ body {
 
 .category {
     background-color: #f9f6ff;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 15px;
+    border-radius: 12px;
     transition: all 0.3s ease;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.1);
+    border: 1px solid #e9e1f9;
 }
+
+.category h3 {
+    color: #6f42c1;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9e1f9;
+    text-align: center;
+}
+
+.category ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.category li {
+    margin: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category a {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.category a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    color: #6f42c1;
+}
+
+/* 不同情绪类型的特殊样式 */
+.category a[href*="振奋"] { border-left: 4px solid #FFD700; }
+.category a[href*="愉悦"] { border-left: 4px solid #4CAF50; }
+.category a[href*="平和"] { border-left: 4px solid #2196F3; }
+.category a[href*="焦虑"] { border-left: 4px solid #FF9800; }
+.category a[href*="低落"] { border-left: 4px solid #9E9E9E; }
+.category a[href*="烦闷"] { border-left: 4px solid #F44336; }
+
+.category a[href*="振奋"]:hover { background: rgba(255, 215, 0, 0.1); }
+.category a[href*="愉悦"]:hover { background: rgba(76, 175, 80, 0.1); }
+.category a[href*="平和"]:hover { background: rgba(33, 150, 243, 0.1); }
+.category a[href*="焦虑"]:hover { background: rgba(255, 152, 0, 0.1); }
+.category a[href*="低落"]:hover { background: rgba(158, 158, 158, 0.1); }
+.category a[href*="烦闷"]:hover { background: rgba(244, 67, 54, 0.1); }
 
 .category:hover {
     transform: translateY(-2px);
