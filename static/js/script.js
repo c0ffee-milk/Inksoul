@@ -68,11 +68,14 @@ document.querySelectorAll('.close').forEach(closeBtn => {
     });
 });
 
+// 修改原有模态关闭逻辑
 window.onclick = function(event) {
-    const modal = document.getElementById('report-modal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 };
 
 // 日记撰写功能
@@ -190,4 +193,82 @@ registerClose.addEventListener('click', () => {
 
 loginClose.addEventListener('click', () => {
     loginModal.style.display = 'none';
+});
+
+// script.js 新增周报功能
+// 修改后的周报按钮交互
+const weeklyClose = document.querySelector('.weekly-close');
+
+// 打开周报模态框
+writeWeeklyBtn.addEventListener('click', () => {
+    weeklyModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 禁止背景滚动
+});
+
+// 关闭周报模态框
+weeklyClose.addEventListener('click', () => {
+    weeklyModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+});
+
+// 点击外部关闭
+window.addEventListener('click', (e) => {
+    if (e.target === weeklyModal) {
+        weeklyModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// 周报表单提交
+document.getElementById('weekly-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const submitBtn = document.getElementById('submit-weekly');
+    const errorDiv = document.getElementById('weekly-error');
+    // 客户端验证
+    if (!start || !end) {
+        errorDiv.textContent = "请选择开始和结束日期";
+        return;
+    }
+    if (start > end) {
+        errorDiv.textContent = "结束日期不能早于开始日期";
+        return;
+    }
+
+    submitBtn.classList.add('loading');
+    submitBtn.innerHTML = '生成中...';
+
+    try {
+        const response = await fetch('/diary/generate_weekly_report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: new URLSearchParams({
+                'start_time': startDate,
+                'end_time': endDate
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            errorDiv.textContent = data.message || '生成周报失败';
+        }
+    } catch (error) {
+        errorDiv.textContent = '网络请求失败，请稍后重试';
+    } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = '生成报告';
+    }
+});
+
+// 关闭周报模态框
+document.querySelectorAll('.close').forEach(btn => {
+    btn.addEventListener('click', () => {
+        weeklyModal.style.display = 'none';
+    });
 });

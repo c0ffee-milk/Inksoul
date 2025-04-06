@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周报详情</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/weekly_report.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.1/build/wordcloud.min.js"></script>
+</head>
+
+<body>
+    <div class="weekly-report-container">
+        <h2>周报详情</h2>
+
+        <!-- 日记回顾 -->
+        <div class="report-section">
+            <h3>日记回顾</h3>
+            <p>{{ content.diary_review }}</p>
+        </div>
+
+        <!-- 情感构成柱状图 -->
+        <div class="report-section">
+            <h3>情感构成</h3>
+            <div class="chart-container">
+                <canvas id="emotionalBasisChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 主导事件和情绪 -->
+        <div class="report-section">
+            <h3>主导事件和情绪</h3>
+            <ul>
+                {% for day, data in content.domain_event.items() %}
+                <li>{{ day }}: 事件 - {{ data.event }}, 情绪 - {{ data.emotion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 情绪变化趋势 -->
+        <div class="report-section">
+            <h3>情绪变化趋势</h3>
+            <p>{{ content.emotion_trend }}</p>
+        </div>
+
+        <!-- 本周长期建议 -->
+        <div class="report-section">
+            <h3>本周长期建议</h3>
+            <p>{{ content.weekly_advice }}</p>
+        </div>
+
+        <!-- 事件关键词云图 -->
+        <div class="report-section">
+            <h3>事件关键词</h3>
+            <div class="wordcloud-container" id="eventKeywordsCloud"></div>
+        </div>
+
+        <!-- 情绪关键词云图 -->
+        <div class="report-section">
+            <h3>情绪关键词</h3>
+            <div class="wordcloud-container" id="emotionKeywordsCloud"></div>
+        </div>
+
+        <!-- 名言引文 -->
+        <div class="report-section">
+            <h3>名言引文</h3>
+            <p>{{ content.famous_quote }}</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/weekly_report.js') }}"></script>
+</body>
+
+</html>
