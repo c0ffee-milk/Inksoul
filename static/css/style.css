@@ -236,10 +236,11 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    align-self: flex-start;
+    /* 新增：让按钮在同一行显示 */
+    display: inline-block;
+    margin-right: 10px;
     transition: background-color 0.3s ease, transform 0.3s ease;
     outline: none;
-
 }
 
 .write-diary:hover {
@@ -455,115 +456,47 @@ body {
 .form-input {
     width: 100%;
     padding: 8px;
-    border: 1px solid #d6c7f7;
-    border-radius: 3px;
-    box-sizing: border-box;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
+    border: 1px solid #d
+
+/* style.css 新增部分 */
+/* 周报按钮样式 */
+#write-weekly-btn {
+    margin-left: 10px;
+    background-color: #8a63d2; /* 稍浅紫色 */
 }
 
-/* 验证码按钮样式 */
-.captcha-btn {
-    padding: 10px;
-    background-color: #6f42c1;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    outline: none;
+#write-weekly-btn:hover {
+    background-color: #7756b9;
 }
 
-/* 认证按钮样式 */
-.auth-btn {
-    width: 100%;
-    padding: 10px;
-    background-color: #6f42c1;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    outline: none;
+/* 周报模态框样式 */
+#weekly-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* 认证链接样式 */
-.auth-links {
-    margin-top: 15px;
-    text-align: center;
-}
-
-.auth-links a {
-    color: #6f42c1;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.auth-links a:hover {
-    text-decoration: underline;
-    color: #5a32a3;
-}
-/* 搜索结果标题样式 - 更新版 */
-.search-result-header {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: linear-gradient(135deg, #f3f0ff 0%, #e9e1f9 100%);
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.15);
-    border: 1px solid #d6c7f7;
-}
-
-/* 关键词高亮样式 - 更新版 */
-.highlight-keyword {
-    color: #6f42c1;
-    font-weight: 600;
-    padding: 3px 8px;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(111, 66, 193, 0.2);
-    border: 1px solid rgba(111, 66, 193, 0.3);
-}
-
-/* 结果数量高亮样式 - 更新版 */
-.highlight-count {
-    color: #ff4757;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 3px 8px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(255, 71, 87, 0.2);
-}
-
-/* 返回按钮样式 - 更新版 */
-.back-btn {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #8a63d2 0%, #6f42c1 100%);
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    box-shadow: 0 2px 5px rgba(111, 66, 193, 0.3);
-    border: none;
-    display: inline-flex;
+#weekly-form .form-group {
+    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-.back-btn:hover {
-    background: linear-gradient(135deg, #7a52c2 0%, #5a32a3 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+#weekly-form input[type="date"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #d6c7f7;
+    border-radius: 4px;
+}
+/* 新增模态框层级和初始状态 */
+#weekly-modal {
+    display: none; /* 默认隐藏 */
+    position: fixed;
+    z-index: 1001; /* 高于其他元素 */
 }
 
-/* 搜索图标样式 */
-.search-result-header i {
-    color: #8a63d2;
-    font-size: 1.1em;
-}
-
-/* 让提示消息居中显示 */
-.flash-message {
-    text-align: center;
-    margin: 10px 0;
+/* 修正日期输入框宽度 */
+#weekly-form input[type="date"] {
+    width: 200px;
+    padding: 10px;
 }
