@@ -6,7 +6,7 @@ from models import DiaryModel, UserModel, WeeklyModel
 from flask_login import current_user, login_required
 from exts import db
 from LLM.llm import EmotionAnalyzer  
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.crypto import AESCipher
 import json
 import os
@@ -245,21 +245,13 @@ def generate_weekly_report():
 
             # 统一使用相同的日期格式
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
             
-            if not start_date or not end_date:
-                return jsonify(success=False, message="必须提供开始和结束日期"), 400
-                
-            if start_date > end_date:
-                return jsonify(success=False, message="开始日期不能晚于结束日期"), 400
-
-            
-
             # 获取该时间范围内的日记数量
             diary_count = DiaryModel.query.filter(
                 DiaryModel.author_id == current_user.id,
                 DiaryModel.create_time >= start_date,
-                DiaryModel.create_time <= end_date
+                DiaryModel.create_time < end_date
             ).count()
 
             # 检查是否有日记记录
