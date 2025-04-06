@@ -236,7 +236,7 @@ def weekly_report_detail(report_id):
 @bp.route('/generate_weekly_report', methods=['POST','GET'])
 @login_required
 def generate_weekly_report():
-    form = TimeForm()
+    form = TimeForm(request.form)
     if form.validate_on_submit():
         try:
             # 解析日期参数
