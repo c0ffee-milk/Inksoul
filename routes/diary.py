@@ -241,7 +241,7 @@ def generate_weekly_report():
         try:
             # 解析日期参数
             start_date = form.start_time.data
-            end_date = form.start_time.data
+            end_date = form.end_time.data
 
             # 统一使用相同的日期格式
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
