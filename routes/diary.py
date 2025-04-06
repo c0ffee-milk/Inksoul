@@ -242,6 +242,10 @@ def generate_weekly_report():
             # 解析日期参数
             start_date = form.start_time.data
             end_date = form.start_time.data
+
+            # 统一使用相同的日期格式
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
             
             if not start_date or not end_date:
                 return jsonify(success=False, message="必须提供开始和结束日期"), 400
@@ -249,9 +253,7 @@ def generate_weekly_report():
             if start_date > end_date:
                 return jsonify(success=False, message="开始日期不能晚于结束日期"), 400
 
-            # 统一使用相同的日期格式
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            
 
             # 获取该时间范围内的日记数量
             diary_count = DiaryModel.query.filter(
