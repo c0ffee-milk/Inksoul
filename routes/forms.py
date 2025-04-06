@@ -88,3 +88,11 @@ class DiaryForm(FlaskForm):  # 继承 FlaskForm
         if not field.data.strip():
             raise wtforms.ValidationError(message="内容不能为空！")
 
+class TimeForm(FlaskForm):  # 继承 FlaskForm
+    start_time = StringField(validators=[InputRequired(message="开始时间不能为空！")])
+    end_time = StringField(validators=[InputRequired(message="结束时间不能为空！")])
+    submit = SubmitField("提交")
+    
+
+
+

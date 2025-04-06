@@ -13,6 +13,8 @@ import os
 from dotenv import load_dotenv
 import calendar
 from collections import defaultdict
+from flask_wtf import form
+from .forms import TimeForm 
 
 
 # 初始化
@@ -234,11 +236,12 @@ def weekly_report_detail(report_id):
 @bp.route('/generate_weekly_report', methods=['POST','GET'])
 @login_required
 def generate_weekly_report():
-    if request.method == 'POST':
+    form = TimeForm()
+    if form.validate_on_submit():
         try:
             # 解析日期参数
-            start_date = request.form.get('start_time')
-            end_date = request.form.get('end_time')
+            start_date = form.start_time.data
+            end_date = form.start_time.data
             
             if not start_date or not end_date:
                 return jsonify(success=False, message="必须提供开始和结束日期"), 400
