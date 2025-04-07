@@ -192,7 +192,7 @@
                     <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
                     <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
                 {% else %}
-                    <span>欢迎回来，{{ current_user.username }}</span>
+                    <span>{{ current_user.username }}</span>
                     <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
                 {% endif %}
             </div>
