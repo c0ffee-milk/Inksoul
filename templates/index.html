@@ -323,12 +323,14 @@
             event.preventDefault();
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
-
+            console.log('Params:', {start_time: startDate, end_time: endDate});    
             // 发送数据到后端
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             fetch('{{ url_for('diary.generate_weekly_report') }}', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken, 
                 },
                 body: `start_time=${startDate}&end_time=${endDate}`
             })

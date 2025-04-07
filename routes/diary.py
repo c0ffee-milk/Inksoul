@@ -270,8 +270,8 @@ def generate_weekly_report():
             new_report = WeeklyModel(
                 author_id=current_user.id,  # 修正字段名
                 content=encrypted_report,
-                start_date=start_date.date(),  
-                end_date=end_date.date(), 
+                start_date=start_date,  
+                end_date=end_date, 
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
