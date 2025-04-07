@@ -54,7 +54,7 @@ class DiaryModel(db.Model):
     analyze = db.Column(JSON)
     emotion_type = db.Column(db.String(100), nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    if_analyze = db.Column(db.Boolean, default=False)  # 新增字段，用于标记是否已分析
+    is_analyzed = db.Column(db.Boolean, default=False)  # 新增字段，用于标记是否已分析
 
     # 添加日期访问器（兼容原热力图逻辑）
     @property
