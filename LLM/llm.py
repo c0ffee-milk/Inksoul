@@ -406,9 +406,6 @@ class EmotionAnalyzer:
         real_knowledge_store = knowledge_retriever.vectorstore
         knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 5)
         knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
-        
-        if mode == "daily" and diary:
-            self.log_diary(diary, timestamp=timestamp)
 
         # 日记处理
         if mode == "daily":
