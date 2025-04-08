@@ -197,18 +197,22 @@
                 {% endif %}
             </div>
             {% if not is_search %}
-                <button class="write-diary" id="write-diary-btn">撰写日记</button>
-                <button class="write-diary" id="write-weekly-btn">生成周报</button>
+                <div class="weekly-buttons">
+                    <a href="{{ url_for('diary.weekly_reports') }}"><button class="weekly-btn" id="view-weekly-btn">查看历史周报</button></a>
+                    <button class="weekly-btn" id="write-weekly-btn">生成新周报</button>
+                </div>
+
             {% endif %}
             <!-- 修改日记输入表单为 Flask 表单 -->
             <div class="diary-write" id="diary-write" style="display: block;">
-    <form id="diary-form" onsubmit="return false;">
-        <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
-        <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
-        <button id="save-diary" type="submit">保存日记</button>
-        <div id="form-error" style="color: red;"></div>
-    </form>
-</div>
+                     <span class="write-diary-label">撰写日记</span>
+                <form id="diary-form" onsubmit="return false;">
+                    <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
+                    <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
+                    <button id="save-diary" type="submit">保存日记</button>
+                    <div id="form-error" style="color: red;"></div>
+                </form>
+            </div>
             <!-- 新的日记网格区域 -->
             <div class="diary-grid">
                 {% if diaries %}

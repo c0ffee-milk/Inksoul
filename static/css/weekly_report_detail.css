@@ -1,4 +1,11 @@
-/* static/css/weekly_report.css */
+/* static/css/weekly_report_detail.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -6,16 +13,22 @@
     padding: 20px;
     background: #f9f6ff;
     border-bottom: 1px solid #e9e1f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .back-home {
     color: #6f42c1;
     text-decoration: none;
     font-size: 18px;
+    transition: color 0.3s ease;
 }
 
 .back-home i {
     margin-right: 5px;
+}
+
+.back-home:hover {
+    color: #5a32a3;
 }
 
 #generate-report-btn {
@@ -59,38 +72,31 @@
     background-color: #4CAF50;
 }
 
+@keyframes spin {
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
 .weekly-report {
-    background: #f5f0ff;
+    background: #fff;
     border-radius: 15px;
     padding: 30px;
     margin: 20px;
     border: 1px solid #e9e1f9;
-    box-shadow: 0 10px 30px rgba(111,66,193,0.1);
+    box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
 }
 
-.report-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 25px;
+.report-section {
     margin-bottom: 30px;
 }
 
-.report-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid #e9e1f9;
-    box-shadow: 0 4px 6px rgba(111,66,193,0.05);
-}
-
-.report-card h3 {
+.report-section h3 {
     color: #6f42c1;
     margin-bottom: 15px;
     font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    border-bottom: 1px solid #e9e1f9;
+    padding-bottom: 10px;
 }
 
 .chart-container {
@@ -98,8 +104,9 @@
     position: relative;
 }
 
-#weekly-wordcloud {
+.wordcloud-container {
     min-height: 300px;
     border-radius: 12px;
     background: #f9f6ff;
+    padding: 20px;
 }

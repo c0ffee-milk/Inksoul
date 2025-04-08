@@ -216,10 +216,22 @@ def diary_analyze(diary_id):
 # 获取当前用户的所有阶段性总结报告，按创建时间倒序排列
 @bp.route('/weekly_reports')
 @login_required
-def weekly_report():
-    weekly_reports = WeeklyModel.query.filter_by(author_id=current_user.id).order_by(WeeklyModel.start_date.desc()).all()
-    return render_template('weekly_reports.html',reports = weekly_reports)
+def weekly_reports():
+    # 获取所有周报并按时间倒序排列
+    weekly_reports = WeeklyModel.query.filter_by(author_id=current_user.id) \
+        .order_by(WeeklyModel.start_time.desc()).all()
 
+    # 解密基础信息（不需要解密完整内容）
+    reports = []
+    for report in weekly_reports:
+        reports.append({
+            "id": report.id,
+            "start": report.start_time.strftime('%Y-%m-%d'),
+            "end": report.end_time.strftime('%Y-%m-%d'),
+            "diary_count": report.diary_nums
+        })
+
+    return render_template('weekly_reports.html', reports=reports)
 # 展示指定阶段性总结报告详情的路由
 @bp.route('/weekly_report_detail/<int:report_id>')
 @login_required
@@ -228,7 +240,7 @@ def weekly_report_detail(report_id):
     if report and report.author_id == current_user.id:
         # 解密报告内容
         decrypted_content = json.loads(cipher.decrypt(report.content))
-        return render_template('weekly_report.html',report = report,content = decrypted_content)
+        return render_template('weekly_report_detail.html',report = report,content = decrypted_content)
     else:
         flash('报告不存在或无权访问')
         return redirect(url_for('diary.weekly_reports'))
