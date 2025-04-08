@@ -42,9 +42,7 @@ new Chart(ctx, {
 // 修改后的关键词处理
 const eventKeywords = Object.entries({{ content.event_key_words|tojson|safe }})
   .map(([word, value]) => [word, parseInt(value)]);
-
-const emotionKeywords = Object.entries({{ content.emotion_key_words|tojson|safe }})
-  .map(([word, value]) => [word, parseInt(value)]);
+const eventKeywordsCloud = document.getElementById('eventKeywordsCloud');
 WordCloud(eventKeywordsCloud, {
     list: eventKeywords,
     backgroundColor: '#f9f6ff',
@@ -52,7 +50,8 @@ WordCloud(eventKeywordsCloud, {
 });
 
 // 情绪关键词云图
-const emotionKeywords = Object.entries({{ content.emotion_key_words|tojson }});
+const emotionKeywords = Object.entries({{ content.emotion_key_words|tojson|safe }})
+  .map(([word, value]) => [word, parseInt(value)]);
 const emotionKeywordsCloud = document.getElementById('emotionKeywordsCloud');
 WordCloud(emotionKeywordsCloud, {
     list: emotionKeywords,
