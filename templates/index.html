@@ -289,13 +289,46 @@
         // 简单的表单错误处理
         const diaryForm = document.getElementById('diary-form');
         const formError = document.getElementById('form-error');
-        diaryForm.addEventListener('submit', function() {
+        diaryForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // 阻止表单默认提交行为
             const title = document.getElementById('diary-title').value;
             const content = document.getElementById('diary-content').value;
             if (title.trim() === '' || content.trim() === '') {
                 formError.textContent = '标题和内容不能为空';
             } else {
-                console.log('保存日记:', title, content);
+                // 获取 CSRF Token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                // 发送 POST 请求
+                fetch('/diary/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: new URLSearchParams({
+                        'title': title,
+                        'content': content
+                    })
+                })
+               .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // 处理重定向
+                    } else {
+                        return response.json();
+                    }
+                })
+               .then(data => {
+                    if (data && data.success) {
+                        window.location.reload(); // 成功则刷新页面
+                    } else if (data) {
+                        alert(data.message || "保存失败");
+                    }
+                })
+               .catch(error => {
+                    console.error('Error:', error);
+                    alert("请求失败，请检查网络");
+                });
             }
         });
 
