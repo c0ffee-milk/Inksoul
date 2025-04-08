@@ -28,6 +28,11 @@ new Chart(ctx, {
             y: {
                 beginAtZero: true
             }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            }
         }
     }
 });

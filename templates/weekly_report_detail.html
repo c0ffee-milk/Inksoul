@@ -5,14 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>周报详情</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/weekly_report.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/weekly_report_detail.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.1/build/wordcloud.min.js"></script>
 </head>
 
 <body>
-    <div class="weekly-report-container">
+    <div class="header">
+        <a href="#" class="back-home"><i class="fa fa-arrow-left"></i> 返回主页</a>
+        <button id="generate-report-btn">生成报告</button>
+    </div>
+    <div class="weekly-report">
         <h2>周报详情</h2>
 
         <!-- 日记回顾 -->
@@ -69,7 +73,7 @@
             <p>{{ content.famous_quote }}</p>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/weekly_report.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/weekly_report_detail.js') }}"></script>
 </body>
 
 </html>

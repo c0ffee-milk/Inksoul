@@ -228,24 +228,18 @@ body {
     transform: translateY(-2px); /* 鼠标悬停时上移 */
 }
 
-.write-diary {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #6f42c1; /* 紫色 */
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    /* 新增：让按钮在同一行显示 */
-    display: inline-block;
-    margin-right: 10px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    outline: none;
-}
-
-.write-diary:hover {
-    background-color: #5a32a3; /* 深紫色 */
-    transform: translateY(-2px);
+.write-diary-label {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6f42c1;
+    border-bottom: 2px solid #6f42c1;
+    padding-bottom: 5px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .diary-write {
@@ -559,9 +553,6 @@ body {
     outline: none;
 }
 
-#write-weekly-btn:hover {
-    background-color: #7756b9;
-}
 
 /* 周报模态框样式 */
 #weekly-form {
@@ -593,4 +584,31 @@ body {
 #weekly-form input[type="date"] {
     width: 200px;
     padding: 10px;
+}
+/* 新增：定义公共的周报按钮类 */
+.diary-write button:hover {
+    background-color: #5a32a3;
+    transform: translateY(-2px);
+}
+
+.weekly-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.weekly-btn {
+    padding: 10px 20px;
+    background-color: #6f42c1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
+}
+
+.weekly-btn:hover {
+    background-color: #5a32a3;
+    transform: translateY(-2px);
 }
