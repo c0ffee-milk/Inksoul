@@ -109,4 +109,7 @@ body {
     border-radius: 12px;
     background: #f9f6ff;
     padding: 20px;
+    width: 100%;
+    height: 300px;
+    border: 1px solid red; /* 添加边框用于调试 */
 }
