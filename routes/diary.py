@@ -24,6 +24,7 @@ cipher = AESCipher(key=os.getenv("AES_KEY").encode())
 
 # 2. 日记CRUD操作
 # 2.1 创建日记
+# 在需要记录日记的地方（比如add路由中）
 @bp.route('/add', methods=['POST'])
 @login_required
 def add():
@@ -35,6 +36,12 @@ def add():
             return jsonify(success=False, message="日记和标题不能为空"), 400
 
         try:
+            # 创建分析器实例
+            analyzer = EmotionAnalyzer(f"U{current_user.id}")
+            
+            # 记录日记到向量数据库
+            analyzer.log_diary(text=content, timestamp=int(datetime.now().timestamp()))
+            
             encrypted_content = cipher.encrypt(content)
             diary = DiaryModel(
                 title=title,
