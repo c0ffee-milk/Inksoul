@@ -201,14 +201,14 @@
                 <button class="write-diary" id="write-weekly-btn">生成周报</button>
             {% endif %}
             <!-- 修改日记输入表单为 Flask 表单 -->
-            <div class="diary-write" id="diary-write">
-                <form id="diary-form" onsubmit="return false;">
-                    <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
-                    <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
-                    <button id="save-diary" type="submit">保存日记</button>
-                    <div id="form-error" style="color: red;"></div>
-                </form>
-            </div>
+            <div class="diary-write" id="diary-write" style="display: block;">
+    <form id="diary-form" onsubmit="return false;">
+        <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
+        <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
+        <button id="save-diary" type="submit">保存日记</button>
+        <div id="form-error" style="color: red;"></div>
+    </form>
+</div>
             <!-- 新的日记网格区域 -->
             <div class="diary-grid">
                 {% if diaries %}
