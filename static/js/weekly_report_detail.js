@@ -1,13 +1,14 @@
 // 情感构成柱状图
+// 修改后的情感构成数据获取
 const emotionalBasis = {
-    "喜悦": {{ content.emotional_basis.喜悦 }},
-    "信任": {{ content.emotional_basis.信任 }},
-    "害怕": {{ content.emotional_basis.害怕 }},
-    "惊讶": {{ content.emotional_basis.惊讶 }},
-    "难过": {{ content.emotional_basis.难过 }},
-    "厌恶": {{ content.emotional_basis.厌恶 }},
-    "生气": {{ content.emotional_basis.生气 }},
-    "期待": {{ content.emotional_basis.期待 }}
+    "喜悦": {{ content.emotional_basis['喜悦'] }},
+    "信任": {{ content.emotional_basis['信任'] }},
+    "害怕": {{ content.emotional_basis['害怕'] }},
+    "惊讶": {{ content.emotional_basis['惊讶'] }},
+    "难过": {{ content.emotional_basis['难过'] }},
+    "厌恶": {{ content.emotional_basis['厌恶'] }},
+    "生气": {{ content.emotional_basis['生气'] }},
+    "期待": {{ content.emotional_basis['期待'] }}
 };
 
 const ctx = document.getElementById('emotionalBasisChart').getContext('2d');
@@ -38,8 +39,12 @@ new Chart(ctx, {
 });
 
 // 事件关键词云图
-const eventKeywords = Object.entries({{ content.event_key_words|tojson }});
-const eventKeywordsCloud = document.getElementById('eventKeywordsCloud');
+// 修改后的关键词处理
+const eventKeywords = Object.entries({{ content.event_key_words|tojson|safe }})
+  .map(([word, value]) => [word, parseInt(value)]);
+
+const emotionKeywords = Object.entries({{ content.emotion_key_words|tojson|safe }})
+  .map(([word, value]) => [word, parseInt(value)]);
 WordCloud(eventKeywordsCloud, {
     list: eventKeywords,
     backgroundColor: '#f9f6ff',
