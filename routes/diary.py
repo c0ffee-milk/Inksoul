@@ -227,7 +227,7 @@ def weekly_report_detail(report_id):
     report = WeeklyModel.query.get(report_id)
     if report and report.author_id == current_user.id:
         # 解密报告内容
-        decrypted_content = cipher.decrypt(report.content)
+        decrypted_content = json.loads(cipher.decrypt(report.content))
         return render_template('weekly_report.html',report = report,content = decrypted_content)
     else:
         flash('报告不存在或无权访问')
@@ -240,20 +240,23 @@ def generate_weekly_report():
     form = TimeForm(request.form)
     if form.validate_on_submit():
         try:
-            # 解析日期参数
-            start_date = form.start_time.data
-            end_date = form.end_time.data
+            # Add validation for date inputs
+            if not form.start_time.data or not form.end_time.data:
+                return jsonify(success=False, message="Start and end dates are required"), 400
+                
+            try:
+                start_date = datetime.strptime(form.start_time.data, '%Y-%m-%d')
+                end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d') + timedelta(days=1)
+            except ValueError as e:
+                return jsonify(success=False, message=f"Invalid date format: {str(e)}"), 400
 
-            # 统一使用相同的日期格式
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
-            
             # 获取该时间范围内的日记数量
             diary_count = DiaryModel.query.filter(
                 DiaryModel.author_id == current_user.id,
                 DiaryModel.create_time >= start_date,
                 DiaryModel.create_time < end_date
             ).count()
+            print(diary_count)
 
             # 检查是否有日记记录
             if diary_count == 0:
@@ -271,8 +274,8 @@ def generate_weekly_report():
             new_report = WeeklyModel(
                 author_id=current_user.id,  # 修正字段名
                 content=encrypted_report,
-                start_date=start_date,  
-                end_date=end_date, 
+                start_time=start_date,  
+                end_time=end_date, 
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
