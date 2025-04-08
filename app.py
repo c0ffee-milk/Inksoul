@@ -19,7 +19,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 实例化 Flask 应用并配置应用参数
+import json
+
+
 app = Flask(__name__)
+
+@app.template_filter('fromjson')
+def fromjson_filter(value):
+    """将 JSON 字符串转换为 Python 对象"""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return value
+    return value
 csrf = CSRFProtect(app)
 app.config.from_pyfile('setting.py')
 moment = Moment(app)
