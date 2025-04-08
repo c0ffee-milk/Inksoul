@@ -48,7 +48,8 @@ def add():
             db.session.rollback()
             return jsonify(success=False, message=str(e)), 500
 
-# 2.2 查看日记
+
+
 @bp.route('/mine')
 @login_required
 def mine():
@@ -65,7 +66,8 @@ def mine():
             'title': diary.title,
             'content': decrypted_content,
             'analyze': decrypted_analysis,
-            'create_time': diary.create_time
+            'create_time': diary.create_time,
+            'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
         })
 
     # ========== 新增热力图数据生成逻辑 ==========
