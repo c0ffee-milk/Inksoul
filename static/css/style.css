@@ -387,7 +387,10 @@ body {
     background: #e9e1f9;
     color: #6f42c1;
 }
-
+.analyze-btn.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
 .analyze-btn {
     align-self: flex-end;
     background: #8a63d2;
