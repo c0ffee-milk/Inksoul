@@ -214,29 +214,30 @@
                 </form>
             </div>
             <!-- 新的日记网格区域 -->
-            <div class="diary-grid">
-                {% if diaries %}
-                    {% for diary in diaries %}
-                        <div class="diary-card" data-id="{{ diary.id }}">
-                            <div class="card-content">
-                                <h3>{{ diary.title }}</h3>
-                                <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
-                                <div class="meta-info">
-                                    <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
-                                    <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
-                                        {{ diary.analyze.emotion if diary.analyze else '待分析' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="analyze-btn">
-                                分析报告
-                            </button>
-                        </div>
-                    {% endfor %}
+            <!-- 新的日记网格区域 -->
+<div class="diary-grid">
+    {% if diaries %}
+        {% for diary in diaries %}
+            <div class="diary-card" data-id="{{ diary.id }}">
+                <div class="card-content">
+                    <h3>{{ diary.title }}</h3>
+                    <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
+                    <div class="meta-info">
+                        <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+                        
+                    </div>
+                </div>
+                {% if diary.is_analyzed %}
+                    <button class="analyze-btn disabled" disabled>已分析</button>
                 {% else %}
-                    <p class="no-diary">暂无日记记录</p>
+                    <button class="analyze-btn">分析报告</button>
                 {% endif %}
             </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-diary">暂无日记记录</p>
+    {% endif %}
+</div>
         </div>
     </div>
 

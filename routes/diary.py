@@ -24,6 +24,7 @@ cipher = AESCipher(key=os.getenv("AES_KEY").encode())
 
 # 2. 日记CRUD操作
 # 2.1 创建日记
+# 在需要记录日记的地方（比如add路由中）
 @bp.route('/add', methods=['POST'])
 @login_required
 def add():
@@ -35,6 +36,12 @@ def add():
             return jsonify(success=False, message="日记和标题不能为空"), 400
 
         try:
+            # 创建分析器实例
+            analyzer = EmotionAnalyzer(f"U{current_user.id}")
+            
+            # 记录日记到向量数据库
+            analyzer.log_diary(text=content, timestamp=int(datetime.now().timestamp()))
+            
             encrypted_content = cipher.encrypt(content)
             diary = DiaryModel(
                 title=title,
@@ -48,7 +55,8 @@ def add():
             db.session.rollback()
             return jsonify(success=False, message=str(e)), 500
 
-# 2.2 查看日记
+
+
 @bp.route('/mine')
 @login_required
 def mine():
@@ -65,7 +73,8 @@ def mine():
             'title': diary.title,
             'content': decrypted_content,
             'analyze': decrypted_analysis,
-            'create_time': diary.create_time
+            'create_time': diary.create_time,
+            'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
         })
 
     # ========== 新增热力图数据生成逻辑 ==========
