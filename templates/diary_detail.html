@@ -64,7 +64,8 @@
                     <h3><i class="fas fa-comment-dots"></i> 综合分析</h3>
                     <div class="analysis-text">{{ analysis.overall_analysis }}</div>
                     <div class="emotion-flow">
-                        {% for emotion in analysis.emotion_type %}
+                        {% set emotion_list = analysis.emotion_label|fromjson %}
+                        {% for emotion in emotion_list %}
                         <span class="emotion-tag">{{ emotion }}</span>
                         {% if not loop.last %}<i class="fas fa-arrow-right"></i>{% endif %}
                         {% endfor %}
