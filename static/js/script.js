@@ -80,57 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // 日记撰写功能
-    const writeDiaryBtn = document.getElementById('write-diary-btn');
-    const diaryWrite = document.getElementById('diary-write');
-    const saveDiaryBtn = document.getElementById('save-diary');
 
-    writeDiaryBtn.addEventListener('click', () => {
-        diaryWrite.style.display = 'block';
-    });
-
-    saveDiaryBtn.addEventListener('click', () => {
-        const title = document.getElementById('diary-title').value;
-        const content = document.getElementById('diary-content').value;
-
-        if (title && content) {
-            // 获取 CSRF Token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-            // 发送 POST 请求
-            fetch('/diary/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken
-                },
-                body: new URLSearchParams({
-                    'title': title,
-                    'content': content
-                })
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url; // 处理重定向
-                } else {
-                    return response.json();
-                }
-            })
-            .then(data => {
-                if (data && data.success) {
-                    window.location.reload(); // 成功则刷新页面
-                } else if (data) {
-                    alert(data.message || "保存失败");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("请求失败，请检查网络");
-            });
-        } else {
-            alert("标题和内容不能为空！");
-        }
-    });
 
     // 获取日记输入框和日记网格元素
     const diaryContent = document.getElementById('diary-content');
