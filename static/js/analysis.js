@@ -1,18 +1,25 @@
-// static/js/analysis.js
 document.addEventListener('DOMContentLoaded', function() {
     // 情绪雷达图初始化
     const radarCanvas = document.getElementById('emotionRadar');
     if (radarCanvas) {
         try {
             const emotionalData = JSON.parse(radarCanvas.dataset.emotionalBasis);
+            // 定义新的情绪顺序
+            const newOrder = ['喜悦', '期待', '信任', '惊讶', '生气', '厌恶', '难过', '害怕'];
+            const newData = {};
+            newOrder.forEach((emotion) => {
+                if (emotionalData[emotion]!== undefined) {
+                    newData[emotion] = emotionalData[emotion];
+                }
+            });
 
             new Chart(radarCanvas, {
                 type: 'radar',
                 data: {
-                    labels: Object.keys(emotionalData),
+                    labels: Object.keys(newData),
                     datasets: [{
                         label: '情绪强度',
-                        data: Object.values(emotionalData),
+                        data: Object.values(newData),
                         backgroundColor: 'rgba(111, 66, 193, 0.2)',
                         borderColor: '#6f42c1',
                         pointBackgroundColor: '#6f42c1',
