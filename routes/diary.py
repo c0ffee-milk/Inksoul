@@ -39,16 +39,21 @@ def add():
             # 创建分析器实例
             analyzer = EmotionAnalyzer(f"U{current_user.id}")
             
-            # 记录日记到向量数据库
-            analyzer.log_diary(text=content, timestamp=int(datetime.now().timestamp()))
-            
-            encrypted_content = cipher.encrypt(content)
+            # 先创建日记对象获取统一时间
             diary = DiaryModel(
                 title=title,
-                content=encrypted_content,
+                content='',  # 临时占位，后面会更新
                 author_id=current_user.id
             )
             db.session.add(diary)
+            db.session.flush()  # 生成create_time但不提交事务
+            
+            # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
+            analyzer.log_diary(text=content, timestamp=int(diary.create_time.timestamp()))
+            
+            # 加密并更新日记内容
+            encrypted_content = cipher.encrypt(content)
+            diary.content = encrypted_content
             db.session.commit()
             return jsonify(success=True, message="日记添加成功", redirect=url_for('diary.mine'))
         except Exception as e:
