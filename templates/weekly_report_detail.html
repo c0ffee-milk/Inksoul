@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>周报详情</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/weekly_report_detail.css') }}">
+    <!-- 引用本地的 wordcloud2.js 文件 -->
+    <script src="{{ url_for('static', filename='js/wordcloud2.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.1/build/wordcloud.min.js"></script>
 </head>
 
 <body>
@@ -73,6 +73,17 @@
             <p>{{ content.famous_quote }}</p>
         </div>
     </div>
+    <script>
+        // 将Python字典转换为JSON
+        try {
+            window.emotionalBasis = JSON.parse('{{ content.emotional_basis | tojson | safe }}');
+            console.log('Emotional Basis:', window.emotionalBasis); // 添加调试信息
+            window.eventKeywords = {{ content.event_key_words|tojson|safe }};
+            window.emotionKeywords = {{ content.emotion_key_words|tojson|safe }};
+        } catch (error) {
+            console.error('JSON parsing error:', error);
+        }
+    </script>
     <script src="{{ url_for('static', filename='js/weekly_report_detail.js') }}"></script>
 </body>
 
