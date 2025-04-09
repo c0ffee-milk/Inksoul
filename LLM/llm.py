@@ -123,9 +123,9 @@ class EmotionAnalyzer:
         self.db = VectorDBManager()
         self.llm = ChatOpenAI(
             temperature=0,
-            openai_api_key=TONGYI_API_KEY,
-            model_name="deepseek-r1",
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+            openai_api_key=DEEPSEEK_API_KEY,
+            model_name="deepseek-reasoner",
+            base_url="https://api.deepseek.com"
         )
         
         # 初始化带用户隔离的日记库
