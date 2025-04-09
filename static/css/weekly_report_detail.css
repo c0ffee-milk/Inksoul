@@ -82,9 +82,10 @@ body {
     background: #fff;
     border-radius: 15px;
     padding: 30px;
-    margin: 20px;
+    margin: 20px auto; /* 修改为居中显示 */
     border: 1px solid #e9e1f9;
     box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
+    max-width: 1200px; /* 限制最大宽度 */
 }
 
 .report-section {
@@ -105,11 +106,11 @@ body {
 }
 
 .wordcloud-container {
-    min-height: 300px;
+    min-height: 400px; /* 增加最小高度 */
+    min-width: 400px;  /* 增加最小宽度 */
     border-radius: 12px;
     background: #f9f6ff;
     padding: 20px;
-    width: 100%;
-    height: 300px;
-    border: 1px solid red; /* 添加边框用于调试 */
+    overflow: hidden; /* 防止内容溢出 */
+    box-sizing: border-box; /* 确保内边距和边框包含在元素的宽度和高度内 */
 }
