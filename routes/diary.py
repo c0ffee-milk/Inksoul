@@ -292,9 +292,7 @@ def generate_weekly_report():
 
             # 生成周报内容
             analyzer = EmotionAnalyzer(f"U{current_user.id}")
-            start_date_timestamp = int(start_date.timestamp())
-            end_date_timestamp = int(end_date.timestamp())
-            report_data = analyzer.analyze('weekly', start_date_timestamp, end_date_timestamp)  
+            report_data = analyzer.analyze('weekly', start_date, end_date)  
             
             # 加密存储到数据库
             encrypted_report = cipher.encrypt(json.dumps(report_data))
