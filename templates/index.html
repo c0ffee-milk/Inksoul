@@ -172,7 +172,7 @@
             </div>
             {% endif %}
             <div class="search-box">
-                <form action="{{ url_for('diary.search') }}" method="GET">
+                <form action="{{ url_for('diary.search') }}" method="GET" id="search-form">
                     <input type="text" name="keyword" placeholder="搜索日记" required>
                     <button type="submit">搜索</button>
                 </form>
@@ -204,8 +204,8 @@
 
             {% endif %}
             <!-- 修改日记输入表单为 Flask 表单 -->
-            <div class="diary-write" id="diary-write" style="display: block;">
-                     <span class="write-diary-label">撰写日记</span>
+            <div class="diary-write" id="diary-write" style="display: {% if is_search %}none{% else %}block{% endif %};">
+                <span class="write-diary-label">撰写日记</span>
                 <form id="diary-form" onsubmit="return false;">
                     <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
                     <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
@@ -213,7 +213,6 @@
                     <div id="form-error" style="color: red;"></div>
                 </form>
             </div>
-            <!-- 新的日记网格区域 -->
             <!-- 新的日记网格区域 -->
 <div class="diary-grid">
     {% if diaries %}
