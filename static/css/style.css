@@ -255,7 +255,7 @@ body {
 
 .diary-write input{
     width: 100%; /* 宽度固定 */
-    padding: 10px;
+    padding: 5px;
     margin-bottom: 10px;
     border: none;
     border-radius: 5px;
@@ -270,7 +270,7 @@ body {
 }
 .diary-write textarea {
     width: 100%; /* 宽度固定 */
-    padding: 10px;
+    padding: 5px;
     margin-bottom: 10px;
     border: none;
     border-radius: 5px;
@@ -546,7 +546,7 @@ body {
 /* style.css 新增部分 */
 /* 周报按钮样式 */
 #write-weekly-btn {
-   padding: 10px 20px;
+    padding: 10px 20px;
     background-color: #6f42c1; /* 紫色 */
     color: #fff;
     border: none;
@@ -555,7 +555,6 @@ body {
     transition: background-color 0.3s ease, transform 0.3s ease;
     outline: none;
 }
-
 
 /* 周报模态框样式 */
 #weekly-form {
@@ -576,11 +575,34 @@ body {
     border: 1px solid #d6c7f7;
     border-radius: 4px;
 }
+
 /* 新增模态框层级和初始状态 */
+/* 周报模态框样式 */
 #weekly-modal {
     display: none; /* 默认隐藏 */
     position: fixed;
     z-index: 1001; /* 高于其他元素 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; /* 默认隐藏 */
+    justify-content: center;
+    align-items: center;
+}
+
+#weekly-modal .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+    /* 新增样式，确保内容居中 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 /* 修正日期输入框宽度 */
@@ -588,6 +610,7 @@ body {
     width: 200px;
     padding: 10px;
 }
+
 /* 新增：定义公共的周报按钮类 */
 .diary-write button:hover {
     background-color: #5a32a3;

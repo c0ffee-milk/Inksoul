@@ -82,10 +82,11 @@ body {
     background: #fff;
     border-radius: 15px;
     padding: 30px;
-    margin: 20px auto; /* 修改为居中显示 */
+    width: 80%; /* 设置宽度为 80% */
+    max-width: 1200px; /* 设置最大宽度为 1200px */
+    margin: 5vh auto; /* 垂直居中 */
     border: 1px solid #e9e1f9;
     box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
-    max-width: 1200px; /* 限制最大宽度 */
 }
 
 .report-section {

@@ -338,6 +338,7 @@
         const weeklyModal = document.getElementById('weekly-modal');
         const closeWeeklyModal = document.querySelector('.weekly-close');
         const weeklyForm = document.getElementById('weekly-form');
+        const submitWeeklyBtn = document.getElementById('submit-weekly');
 
         // 点击生成周报按钮时显示模态框
         writeWeeklyBtn.addEventListener('click', function() {
@@ -361,29 +362,48 @@
             event.preventDefault();
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
-            console.log('Params:', {start_time: startDate, end_time: endDate});    
+            console.log('Params:', {start_time: startDate, end_time: endDate});
+
+            // 开始加载状态
+            submitWeeklyBtn.classList.add('loading');
+            submitWeeklyBtn.textContent = '正在生成...';
+
             // 发送数据到后端
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             fetch('{{ url_for('diary.generate_weekly_report') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken, 
+                    'X-CSRFToken': csrfToken,
                 },
                 body: `start_time=${startDate}&end_time=${endDate}`
             })
            .then(response => response.json())
            .then(data => {
+                // 移除加载状态
+                submitWeeklyBtn.classList.remove('loading');
+
                 if (data.success) {
-                    // 周报生成成功，重定向到周报详情页
-                    window.location.href = data.redirect;
+                    // 周报生成成功，修改按钮文本和样式
+                    submitWeeklyBtn.textContent = '分析成功';
+                    submitWeeklyBtn.disabled = true;
+                    submitWeeklyBtn.classList.add('disabled');
+
+                    // 延迟一段时间后跳转到周报详情页
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000); // 延迟 1 秒
                 } else {
                     // 显示错误信息
                     const weeklyError = document.getElementById('weekly-error');
                     weeklyError.textContent = data.message;
+                    submitWeeklyBtn.textContent = '生成报告';
                 }
             })
            .catch(error => {
+                // 移除加载状态
+                submitWeeklyBtn.classList.remove('loading');
+                submitWeeklyBtn.textContent = '生成报告';
                 console.error('请求出错:', error);
             });
         });
