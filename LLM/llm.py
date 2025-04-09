@@ -124,7 +124,7 @@ class EmotionAnalyzer:
         self.llm = ChatOpenAI(
             temperature=0,
             openai_api_key=DEEPSEEK_API_KEY,
-            model_name="deepseek-reasoner",
+            model_name="deepseek-chat",
             base_url="https://api.deepseek.com"
         )
         
@@ -214,7 +214,7 @@ class EmotionAnalyzer:
                 请输出JSON包含：
                 1. 以第二人称讲述的形式回顾用户过去这段时间的经历：diary_review
                 2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
-                3. 提取这段时间内每篇日记的主要事件：domain_event(主要事件)，
+                3. 提取这段时间内有日记记录的每天的一个主要事件（每篇日记的第一行为撰写日期，若一天有多篇日记则合并进行分析，不管一天有多少篇日记均只输出一个主导事件，按时间排序输出）：domain_event(主要事件)，
                 4. 分析这段时间的情绪变化趋势：emotion_trend（情绪变化趋势描述）
                 5. 针对这段时间的情绪提出给用户下一周的建议：weekly_advice（长期建议）
                 6. 总结这段时间的主导事件找出5-10个事件关键词及其关键程度：event_key_words
@@ -241,7 +241,7 @@ class EmotionAnalyzer:
                     "domain_event": {{
                         "day1": {{"event": "事件1", "emotion": "情绪1"}},
                         "day2": {{"event": "事件2", "emotion": "情绪2"}},
-                        ......((条数与日记条数一致))
+                        ......((每天只总结一个事件))
                     }},
                     "emotion_trend": "情绪变化趋势",
                     "weekly_advice": "本周长期建议",
