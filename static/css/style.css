@@ -228,6 +228,33 @@ body {
     transform: translateY(-2px); /* 鼠标悬停时上移 */
 }
 
+/*用户名美化*/
+.login-register span {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #6f42c1;
+    background-color: #e9e1f9;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-right: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: inline-flex; /* 使用 inline-flex 布局 */
+    align-items: center; /* 垂直居中对齐 */
+}
+
+.login-register span::before {
+    content: '👤';
+    margin-right: 8px; /* 调整图标与文字之间的间距 */
+    font-size: 1.2rem; /* 调整图标大小 */
+}
+
+.login-register span:hover {
+    background-color: #d6c7f7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
 .write-diary-label {
     display: block;
     margin-top: 0;
