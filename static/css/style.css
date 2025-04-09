@@ -482,12 +482,6 @@ body {
     to { transform: translateY(-50%) rotate(360deg); }
 }
 
-/* 调整按钮组布局 */
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
 /* 模态框样式 */
 .modal {
