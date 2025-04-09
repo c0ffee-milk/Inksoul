@@ -143,6 +143,26 @@ document.addEventListener('DOMContentLoaded', function() {
         loginModal.style.display = 'none';
     });
 
+
+    // 获取搜索表单和撰写日记框元素
+    const searchForm = document.getElementById('search-form');
+    const diaryWriteBox = document.getElementById('diary-write');
+
+    // 给搜索表单添加提交事件监听器
+    searchForm.addEventListener('submit', function (event) {
+        // 隐藏撰写日记框
+        diaryWriteBox.style.display = 'none';
+    });
+
+    // 假设这里有一个返回全部日记的链接，点击时显示撰写日记框
+    const backButton = document.querySelector('.back-btn');
+    if (backButton) {
+        backButton.addEventListener('click', function () {
+            diaryWriteBox.style.display = 'block';
+        });
+    }
+
+
     // script.js 新增周报功能
     // 修改后的周报按钮交互
     const writeWeeklyBtn = document.getElementById('write-weekly-btn');
