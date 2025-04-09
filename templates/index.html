@@ -106,76 +106,81 @@
     <div class="main-container">
         <!-- 导航栏 -->
         <div class="sidebar">
-            <div class="heatmap-section">
-                {% if not is_search %}
-                    <h3 style="text-align: center; margin: 0 0 10px 0;">{{ current_month }} 日记热力图</h3>
-                    <div class="heatmap-grid">
-                        {% for entry in heatmap %}
-                        <div class="heatmap-cell"
-                             style="background-color: {{ entry.color }};"
-                             data-toggle="tooltip"
-                             title="{{ entry.tooltip }}">
-                             <span style="color: #ffffff">{{ entry.day }}</span>
+            <div class="sidebar-inner">
+                <!-- 热力图部分 -->
+                <div class="heatmap-section">
+                    {% if not is_search %}
+                        <h3 style="text-align: center; margin: 0 0 10px 0;">{{ current_month }} 日记热力图</h3>
+                        <div class="heatmap-grid">
+                            {% for entry in heatmap %}
+                            <div class="heatmap-cell"
+                                 style="background-color: {{ entry.color }};"
+                                 data-toggle="tooltip"
+                                 title="{{ entry.tooltip }}">
+                                 <span style="color: #ffffff">{{ entry.day }}</span>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                    <div class="heatmap-legend">
-                        <span>篇数少</span>
-                        <div class="gradient-bar"></div>
-                        <span>篇数多</span>
-                    </div>
-                {% else %}
-                    {% if search_type == 'keyword' %}
-                        <div class="search-result-header">
-                            <h3 style="text-align: center; margin: 0 0 10px 0;">
-                                <i class="fas fa-search" style="margin-right: 8px;"></i>
-                                搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>"
-                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
-                            </h3>
+                        <div class="heatmap-legend">
+                            <span>篇数少</span>
+                            <div class="gradient-bar"></div>
+                            <span>篇数多</span>
                         </div>
-                    {% elif search_type == 'date' %}
-                        <div class="search-result-header">
-                            <h3 style="text-align: center; margin: 0 0 10px 0;">
-                                <i class="fas fa-calendar" style="margin-right: 8px;"></i>
-                                日期: <span class="highlight-keyword"> {{ target_date }}</span>
-                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
-                            </h3>
-                        </div>
-                    {% elif search_type == 'emotion' %}
-                        <div class="search-result-header">
-                            <h3 style="text-align: center; margin: 0 0 10px 0;">
-                                <i class="fas fa-smile" style="margin-right: 8px;"></i>
-                                情绪类型: <span class="highlight-keyword">{{ emotion_type }}</span>
-                                共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
-                            </h3>
+                    {% else %}
+                        {% if search_type == 'keyword' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-search" style="margin-right: 8px;"></i>
+                                    搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>"
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% elif search_type == 'date' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-calendar" style="margin-right: 8px;"></i>
+                                    日期: <span class="highlight-keyword"> {{ target_date }}</span>
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% elif search_type == 'emotion' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-smile" style="margin-right: 8px;"></i>
+                                    情绪类型: <span class="highlight-keyword">{{ emotion_type }}</span>
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% endif %}
+                        <div style="text-align: center; margin-top: 20px;">
+                            <a href="{{ url_for('diary.mine') }}" class="back-btn">
+                                <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+                                返回全部日记
+                            </a>
                         </div>
                     {% endif %}
-                    <div style="text-align: center; margin-top: 20px;">
-                        <a href="{{ url_for('diary.mine') }}" class="back-btn">
-                            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
-                            返回全部日记
-                        </a>
-                    </div>
+                </div>
+                <!-- 情绪分类部分 -->
+                {% if not is_search %}
+                <div class="category">
+                    <h3>情绪分类</h3>
+                    <ul>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='振奋') }}">✨ 振奋</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='愉悦') }}">😊 愉悦</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='平和') }}">🧘‍♂️ 平和</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='焦虑') }}">😰 焦虑</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='低落') }}">😔 低落</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='烦闷') }}">😤 烦闷</a></li>
+                    </ul>
+                </div>
                 {% endif %}
-            </div>
-            {% if not is_search %}
-            <div class="category">
-                <h3>情绪分类</h3>
-                <ul>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='振奋') }}">✨ 振奋</a></li>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='愉悦') }}">😊 愉悦</a></li>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='平和') }}">🧘‍♂️ 平和</a></li>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='焦虑') }}">😰 焦虑</a></li>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='低落') }}">😔 低落</a></li>
-                    <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='烦闷') }}">😤 烦闷</a></li>
-                </ul>
-            </div>
-            {% endif %}
-            <div class="search-box">
-                <form action="{{ url_for('diary.search') }}" method="GET" id="search-form">
-                    <input type="text" name="keyword" placeholder="搜索日记" required>
-                    <button type="submit">搜索</button>
-                </form>
+                <!-- 搜索框部分 -->
+                <div class="search-box">
+                    <form action="{{ url_for('diary.search') }}" method="GET">
+                        <input type="text" name="keyword" placeholder="搜索日记" required>
+                        <button type="submit">搜索</button>
+                    </form>
+                </div>
             </div>
         </div>
         <!-- 主内容区域 -->
@@ -214,29 +219,31 @@
                 </form>
             </div>
             <!-- 新的日记网格区域 -->
-<div class="diary-grid">
-    {% if diaries %}
-        {% for diary in diaries %}
-            <div class="diary-card" data-id="{{ diary.id }}">
-                <div class="card-content">
-                    <h3>{{ diary.title }}</h3>
-                    <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
-                    <div class="meta-info">
-                        <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
-                        
-                    </div>
-                </div>
-                {% if diary.is_analyzed %}
-                    <button class="analyze-btn disabled" disabled>已分析</button>
+            <div class="diary-grid">
+                {% if diaries %}
+                    {% for diary in diaries %}
+                        <div class="diary-card" data-id="{{ diary.id }}">
+                            <div class="card-content">
+                                <h3>{{ diary.title }}</h3>
+                                <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
+                                <div class="meta-info">
+                                    <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+                                </div>
+                            </div>
+                            <div class="button-group">
+                                <button class="analyze-btn delete-btn">删除</button>
+                                {% if diary.is_analyzed %}
+                                    <button class="analyze-btn disabled" disabled>已分析</button>
+                                {% else %}
+                                    <button class="analyze-btn">分析报告</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
                 {% else %}
-                    <button class="analyze-btn">分析报告</button>
+                    <p class="no-diary">暂无日记记录</p>
                 {% endif %}
             </div>
-        {% endfor %}
-    {% else %}
-        <p class="no-diary">暂无日记记录</p>
-    {% endif %}
-</div>
         </div>
     </div>
 

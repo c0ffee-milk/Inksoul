@@ -3,7 +3,6 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-
 }
 
 body {
@@ -25,7 +24,6 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 给容器添加阴影 */
     border-radius: 5px; /* 圆角 */
     margin: 5vh auto; /* 垂直居中 */
-
 }
 
 /* 主内容区域样式 */
@@ -36,6 +34,7 @@ body {
     flex-direction: column;
     flex-grow: 1; /* 让主内容区域可以自适应高度 */
     overflow-y: auto; /* 内容超出时滚动 */
+    box-sizing: border-box; /* 确保内边距包含在宽度内 */
 }
 
 /* 导航栏样式 */
@@ -49,14 +48,19 @@ body {
     border-right: 1px solid #d6c7f7; /* 紫色边框 */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease; /* 侧边栏过渡效果 */
-    position: sticky; /* 粘性定位 */
-    top: 5vh; /* 距离顶部 5vh */
-    overflow-y: hidden;
+    box-sizing: border-box; /* 确保内边距包含在宽度内 */
 }
+
 .sidebar:hover {
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* 鼠标悬停时增强阴影 */
 }
 
+.sidebar-inner {
+    position: sticky;
+    top: 5vh;
+    overflow-y: auto;
+    max-height: calc(90vh - 40px); /* 固定高度 */
+}
 .heatmap {
     background-color: #f9f6ff;
     padding: 10px;
@@ -414,6 +418,7 @@ body {
     background: #e9e1f9;
     color: #6f42c1;
 }
+
 .analyze-btn.disabled {
     background: #ccc;
     cursor: not-allowed;
@@ -433,6 +438,55 @@ body {
 
 .analyze-btn:hover {
     background: #6f42c1;
+}
+/*删除按钮样式*/
+/* 复用分析按钮样式 */
+.delete-btn {
+    align-self: flex-end;
+    background: #8a63d2;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.delete-btn:hover {
+    background: #6f42c1;
+}
+
+.delete-btn.loading {
+    background: #8a63d2 !important;
+    padding-right: 40px !important;
+    pointer-events: none;
+}
+
+.delete-btn.loading::after {
+    content: "";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    transform: translateY(-50%);
+}
+
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* 调整按钮组布局 */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* 模态框样式 */
