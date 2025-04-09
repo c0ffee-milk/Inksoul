@@ -61,6 +61,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
         });
+
+        // 点击删除按钮
+        card.querySelector('.delete-btn').addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const diaryId = card.dataset.id;
+            const deleteBtn = this;
+
+            if (confirm('确定要删除这篇日记吗？')) {
+                try {
+                    // 设置加载状态
+                    deleteBtn.classList.add('loading');
+                    deleteBtn.innerHTML = '删除中...';
+
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                    const response = await fetch(`/diary/delete/${diaryId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    if (response.ok) {
+                        // 删除成功，从页面移除该日记卡片
+                        card.remove();
+                    } else {
+                        throw new Error(`删除失败: ${response.status}`);
+                    }
+                } catch (error) {
+                    // 恢复按钮状态
+                    deleteBtn.classList.remove('loading');
+                    deleteBtn.innerHTML = '删除';
+                    console.error('删除日记失败:', error);
+                    alert('删除日记失败，请稍后重试');
+                }
+            }
+        });
+
     });
 
     // 模态框控制
@@ -143,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loginModal.style.display = 'none';
     });
 
-
+/*搜索时不显示撰写框*/
     // 获取搜索表单和撰写日记框元素
     const searchForm = document.getElementById('search-form');
     const diaryWriteBox = document.getElementById('diary-write');
