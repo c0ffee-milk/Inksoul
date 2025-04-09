@@ -307,10 +307,14 @@ def generate_weekly_report():
             )
             db.session.add(new_report)
             db.session.commit()
+            
+            # 添加短暂延迟确保数据库操作完成
+            import time
+            time.sleep(1)  # 等待1秒
 
             return jsonify(
                 success=True,
-                message="周报生成成功",
+                message="周报生成成功", 
                 redirect=url_for('diary.weekly_report_detail', report_id=new_report.id)
             )
             
