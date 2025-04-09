@@ -37,10 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const eventKeywords = window.eventKeywords;
     if (eventKeywords && Object.keys(eventKeywords).length > 0) {
         const validEventKeywords = Object.entries(eventKeywords).map(([text, size]) => {
-            // 使用 Number 函数进行转换
             const validSize = Number(size);
-            // 检查转换结果是否为有效数字
-            const scaledSize = isNaN(validSize) ? 10 : Math.max(10, validSize * 2);
+            const scaledSize = isNaN(validSize) ? 10 : Math.max(10, validSize * 1.2); // 减小缩放比例
             console.log('Processed event keyword:', text, scaledSize);
             return [text, scaledSize];
         });
@@ -48,9 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
         WordCloud(eventKeywordsCloud, {
             list: validEventKeywords,
             backgroundColor: '#f9f6ff',
-            color: () => 'rgba(111, 66, 193, 0.8)',
-            minSize: 10,
-            maxSize: 50
+            color: function() {
+                const colors = ['#6f42c1', '#8a63d2', '#a785e2', '#c3a6f2', '#e0c7ff'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            },
+            minSize: 8, // 减小最小字体大小
+            maxSize: 25, // 减小最大字体大小
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            gridSize: 8,
+            rotateRatio: 0.2,
+            shrinkToFit: true // 启用自动缩放以适应容器
         });
     } else {
         console.error('Event keywords data is invalid or empty.');
@@ -60,10 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const emotionKeywords = window.emotionKeywords;
     if (emotionKeywords && Object.keys(emotionKeywords).length > 0) {
         const validEmotionKeywords = Object.entries(emotionKeywords).map(([text, size]) => {
-            // 使用 Number 函数进行转换
             const validSize = Number(size);
-            // 检查转换结果是否为有效数字
-            const scaledSize = isNaN(validSize) ? 10 : Math.max(10, validSize * 2);
+            const scaledSize = isNaN(validSize) ? 10 : Math.max(10, validSize * 1.2); // 减小缩放比例
             console.log('Processed emotion keyword:', text, scaledSize);
             return [text, scaledSize];
         });
@@ -71,9 +75,17 @@ document.addEventListener('DOMContentLoaded', function() {
         WordCloud(emotionKeywordsCloud, {
             list: validEmotionKeywords,
             backgroundColor: '#f9f6ff',
-            color: () => 'rgba(111, 66, 193, 0.8)',
-            minSize: 10,
-            maxSize: 50
+            color: function() {
+                const colors = ['#6f42c1', '#8a63d2', '#a785e2', '#c3a6f2', '#e0c7ff'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            },
+            minSize: 8, // 减小最小字体大小
+            maxSize: 25, // 减小最大字体大小
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            gridSize: 8,
+            rotateRatio: 0.2,
+            shrinkToFit: true // 启用自动缩放以适应容器
         });
     } else {
         console.error('Emotion keywords data is invalid or empty.');
