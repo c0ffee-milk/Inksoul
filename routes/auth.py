@@ -96,8 +96,9 @@ def register():
                 db.session.flush()  # 生成create_time但不提交事务
                 
                 # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
+                create_time_str = diary.create_time.strftime('%Y-%m-%d %H:%M:%S')
                 analyzer.log_diary(
-                    text=diary_data["content"], 
+                    text=f"[{create_time_str}]\n{diary_data['content']}", 
                     timestamp=int(diary.create_time.timestamp())
                 )
                 

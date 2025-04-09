@@ -49,7 +49,8 @@ def add():
             db.session.flush()  # 生成create_time但不提交事务
             
             # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
-            analyzer.log_diary(text=content, timestamp=int(diary.create_time.timestamp()))
+            create_time_str = diary.create_time.strftime('%Y-%m-%d %H:%M:%S')
+            analyzer.log_diary(text=f"[{create_time_str}]\n{content}", timestamp=int(diary.create_time.timestamp()))
             
             # 加密并更新日记内容
             encrypted_content = cipher.encrypt(content)
