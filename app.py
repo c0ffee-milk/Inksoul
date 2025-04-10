@@ -81,16 +81,10 @@ def my_before_request():
 def my_context_processor():
     return {'user': g.user}
 
-# 邮件测试路由
-@app.route("/mail/test")
-def mail_test():
-    message = Message(
-        subject="邮箱测试",
-        recipients=["2561884482@qq.com"],
-        body="这是一条测试邮件"
-    )
-    mail.send(message)
-    return "邮件发送成功！"
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
 
 # 主程序入口
 if __name__ == '__main__':
