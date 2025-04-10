@@ -1,0 +1,117 @@
+/* static/css/weekly_report_detail.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f9f6ff;
+    border-bottom: 1px solid #e9e1f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-home {
+    color: #6f42c1;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.back-home i {
+    margin-right: 5px;
+}
+
+.back-home:hover {
+    color: #5a32a3;
+}
+
+#generate-report-btn {
+    background-color: #6f42c1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    outline: none;
+}
+
+#generate-report-btn:hover {
+    background-color: #5a32a3;
+    transform: translateY(-2px);
+}
+
+#generate-report-btn.loading {
+    background: #8a63d2 !important;
+    padding-right: 40px !important;
+    pointer-events: none;
+    position: relative;
+}
+
+#generate-report-btn.loading::after {
+    content: "";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    transform: translateY(-50%);
+}
+
+#generate-report-btn.success {
+    background-color: #4CAF50;
+}
+
+@keyframes spin {
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+.weekly-report {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    width: 80%; /* 设置宽度为 80% */
+    max-width: 1200px; /* 设置最大宽度为 1200px */
+    margin: 5vh auto; /* 垂直居中 */
+    border: 1px solid #e9e1f9;
+    box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
+}
+
+.report-section {
+    margin-bottom: 30px;
+}
+
+.report-section h3 {
+    color: #6f42c1;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 1px solid #e9e1f9;
+    padding-bottom: 10px;
+}
+
+.chart-container {
+    min-height: 400px;
+    position: relative;
+}
+
+.wordcloud-container {
+    min-height: 400px; /* 增加最小高度 */
+    min-width: 400px;  /* 增加最小宽度 */
+    border-radius: 12px;
+    background: #f9f6ff;
+    padding: 20px;
+    overflow: hidden; /* 防止内容溢出 */
+    box-sizing: border-box; /* 确保内边距和边框包含在元素的宽度和高度内 */
+}

@@ -123,9 +123,9 @@ class EmotionAnalyzer:
         self.db = VectorDBManager()
         self.llm = ChatOpenAI(
             temperature=0,
-            openai_api_key=TONGYI_API_KEY,
-            model_name="deepseek-r1",
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+            openai_api_key=DEEPSEEK_API_KEY,
+            model_name="deepseek-chat",
+            base_url="https://api.deepseek.com"
         )
         
         # 初始化带用户隔离的日记库
@@ -142,7 +142,6 @@ class EmotionAnalyzer:
                 input_variables=["knowledge", "current_diary"],
 
                 template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对用户日记进行结构化心理分析：
-
                 
                 【专业知识】
                 {knowledge}
@@ -153,21 +152,58 @@ class EmotionAnalyzer:
                 请输出JSON格式包含：
                 1. 综合分析用户当日日记：overall_analysis(综合分析)
                 2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
-                3. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_lable（情绪类型）
+                3. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_lable（复杂情绪）
                 4. 根据用户日记体现的情绪，将本日记分为以下六种中的一种(振奋、愉悦、平和、焦虑、低落、烦闷)：emotion_type（情绪类型）
-                5. 在原文中提取当日事件的关键词：keywords（3-5个关键词）
+                5. 在原文中提取当日事件的关键词及其关键程度：keywords（5个以上个关键词）
                 6. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）
                 7. 根据用户的经历，从百年文学/电影/历史中抓取相似瞬间，结构类似："1926年海明威在巴黎的雨天同样丢失手稿，他喝了三杯威士忌后继续写作"（强调"也、同样"等表达相似的词，禁止直接引用前面的例子）：history_moment
                 
                 输出要求：
                 1.面向用户输出，注意人称用词必须用您
                 2.提出的建议要基于现实，容易实现
+
+                输出格式：
+                {{
+                    "overall_analysis": "分析内容",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "emotion_label": [
+                        "情绪1",
+                        "情绪2",
+                        ...
+                    ],
+                    "emotion_type": "情绪类型",
+                    "keywords": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ...
+                    }},
+                    "immediate_suggestion": {{
+                        "music":{{
+                            "music_suggestion1":"音乐推荐与推荐理由1",
+                            "music_suggestion2":"音乐推荐与推荐理由2"
+                        }}, 
+                        "books":"书籍推荐与推荐理由",
+                        "activities":"活动建议",
+                        "techniques":"心理调节技巧"
+                    }},
+                    "history_moment": "历史回响内容"
+                }}
                 """
             ),
 
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
-                template="""基于过去一周的日记进行周期性分析：
+                template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对过去一段时间的日记进行周期性分析：
                 
                 【心理学理论】
                 {knowledge}
@@ -178,12 +214,54 @@ class EmotionAnalyzer:
                 请输出JSON包含：
                 1. 以第二人称讲述的形式回顾用户过去这段时间的经历：diary_review
                 2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
-                3. 提取这段时间内每天（不用给出日期）的主导事件和主导情绪：domain_event(主导事件)、domain_emotion(主导情绪)
+                3. 提取这段时间内有日记记录的每天的一个主要事件（每篇日记的第一行为撰写日期，若一天有多篇日记则合并进行分析，不管一天有多少篇日记均只输出一个主导事件，按时间排序输出）：domain_event(主要事件)，
                 4. 分析这段时间的情绪变化趋势：emotion_trend（情绪变化趋势描述）
                 5. 针对这段时间的情绪提出给用户下一周的建议：weekly_advice（长期建议）
-                6. 总结这段时间的主导事件找出5-10个事件关键词：event_key_words
-                7. 总结这段时间的主导情绪找出5-10个情绪关键词：emotion_key_words
-                8. 结合用户这段时间的心理情绪找一段名人的名言，作为总结的引言：famous_quote
+                6. 总结这段时间的主导事件找出5-10个事件关键词及其关键程度：event_key_words
+                7. 总结这段时间的主导情绪找出5-10个情绪关键词及其关键程度：emotion_key_words
+                8. 结合用户这段时间的心理情绪找一段名人或名著的名言，作为总结的引言：famous_quote
+
+                输出要求：
+                1.面向用户输出，注意人称用词必须用您
+                2.提出的建议要基于现实，容易实现
+
+                输出格式：
+                {{
+                    "diary_review": "日记回顾",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "domain_event": {{
+                        "day1": {{"event": "事件1", "emotion": "情绪1"}},
+                        "day2": {{"event": "事件2", "emotion": "情绪2"}},
+                        ......((每天只总结一个事件))
+                    }},
+                    "emotion_trend": "情绪变化趋势",
+                    "weekly_advice": "本周长期建议（一段话）",
+                    "event_key_words": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ......
+                    }},
+                    "emotion_key_words": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ......
+                    }},
+                    "famous_quote": "名言引文"
+                }}
+
+                输出示例：
+                {{'diary_review': '过去几天里，您的生活充满了细腻的观察和微妙的情感波动。从雨中回忆童年，到与同事共享辣味午餐；从清晨被桂花香唤醒，到深夜弹奏生锈的吉他；从发现社区图书馆的温暖，到与发小跨越时空的对话——这些片段交织成您独特的情感图谱。您既在日常生活里捕捉诗意（如羊角包香气与钢琴声的交融），也在科技与传统的碰撞中思考（如元宇宙作业与石库门青苔的对比）。', 'emotional_basis': {{'喜悦': 35, '信任': 25, '害怕': 10, '惊讶': 20, '难过': 30, '厌恶': 5, '生气': 5, '期待': 40}}, 'domain_event': {{'2024-6-15': {{'event': '被桂花香唤醒并完成重要提案', 'emotion': '欣慰与成就感'}}, '2024-6-16': {{'event': '雨中回忆童年并与同事共进辣味午餐', 'emotion': '怀旧与温暖'}}, '2024-6-17': {{'event': '与发小跨时空对话并发现社区图书馆夜读区', 'emotion': '连接感与宁静'}}, '2024-6-18': {{'event': '发现旧书店粮票与收到里程过期提醒', 'emotion': '时光流逝的怅惘'}}}}, 'emotion_trend': '情绪呈现波浪式变化，从15日的积极满足，到16日加入怀旧色彩，17日达到情感连接的高点，18日因时间感知而产生轻微低落。期待感始终作为基底情绪存在，但后期混合了更多对时光流逝的敏感。', 'weekly_advice': "建议每天预留15分钟'感官时刻'：周一闻三种不同气味，周二触摸五种材质，周三记录三种声音，周四观察光线变化，周五重温旧物触感。周末可尝试将吉他送去换弦，或拜访那位读普鲁斯特的猫店主。这些微型仪式能锚定您对当下的感知，缓解时间焦虑。", 'event_key_words': {{'怀旧触发': 70, '跨代交流': 60, '感官记忆': 85, '时间感知': 75, '科技与传统碰撞': 50, '微小确幸': 65, '未完成计划': 40, '城市诗意': 55}}, 'emotion_key_words': {{'温柔的怅惘': 60, '克制的喜悦': 45, '悬浮的期待': 70, '疏离的观察': 35, '时光焦虑': 50, '连接渴望': 55, '审美触动': 65, '幽默化解': 30}}, 'famous_quote': '「记忆中的形象一旦被词语固定住，就会抹去其他可能的含义。」——卡尔维诺《看不见的城市》（您日记中那些未被文字固化的微妙情绪，恰是最珍贵的部分）'}}
                 """
             )
         }
@@ -329,9 +407,6 @@ class EmotionAnalyzer:
         real_knowledge_store = knowledge_retriever.vectorstore
         knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 5)
         knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
-        
-        if mode == "daily" and diary:
-            self.log_diary(diary, timestamp=timestamp)
 
         # 日记处理
         if mode == "daily":
