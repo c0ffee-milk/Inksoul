@@ -263,7 +263,7 @@ body {
     display: block;
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 1.2rem;
+    font-size: 1.5rem; /* 增大字体大小 */
     font-weight: 600;
     color: #6f42c1;
     border-bottom: 2px solid #6f42c1;
@@ -271,6 +271,7 @@ body {
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 美化字体 */
 }
 
 .diary-write {
@@ -298,6 +299,8 @@ body {
     max-height: 30px; /* 增加最大高度 */
     overflow-y: auto; /* 文本超量后能够滚动 */
     resize: none; /* 禁止用户调节框的大小 */
+    font-size: 1.1rem; /* 增大字体大小 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 美化字体 */
 }
 .diary-write textarea {
     width: 100%; /* 宽度固定 */
@@ -313,6 +316,8 @@ body {
     max-height: 270px; /* 增加最大高度 */
     overflow-y: auto; /* 文本超量后能够滚动 */
     resize: none; /* 禁止用户调节框的大小 */
+    font-size: 1.1rem; /* 增大字体大小 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 美化字体 */
 }
 
 
@@ -329,6 +334,8 @@ body {
     transition: box-shadow 0.3s ease;
     max-height:50vh;
     overflow-y: auto; /* 新增：使日记输入框内容超出时可滚动 */
+    font-size: 1.1rem; /* 增大字体大小 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 美化字体 */
 }
 
 .diary-write input:focus,
@@ -346,6 +353,8 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
     outline: none;
+    font-size: 1.1rem; /* 增大字体大小 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 美化字体 */
 }
 
 .diary-write button:hover {
@@ -397,6 +406,8 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* 新增最小高度，确保至少三行 */
+    min-height: calc(1.5em * 3);
 }
 
 .meta-info {
