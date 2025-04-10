@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,31 +17,173 @@
         .modal {
             transition: opacity 0.3s ease;
         }
+        /* 新增按钮状态样式 */
+        .analyze-btn {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .analyze-btn.loading {
+            background: #8a63d2 !important;
+            padding-right: 40px !important;
+            pointer-events: none;
+        }
+
+        .analyze-btn.loading::after {
+            content: "";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        .analyze-btn.disabled {
+            background: #c5a8e4 !important;
+            cursor: not-allowed;
+        }
+
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+        .heatmap-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            cursor: pointer;  /* 添加这行将光标改为手型指针 */
+            transition: all 0.2s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.15);
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .heatmap-legend {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .gradient-bar {
+            flex: 1;
+            height: 10px;
+            margin: 0 8px;
+            background: linear-gradient(to right, #e6e6fa, #4b0082);
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <!-- 导航栏 -->
         <div class="sidebar">
-            <div class="heatmap">
-                <h3>每日记录热力图</h3>
-                <div class="heatmap-content"></div>
-            </div>
-            <div class="category">
-                <h3>情绪分类</h3>
-                <ul>
-                    <li>开心</li>
-                    <li>难过</li>
-                    <li>愤怒</li>
-                    <li>平静</li>
-                </ul>
-            </div>
-            <div class="search-box">
-                <input type="text" placeholder="搜索日记">
-                <button>搜索</button>
+            <div class="sidebar-inner">
+                <!-- 热力图部分 -->
+                <div class="heatmap-section">
+                    {% if not is_search %}
+                        <h3 style="text-align: center; margin: 0 0 10px 0;">{{ current_month }} 日记热力图</h3>
+                        <div class="heatmap-grid">
+                            {% for entry in heatmap %}
+                            <div class="heatmap-cell"
+                                 style="background-color: {{ entry.color }};"
+                                 data-toggle="tooltip"
+                                 title="{{ entry.tooltip }}"
+                                 onclick="window.location.href='{{ url_for('diary.search_by_date', date_str=current_month|string + '-' + entry.day|string) }}'">
+                                 <span style="color: #ffffff">{{ entry.day }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="heatmap-legend">
+                            <span>篇数少</span>
+                            <div class="gradient-bar"></div>
+                            <span>篇数多</span>
+                        </div>
+                    {% else %}
+                        {% if search_type == 'keyword' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-search" style="margin-right: 8px;"></i>
+                                    搜索关键词"<span class="highlight-keyword">{{ keyword }}</span>"
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% elif search_type == 'date' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-calendar" style="margin-right: 8px;"></i>
+                                    日期: <span class="highlight-keyword"> {{ target_date }}</span>
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% elif search_type == 'emotion' %}
+                            <div class="search-result-header">
+                                <h3 style="text-align: center; margin: 0 0 10px 0;">
+                                    <i class="fas fa-smile" style="margin-right: 8px;"></i>
+                                    情绪类型: <span class="highlight-keyword">{{ emotion_type }}</span>
+                                    共找到 <span class="highlight-count">{{ result_count }}</span> 条结果
+                                </h3>
+                            </div>
+                        {% endif %}
+                        <div style="text-align: center; margin-top: 20px;">
+                            <a href="{{ url_for('diary.mine') }}" class="back-btn">
+                                <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+                                返回全部日记
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- 情绪分类部分 -->
+                {% if not is_search %}
+                <div class="category">
+                    <h3>情绪分类</h3>
+                    <ul>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='振奋') }}">✨ 振奋</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='愉悦') }}">😊 愉悦</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='平和') }}">🧘‍♂️ 平和</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='焦虑') }}">😰 焦虑</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='低落') }}">😔 低落</a></li>
+                        <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='烦闷') }}">😤 烦闷</a></li>
+                    </ul>
+                </div>
+                {% endif %}
+                <!-- 搜索框部分 -->
+                <div class="search-box">
+                    <form action="{{ url_for('diary.search') }}" method="GET">
+                        <input type="text" name="keyword" placeholder="搜索日记" required>
+                        <button type="submit">搜索</button>
+                    </form>
+                </div>
             </div>
         </div>
-
         <!-- 主内容区域 -->
         <div class="main-content">
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -57,13 +198,20 @@
                     <a href="{{ url_for('auth.register') }}"><button id="register-btn">注册</button></a>
                     <a href="{{ url_for('auth.login') }}"><button id="login-btn">登录</button></a>
                 {% else %}
-                    <span>欢迎回来，{{ current_user.username }}</span>
+                    <span>{{ current_user.username }}</span>
                     <a href="{{ url_for('auth.logout') }}"><button>注销</button></a>
                 {% endif %}
             </div>
-            <button class="write-diary" id="write-diary-btn">撰写日记</button>
+            {% if not is_search %}
+                <div class="weekly-buttons">
+                    <a href="{{ url_for('diary.weekly_reports') }}"><button class="weekly-btn" id="view-weekly-btn">查看历史周报</button></a>
+                    <button class="weekly-btn" id="write-weekly-btn">生成新周报</button>
+                </div>
+
+            {% endif %}
             <!-- 修改日记输入表单为 Flask 表单 -->
-            <div class="diary-write" id="diary-write">
+            <div class="diary-write" id="diary-write" style="display: {% if is_search %}none{% else %}block{% endif %};">
+                <span class="write-diary-label">撰写日记</span>
                 <form id="diary-form" onsubmit="return false;">
                     <input type="text" id="diary-title" name="title" placeholder="日记标题" required>
                     <textarea id="diary-content" name="content" placeholder="日记内容" required></textarea>
@@ -71,40 +219,67 @@
                     <div id="form-error" style="color: red;"></div>
                 </form>
             </div>
-
             <!-- 新的日记网格区域 -->
-            <div class="diary-grid">
-                {% if diaries %}
-                    {% for diary in diaries %}
-                        <div class="diary-card" data-id="{{ diary.id }}">
-                            <div class="card-content">
-                                <h3>{{ diary.title }}</h3>
-                                <p class="excerpt">{{ diary.content|truncate(100) }}</p>
-                                <div class="meta-info">
-                                    <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
-                                    <span class="emotion-tag {{ diary.analyze.emotion if diary.analyze else 'neutral' }}">
-                                        {{ diary.analyze.emotion if diary.analyze else '待分析' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="analyze-btn">
-                                分析报告
-                            </button>
-                        </div>
-                    {% endfor %}
+<div class="diary-grid">
+    {% if diaries %}
+        {% for diary in diaries %}
+            <div class="diary-card" data-id="{{ diary.id }}">
+                <div class="card-content">
+                    <h3>{{ diary.title }}</h3>
+                    <p class="excerpt">{{ diary.content|truncate(100)|safe }}</p>
+                    <div class="meta-info">
+                        <span class="date">{{ diary.create_time.strftime('%Y-%m-%d') }}</span>
+
+                    </div>
+                </div>
+                {% if diary.is_analyzed %}
+                    <button class="analyze-btn disabled" disabled>已分析</button>
                 {% else %}
-                    <p class="no-diary">暂无日记记录</p>
+                    <button class="analyze-btn">分析报告</button>
                 {% endif %}
+                    <button class="delete-btn">删除</button>
             </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-diary">暂无日记记录</p>
+    {% endif %}
+</div>
         </div>
     </div>
 
-    <!-- 分析报告模态框 -->
+    <!-- 修改index.html中的分析报告模态框 -->
     <div id="report-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>📊 情绪分析报告</h3>
-            <div id="report-content"></div>
+            <div id="report-content">
+                <!-- 动态内容 -->
+            </div>
+            <!-- 新增加载状态 -->
+            <div class="loading-state" style="display: none;">
+                <div class="loader"></div>
+                <p>正在生成深度分析报告...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加周报日期选择模态框 -->
+    <div id="weekly-modal" class="modal">
+        <div class="modal-content">
+            <span class="close weekly-close">&times;</span>
+            <h3>📅 选择周报时间段</h3>
+            <form id="weekly-form">
+                <div class="form-group">
+                    <label>开始日期：</label>
+                    <input type="date" id="start-date" required>
+                </div>
+                <div class="form-group">
+                    <label>结束日期：</label>
+                    <input type="date" id="end-date" required>
+                </div>
+                <button type="submit" class="analyze-btn" id="submit-weekly">生成报告</button>
+                <div id="weekly-error" style="color: red; margin-top: 10px;"></div>
+            </form>
         </div>
     </div>
 
@@ -121,15 +296,133 @@
         // 简单的表单错误处理
         const diaryForm = document.getElementById('diary-form');
         const formError = document.getElementById('form-error');
-        diaryForm.addEventListener('submit', function() {
+        diaryForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // 阻止表单默认提交行为
             const title = document.getElementById('diary-title').value;
             const content = document.getElementById('diary-content').value;
             if (title.trim() === '' || content.trim() === '') {
                 formError.textContent = '标题和内容不能为空';
             } else {
-                console.log('保存日记:', title, content);
+                // 获取 CSRF Token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                // 发送 POST 请求
+                fetch('/diary/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: new URLSearchParams({
+                        'title': title,
+                        'content': content
+                    })
+                })
+               .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // 处理重定向
+                    } else {
+                        return response.json();
+                    }
+                })
+               .then(data => {
+                    if (data && data.success) {
+                        window.location.reload(); // 成功则刷新页面
+                    } else if (data) {
+                        alert(data.message || "保存失败");
+                    }
+                })
+               .catch(error => {
+                    console.error('Error:', error);
+                    alert("请求失败，请检查网络");
+                });
             }
         });
+
+        // 获取生成周报按钮和日期选择模态框
+        const writeWeeklyBtn = document.getElementById('write-weekly-btn');
+        const weeklyModal = document.getElementById('weekly-modal');
+        const closeWeeklyModal = document.querySelector('.weekly-close');
+        const weeklyForm = document.getElementById('weekly-form');
+        const submitWeeklyBtn = document.getElementById('submit-weekly');
+
+        // 点击生成周报按钮时显示模态框
+        writeWeeklyBtn.addEventListener('click', function() {
+            weeklyModal.style.display = 'block';
+        });
+
+        // 点击关闭按钮时隐藏模态框
+        closeWeeklyModal.addEventListener('click', function() {
+            weeklyModal.style.display = 'none';
+        });
+
+        // 点击模态框外部时隐藏模态框
+        window.addEventListener('click', function(event) {
+            if (event.target === weeklyModal) {
+                weeklyModal.style.display = 'none';
+            }
+        });
+
+        // 处理日期选择表单提交
+        weeklyForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            console.log('Params:', {start_time: startDate, end_time: endDate});
+
+            // 开始加载状态
+            submitWeeklyBtn.classList.add('loading');
+            submitWeeklyBtn.textContent = '正在生成...';
+
+            // 发送数据到后端
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            fetch('{{ url_for('diary.generate_weekly_report') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: `start_time=${startDate}&end_time=${endDate}`
+            })
+           .then(response => response.json())
+           .then(data => {
+                // 移除加载状态
+                submitWeeklyBtn.classList.remove('loading');
+
+                if (data.success) {
+                    // 周报生成成功，修改按钮文本和样式
+                    submitWeeklyBtn.textContent = '分析成功';
+                    submitWeeklyBtn.disabled = true;
+                    submitWeeklyBtn.classList.add('disabled');
+
+                    // 延迟一段时间后跳转到周报详情页
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000); // 延迟 1 秒
+                } else {
+                    // 显示错误信息
+                    const weeklyError = document.getElementById('weekly-error');
+                    weeklyError.textContent = data.message;
+                    submitWeeklyBtn.textContent = '生成报告';
+                }
+            })
+           .catch(error => {
+                // 移除加载状态
+                submitWeeklyBtn.classList.remove('loading');
+                submitWeeklyBtn.textContent = '生成报告';
+                console.error('请求出错:', error);
+            });
+        });
+
+        // 修改原有模态关闭逻辑
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        };
     </script>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

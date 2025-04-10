@@ -56,6 +56,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.code === 200) {
                     startCountdown(60);
                     showError('email-error', ''); // 清空错误提示
+                } else if (data.code === 400 && data.message === "该邮箱已注册") {
+                    // 弹出提示框
+                    alert("该邮箱已注册");
+                    showError('email-error', data.message);
                 } else {
                     showError('email-error', data.message || '验证码发送失败');
                 }

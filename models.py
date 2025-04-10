@@ -1,3 +1,5 @@
+from email.policy import default
+
 from flask_login import UserMixin
 from sqlalchemy.engine import create
 from exts import db
@@ -51,9 +53,13 @@ class DiaryModel(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     analyze = db.Column(JSON)
     emotion_type = db.Column(db.String(100), nullable=True)
-
-
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_analyzed = db.Column(db.Boolean, default=False)  # 新增字段，用于标记是否已分析
+
+    # 添加日期访问器（兼容原热力图逻辑）
+    @property
+    def date(self):
+        return self.create_time.date()
 
 class WeeklyModel(db.Model):
     __tablename__ = "weekly_report"

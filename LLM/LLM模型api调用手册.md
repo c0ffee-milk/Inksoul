@@ -1,7 +1,11 @@
-## LLM模型api调用手册
+# LLM调用手册
 
-### 1. 日记模式
+*编辑人：coffee*
+
+## 1. 日报模式
+
 示例代码：
+
 ```python
 from LLM.llm import EmotionAnalyzer
 from datetime import datetime
@@ -9,36 +13,39 @@ from datetime import datetime
 
 user_id = "U985"
 mode = "daily"
-test_diary = '阁楼储物箱的霉味里混进柳絮气息，断线风筝的竹骨在月光下咯吱作响。去年缠在晾衣架上的风筝线突然自行松脱，在水泥地上蜿蜒成未标注的河道。而夜风途经生锈的自行车铃时，捎来了遥远的海浪声。'
-date = datetime(2025, 3, 15, 14, 30)
+diary = '起来晚了，第一堂课没来得及上，空堂时可筠的同学宁家英来了，告诉我有一封信，是武昌来的，果然是可筠的，她说我与一般老朋友真是音信杳然了。然而我的的确确随时都想着她们，只是懒得不想提笔而已。我发现我是真的堕落了，从灵魂堕落起，外表上也许别人以为我活得很有生气，可是实际上我已经不堪了。我需要一点刺激，需要在我的生活来一个大的波浪，这样也许我可能从新干下去。'
 
 analyze = EmotionAnalyzer(user_id)
-result = analyze.analyze(mode, test_diary, date)
+result = analyze.analyze(mode, diary)
 print(result)
 ```
 
-```
-{'emotional_basis': {'喜悦': 10, '信任': 5, '害怕': 20, '惊讶': 15, '难过': 30, '厌恶': 10, '生气': 5, '期待': 5}, 'emotion_type': ['怀旧', '孤独', '失落'], 'keywords': ['怀旧', '孤独', '失落'], 'immediate_suggestion': '建议用户尝试与朋友或家人分享这些感受，或者通过写日记、绘画等方式表达内心的情感。同时，可以尝试进行一些放松的活动，如冥想、散步等，以缓解内心的孤独和失落感。'}
-```
+参数说明：
 
-1. **user_id**：用户ID，用于标识用户。注意：user_id必须要以U开头，否则会报错。
-2. **mode**：模式，目前支持的参数有`daily`和`weekly`。
-3. **test_diary**：用户输入的日记内容。
-4. **date**：用户输入的日记日期，格式为`datetime`对象。若没有`date`参数则默认为当前日期。
+`user_id`：用户id，注意要以U开头
 
-### 2. 周报模式
+`mode`：分为daily与weekly两种模式，对应日报与周报
+
+`dairy`：日记内容
+
+`analyze = EmotionAnalyzer(user_id)`：实例化，只用传入参数user_id
+
+`result = analyze.analyze(mode, diary)`：传入参数
+
+## 2. 周报模式
+
 示例代码：
+
 ```python
 from LLM.llm import EmotionAnalyzer
 from datetime import datetime
 
-user_id = "U985"
+user_id = "U211"
 mode = "weekly"
-start_date = datetime(2024, 3, 9)
-end_date = datetime(2024, 3, 15)
+start_date = datetime(2024, 6, 15)
+end_date = datetime(2024, 6, 17)
 
 analyze = EmotionAnalyzer(user_id)
-print("已保存的日记日期：", analyze.get_diary_dates())
 
 # 指定日期模式
 result = analyze.analyze(
@@ -54,16 +61,75 @@ result = analyze.analyze(
 print(result)
 ```
 
+参数说明：
+
+`user_id`：用户id，注意要以U开头
+
+`mode`：分为daily与weekly两种模式，对应日报与周报
+
+`start_date(可选)`：周报开始时间，不填默认为过去7天
+
+`end_date`：周报结束时间，不填默认为过去7天
+
+`analyze = EmotionAnalyzer(user_id)`：示例化，只用传入参数user_id
+
+## 3. 删除日记
+
+示例代码：
+
+```python
+from LLM.llm import EmotionAnalyzer
+from datetime import datetime
+
+user_id = "U211"
+date = datetime(2024, 6, 15, 14, 30, 0)
+
+analyze = EmotionAnalyzer(user_id)  # 创建新实例
+delete_result = analyze.delete_diary(date)
+print(delete_result)
 ```
-已保存的日记日期： ['2024-03-09', '2024-03-10', '2024-03-11', '2024-03-12', '2024-03-13', '2024-03-14', '2024-03-15', '2025-03-09', '2025-03-10', '2025-03-11', '2025-03-12', '2025-03-13', '2025-03-14', '2025-03-15']
 
-{'emotional_basis': {'喜悦': 15, '信任': 20, '害怕': 10, '惊讶': 15, '难过': 25, '厌恶': 5, '生气': 5, '期待': 15}, 'dominant_emotion': '难过', 'emotion_trend': '本周的情绪趋势呈现出一种怀旧和淡淡的忧伤。日记中多次提到过去的回忆，如旧杂志、未寄出的信、干枯的樱花、数学试卷的批改痕迹等，这些细节都透露出对过去时光的怀念和一丝无奈。同时，日记中也提到了一些期待的元素，如等待雨季过去、期待与朋友的再次见面等，但这些期待似乎被现实的孤独和距离所冲淡。整体情绪呈现出一种复杂的混合状态，既有对过去的怀念，也有对未来的期待，但更多的是对现状的无奈和淡淡的忧伤。', 'weekly_advice': '建议尝试通过一些积极的活动来调节情绪，如与朋友或家人进行面对面的交流，参与一些户外活动或兴趣小组，以增加社交互动和新鲜感。同时，可以尝试整理和清理一些旧物，以减轻对过去的过度依赖，并为新的事物和经历腾出空间。此外，设定一些短期和长期的目标，可以帮助你更好地聚焦于未来，减少对过去的过度关注。', 'key_words': ['旧杂志', '未寄出的信', '干枯的樱花', '数学试卷', '雨季', '朋友', '期待', '怀旧', '孤独', '距离']}
+参数说明：
 
-{'emotional_basis': {'喜悦': 30, '信任': 25, '害怕': 10, '惊讶': 15, '难过': 5, '厌恶': 0, '生气': 0, '期待': 15}, 'dominant_emotion': '喜悦', 'emotion_trend': '本周的情绪整体偏向积极，喜悦和信任占据了主导地位。日记中充满了对自然和生活的细腻观察，如晨光、绿芽、红豆汤等，这些细节反映了内心的平静与满足。同时，期待的情绪也较为明显，体现在对未来的憧憬和计划上，如志愿调查表、机票降价提醒等。害怕和难过的情绪较少，表明本周的心理状态较为稳定。', 'weekly_advice': '继续保持对生活的细致观察和积极态度，这有助于维持良好的心理状态。可以尝试将期待的情绪转化为实际行动，如制定具体的计划或目标，以增强生活的方向感和成就感。同时，注意保持情绪的平衡，避免过度期待带来的压力。', 'key_words': ['晨光', '绿芽', '红豆汤', '志愿调查表', '机票降价提醒', '双子座流星雨', '咖啡香', '春']}
+`user_id`：用户id，注意要以U开头
+
+`date(必填)`：日记时间戳，格式为datetime(年，月，日，小时，分钟，秒)
+
+`analyze = EmotionAnalyzer(user_id)`：创建实例
+
+`delete_result = analyze.delete_diary(date)`：使用delete_diary方法删除指定时间戳日记
+
+## 4. 保存日记
+
+示例代码：
+
+```python
+from LLM.llm import EmotionAnalyzer
+from datetime import datetime
+
+user_id = "U211"
+date = datetime(2024, 6, 15, 14, 30, 0)
+diary = '起来晚了，第一堂课没来得及上，空堂时可筠的同学宁家英来了，告诉我有一封信，是武昌来的，果然是可筠的，她说我与一般老朋友真是音信杳然了。然而我的的确确随时都想着她们，只是懒得不想提笔而已。我发现我是真的堕落了，从灵魂堕落起，外表上也许别人以为我活得很有生气，可是实际上我已经不堪了。我需要一点刺激，需要在我的生活来一个大的波浪，这样也许我可能从新干下去。'
+
+analyze = EmotionAnalyzer(user_id)  # 创建新实例
+log_result = analyze.log_diary(diary, date)
+print(log_result)
 ```
 
-1. **user_id**：用户ID，用于标识用户。注意：user_id必须要以U开头，否则会报错。
-2. **mode**：模式，目前支持的参数有`daily`和`weekly`。
-3. **start_date**：开始日期，格式为`datetime`对象。若没有`start_date`参数则默认为过去7天。
-4. **end_date**：结束日期，格式为`datetime`对象。
+参数说明：
+
+`user_id`：用户id，注意要以U开头  
+
+`date(必填)`：日记时间戳，格式为datetime(年，月，日，小时，分钟，秒)
+
+`diary(必填)`：所要保存的日记内容
+
+`analyze = EmotionAnalyzer(user_id)`：创建实例
+
+`log_result = analyze.log_diary(diary, date)`：使用log_diary方法保存指定时间戳日记
+
+## 5. 注意事项
+
+1. 删除日记前先判定！**若删除的日记没有进行过分析则不要调用删除日记的代码！！！**
+2. 分析周报前先判定！**若这段时间没有日记记录则不要调用周报模式！！！**
 

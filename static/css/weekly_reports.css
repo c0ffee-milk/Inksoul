@@ -1,0 +1,110 @@
+/* 容器样式 */
+.container {
+    width: 80%;
+    max-width: 1200px;
+    min-height: 90vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin: 5vh auto;
+    background-color: #f9f6ff;
+    padding: 20px;
+}
+
+/* 标题样式 */
+.container h2 {
+    color: #6f42c1;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #6f42c1;
+    padding-bottom: 5px;
+    width: fit-content;
+}
+
+/* 返回按钮样式 */
+.back-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #6f42c1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.back-btn:hover {
+    background-color: #5a32a3;
+    transform: translateY(-2px);
+}
+
+/* 周报列表样式 */
+.report-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* 周报项样式 */
+.report-item {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.report-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* 周报元信息样式 */
+.report-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 0.85em;
+}
+
+.date-range {
+    color: #888;
+}
+
+.diary-count {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-weight: 500;
+    background: #e9e1f9;
+    color: #6f42c1;
+}
+
+/* 查看详情按钮样式 */
+.view-report-btn {
+    align-self: flex-end;
+    background: #8a63d2;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s ease;
+}
+
+.view-report-btn:hover {
+    background: #6f42c1;
+}
+
+/* 暂无历史周报提示样式 */
+.no-reports {
+    color: #666;
+    font-size: 0.95em;
+}

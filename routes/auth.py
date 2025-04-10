@@ -19,6 +19,7 @@ from models import DiaryModel
 from utils.crypto import AESCipher
 import os
 from dotenv import load_dotenv
+from LLM.llm import EmotionAnalyzer 
 
 from datetime import datetime
 from data.auto_create_diaries import AUTO_CREATE_DIARIES
@@ -71,32 +72,43 @@ def register():
         username = form.username.data
         password = form.password.data
         
-        # 检查邮箱是否已存在
-        if UserModel.query.filter_by(email=email).first():
-            flash('该邮箱已被注册', 'error')
-            return render_template('register.html', form=form)
-            
         hashed_password = generate_password_hash(password)
         user = UserModel(email=email, username=username, password=hashed_password)
         
         try:
+            # 开始事务
             db.session.add(user)
-            db.session.commit()
+            db.session.flush()  # 获取user.id但不提交事务
+            
+            # 创建分析器实例
+            analyzer = EmotionAnalyzer(f"U{user.id}")
             
             # 添加季羡林日记
             for diary_data in AUTO_CREATE_DIARIES:
+                # 先创建日记对象获取统一时间
                 diary = DiaryModel(
                     title=diary_data["title"],
-                    content=cipher.encrypt(diary_data["content"]),
+                    content='',  # 临时占位
                     author_id=user.id,
                     create_time=datetime.strptime(diary_data["create_time"], "%Y-%m-%d")
                 )
                 db.session.add(diary)
+                db.session.flush()  # 生成create_time但不提交事务
+                
+                # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
+                create_time_str = diary.create_time.strftime('%Y-%m-%d %H:%M:%S')
+                analyzer.log_diary(
+                    text=f"[{create_time_str}]\n{diary_data['content']}", 
+                    timestamp=int(diary.create_time.timestamp())
+                )
+                
+                # 加密并更新日记内容
+                diary.content = cipher.encrypt(diary_data["content"])
             
             db.session.commit()
-            
             flash('注册成功，请登录', 'success')
             return redirect(url_for('auth.login'))
+            
         except Exception as e:
             db.session.rollback()
             flash(f'注册失败: {str(e)}', 'error')
@@ -107,6 +119,11 @@ def get_email_captcha():
     email = request.args.get('email')
     if not email:
         return jsonify({"code": 400, "message": "请提供邮箱地址"})
+    
+    # 检查邮箱是否已注册
+    if UserModel.query.filter_by(email=email).first():
+        return jsonify({"code": 400, "message": "该邮箱已注册"})
+        
     captcha = ''.join(random.choices(string.digits, k=4))
     message = Message(subject="心灵日记验证码", recipients=[email], body=f"您的验证码是: {captcha}")
     try:
