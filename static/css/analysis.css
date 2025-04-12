@@ -86,7 +86,7 @@
     -webkit-overflow-scrolling: touch; /* 为了在 iOS 设备上实现流畅滚动 */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .report-grid {
         grid-template-columns: 1fr;
     }
