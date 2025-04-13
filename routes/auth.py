@@ -104,10 +104,6 @@ def register():
                 # 加密并更新日记内容
                 diary.content = cipher.encrypt(diary_data["content"])
 
-                
-            # 添加短暂延迟确保向量数据库操作完成
-                import time
-                time.sleep(1)
             #提交日记到关系数据库
             db.session.commit()
             flash('注册成功，请登录', 'success')
