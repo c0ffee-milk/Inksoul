@@ -1,3 +1,4 @@
+# 此文件用来存储用户注册时自动添加的日记数据
 AUTO_CREATE_DIARIES = [
     {
         "title": "星期一",

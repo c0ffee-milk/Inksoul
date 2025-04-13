@@ -60,11 +60,11 @@ mail.init_app(app)
 # 创建 Migrate 对象
 migrate = Migrate(app, db)
 
-# 检测数据库是否连接
-with app.app_context():
-    with db.engine.connect() as conn:
-        rs = conn.execute(text('select 1'))  # 运行后终端输出 1
-        print(rs.fetchone())
+# 检测数据库是否连接（开发调试）
+# with app.app_context():
+#     with db.engine.connect() as conn:
+#         rs = conn.execute(text('select 1'))  # 运行后终端输出 1
+#         print(rs.fetchone())
 
 # 请求前处理
 @app.before_request
@@ -81,6 +81,7 @@ def my_before_request():
 def my_context_processor():
     return {'user': g.user}
 
+# 获取网页logo
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('image.svg')
