@@ -98,10 +98,8 @@ def register():
                 
                 # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
                 create_time_str = diary.create_time.strftime('%Y-%m-%d %H:%M:%S')
-                analyzer.log_diary(
-                    text=f"[{create_time_str}]\n{diary_data["content"]}", 
-                    timestamp=int(diary.create_time.timestamp())
-                )
+                content_to_log = diary_data["content"]
+                analyzer.log_diary(text=f"[{create_time_str}]\n{content_to_log}", timestamp=int(diary.create_time.timestamp()))
                 
                 # 加密并更新日记内容
                 diary.content = cipher.encrypt(diary_data["content"])
