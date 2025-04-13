@@ -3,7 +3,7 @@
 <html>
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.4"></script>
     <title>{{ diary.title }} - 分析报告</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
@@ -18,6 +18,17 @@
             min-height: 300px;
             border-radius: 12px;
             background: #f9f6ff;
+        }
+        /* 新增样式：将日记内容和分析部分分隔为两列 */
+        .main-container {
+            display: flex;
+            gap: 20px;
+        }
+        .main-content,
+        .analysis-report {
+            flex: 1;
+            max-height: 80vh;
+            overflow-y: auto;
         }
     </style>
     <script src="{{ url_for('static', filename='js/wordcloud2.js') }}"></script>
