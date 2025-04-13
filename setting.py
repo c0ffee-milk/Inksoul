@@ -8,7 +8,7 @@ load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY', 'sdafewafewwqfgdsf')
 
 # 数据库配置
-HOSTNAME = os.getenv('DB_HOST', '127.0.0.1')  # 修改为127.0.0.1更安全
+HOSTNAME = os.getenv('DB_HOST', '127.0.0.1')  
 PORT = int(os.getenv('DB_PORT', '3306'))
 USERNAME = os.getenv('DB_USER', 'root')
 PASSWORD = os.getenv('DB_PASSWORD', '14618983')

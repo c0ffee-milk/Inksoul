@@ -1,23 +1,28 @@
 # 1. 基础配置和工具函数
+# 1.1 标准库导入
 import re
-from time import time as times
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import DiaryModel, UserModel, WeeklyModel
-from flask_login import current_user, login_required
-from exts import db
-from LLM.llm import EmotionAnalyzer  
-from datetime import datetime, timedelta
-from utils.crypto import AESCipher
 import json
 import os
-from dotenv import load_dotenv
 import calendar
+import time
+from datetime import datetime, timedelta
 from collections import defaultdict
+
+# 1.2 第三方库导入
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import current_user, login_required
 from flask_wtf import form
-from .forms import TimeForm 
+from dotenv import load_dotenv
+
+# 1.3 本地模块导入
+from models import DiaryModel, UserModel, WeeklyModel
+from exts import db
+from LLM.llm import EmotionAnalyzer
+from utils.crypto import AESCipher
+from .forms import TimeForm
 
 
-# 初始化
+# 1.4 初始化
 load_dotenv()
 bp = Blueprint('diary', __name__, url_prefix='/diary')
 cipher = AESCipher(key=os.getenv("AES_KEY").encode())
@@ -66,10 +71,10 @@ def add():
 @bp.route('/mine')
 @login_required
 def mine():
-    # 获取所有日记（保持原有逻辑）
+    # 获取所有日记
     diaries = DiaryModel.query.filter_by(author_id=current_user.id).order_by(DiaryModel.create_time.desc()).all()
 
-    # 解密日记内容（保持原有逻辑）
+    # 解密日记内容
     decrypted_diaries = []
     for diary in diaries:
         decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>')
@@ -83,7 +88,7 @@ def mine():
             'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
         })
 
-    # ========== 新增热力图数据生成逻辑 ==========
+    # ========== 热力图数据生成逻辑 ==========
     # 获取当前月份信息
     now = datetime.now()
     current_year = now.year
@@ -121,7 +126,7 @@ def mine():
             "tooltip": f"{day}日：{count}篇日记"
         })
 
-    # ========== 结束新增逻辑 ==========
+    # ========== 结束热力图逻辑 ==========
 
     return render_template('index.html',
                            diaries=decrypted_diaries,
@@ -133,10 +138,11 @@ def mine():
 def diary_detail(diary_id):
     diary = DiaryModel.query.get(diary_id)
     if diary and diary.author_id == current_user.id:
-        # 解密日记内容
+        # 解密日记内容，确保正常展示分行
         decrypted_content = cipher.decrypt(diary.content).replace('\n', '<br>') 
         
         # 检查是否有分析结果
+        # 如果有分析结果，显示分析结果
         if diary.analyze:
             decrypted_analysis = json.loads(cipher.decrypt(diary.analyze))
             return render_template('diary_detail.html', 
@@ -149,6 +155,7 @@ def diary_detail(diary_id):
                 },
                 analysis=decrypted_analysis
             )
+        #如果没有分析结果，只显示内容
         else:
             return render_template('diary_only_content.html',  
                 diary={
@@ -171,13 +178,12 @@ def delete(diary_id):
         if diary.analyze:
             analyze = EmotionAnalyzer(f"U{current_user.id}")
             timestamp = int(diary.create_time.timestamp())
+            # 同时删除向量数据库中的日记数据
             delete_analysis = analyze.delete_diary(timestamp)
+
         db.session.delete(diary)
         db.session.commit()
-        
-        
         flash('日记删除成功')
-        
         return redirect(url_for('diary.mine'))
     else:
         return redirect(url_for('diary.mine'))
@@ -186,16 +192,24 @@ def delete(diary_id):
 @bp.route('/<int:diary_id>/analyze', methods=['POST','GET'])
 @login_required
 def diary_analyze(diary_id):
-    import time
+
+        # 设置最大重试次数为3次
     max_retries = 3
+    # 设置每次重试的延迟时间为0.5秒
     retry_delay = 0.5  # 0.5秒
     
+    # 开始重试循环
     for attempt in range(max_retries):
+        # 尝试获取日记对象
         diary = DiaryModel.query.get(diary_id)
+        # 如果日记不存在
         if diary is None:
+            # 如果还有剩余重试次数
             if attempt < max_retries - 1:
+                # 等待指定延迟时间后继续重试
                 time.sleep(retry_delay)
                 continue
+            # 如果已达到最大重试次数，返回404错误
             return "日记不存在", 404
             
         if diary and diary.author_id == current_user.id:
@@ -247,6 +261,7 @@ def weekly_reports():
         })
 
     return render_template('weekly_reports.html', reports=reports)
+
 # 展示指定阶段性总结报告详情的路由
 @bp.route('/weekly_report_detail/<int:report_id>')
 @login_required
@@ -259,6 +274,7 @@ def weekly_report_detail(report_id):
     else:
         flash('报告不存在或无权访问')
         return redirect(url_for('diary.weekly_reports'))
+
 #4.2 生成周报
 # 生成阶段性总结报告的路由
 @bp.route('/generate_weekly_report', methods=['POST','GET'])
@@ -267,9 +283,9 @@ def generate_weekly_report():
     form = TimeForm(request.form)
     if form.validate_on_submit():
         try:
-            # Add validation for date inputs
+            # 验证表单输入
             if not form.start_time.data or not form.end_time.data:
-                return jsonify(success=False, message="Start and end dates are required"), 400
+                return jsonify(success=False, message="起始日期和终止日期不能为空"), 400
                 
             try:
                 start_date = datetime.strptime(form.start_time.data, '%Y-%m-%d')
@@ -283,7 +299,6 @@ def generate_weekly_report():
                 DiaryModel.create_time >= start_date,
                 DiaryModel.create_time < end_date
             ).count()
-            print(diary_count)
 
             # 检查是否有日记记录
             if diary_count == 0:
@@ -297,7 +312,7 @@ def generate_weekly_report():
             # 加密存储到数据库
             encrypted_report = cipher.encrypt(json.dumps(report_data))
             new_report = WeeklyModel(
-                author_id=current_user.id,  # 修正字段名
+                author_id=current_user.id,  
                 content=encrypted_report,
                 start_time=start_date,  
                 end_time=end_date, 

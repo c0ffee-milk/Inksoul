@@ -2,6 +2,7 @@
 # 标准库导入
 import random
 import string
+import os
 
 # 第三方库导入
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, flash, abort
@@ -10,6 +11,8 @@ from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import PasswordInput
 from flask_login import current_user, login_user, logout_user
+from datetime import datetime
+from dotenv import load_dotenv
 
 # 本地模块导入
 from exts import mail, db
@@ -17,11 +20,7 @@ from models import EmailCaptchaModel, UserModel
 from .forms import RegisterForm, LoginForm, ChangeForm
 from models import DiaryModel
 from utils.crypto import AESCipher
-import os
-from dotenv import load_dotenv
 from LLM.llm import EmotionAnalyzer 
-
-from datetime import datetime
 from data.auto_create_diaries import AUTO_CREATE_DIARIES
 
 # 加载.env文件
@@ -30,8 +29,10 @@ load_dotenv()
 # 初始化加密器
 cipher = AESCipher(key=os.getenv("AES_KEY").encode())
 
+# 创建蓝图
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+# 登录路由
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -63,7 +64,7 @@ def login():
             flash("表单错误：" + str(form.errors))
             return redirect(url_for("auth.login"))
 
-
+# 注册新用户的路由(注册时自动添加日记)
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -83,9 +84,9 @@ def register():
             # 创建分析器实例
             analyzer = EmotionAnalyzer(f"U{user.id}")
             
-            # 添加季羡林日记
+            # 添加自动创建的日记
             for diary_data in AUTO_CREATE_DIARIES:
-                # 先创建日记对象获取统一时间
+                # 先创建日记对象获取统一时间，确保向量数据库和关系数据库的时间一致
                 diary = DiaryModel(
                     title=diary_data["title"],
                     content='',  # 临时占位
@@ -107,8 +108,8 @@ def register():
                 # 添加短暂延迟确保向量数据库操作完成
                 import time
                 time.sleep(1)
-            
-            db.session.commit()
+                #提交日记到关系数据库
+                db.session.commit()
             flash('注册成功，请登录', 'success')
             return redirect(url_for('auth.login'))
             
@@ -117,6 +118,7 @@ def register():
             flash(f'注册失败: {str(e)}', 'error')
     return render_template('register.html', form=form)
 
+# 获取邮箱验证码的路由
 @bp.route("/captcha/email", methods=["GET"])
 def get_email_captcha():
     email = request.args.get('email')
@@ -138,12 +140,13 @@ def get_email_captcha():
     except Exception as e:
         return jsonify({"code": 500, "message": "验证码发送失败"})
 
-
+# 退出登录的路由
 @bp.route("/logout")
 def logout():
     logout_user()
     return redirect(url_for('index.index_page'))
 
+# 修改密码的路由
 @bp.route("/change_password", methods=["GET", "POST"])
 def change_password():
     form = ChangeForm()
