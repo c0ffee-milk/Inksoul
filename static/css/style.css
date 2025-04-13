@@ -1,8 +1,9 @@
 /* 全局样式 */
 html, body {
-    height: 100%;
+
     margin: 0;
     padding: 0;
+     overflow-y: hidden;
 }
 
 body {
@@ -33,6 +34,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+   max-height: 90vh; /* 根据需要调整最大高度 */
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -180,7 +182,6 @@ body {
     margin-top: 20px;
     display: flex;
     width: 100%;
-    /* 确保搜索框和按钮在同一行 */
     flex-wrap: nowrap;
 }
 
@@ -201,7 +202,7 @@ body {
 }
 
 .search-box button {
-    padding: 12px 20px;
+    padding: 12px 26px;
     background-color: #6f42c1;
     color: #fff;
     border: none;
@@ -381,7 +382,7 @@ body {
     background: #f9f6ff;
     border-radius: 8px;
     max-height: calc(100vh - 250px); /* 根据实际情况调整最大高度 */
-    overflow-y: auto; /* 内容超出时滚动 */
+    overflow-y: visible; /* 内容超出时滚动 */
 }
 
 .diary-card {
