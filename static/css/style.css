@@ -18,12 +18,12 @@ body {
 /* 主容器样式 */
 .main-container {
     display: flex;
-    width: 80%; /* 可以根据需要调整宽度，留出两边的空白 */
-    max-width: 1200px; /* 最大宽度 */
-    min-height: 90vh; /* 使用 min-height 确保容器可以自适应高度 */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 给容器添加阴影 */
-    border-radius: 5px; /* 圆角 */
-    margin: 5vh auto; /* 垂直居中 */
+    width: 80%;
+    max-width: 1200px;
+    min-height: 90vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin: 5vh auto;
 }
 
 /* 主内容区域样式 */
@@ -32,46 +32,48 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* 让主内容区域可以自适应高度 */
-    overflow-y: auto; /* 内容超出时滚动 */
-    box-sizing: border-box; /* 确保内边距包含在宽度内 */
+    flex-grow: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 /* 导航栏样式 */
 .sidebar {
-    width: 25%;
-    background-color: #e9e1f9; /* 淡紫色背景 */
+    width: 29%;
+    background-color: #e9e1f9;
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-right: 1px solid #d6c7f7; /* 紫色边框 */
+    border-right: 1px solid #d6c7f7;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease; /* 侧边栏过渡效果 */
-    box-sizing: border-box; /* 确保内边距包含在宽度内 */
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  
 }
 
 .sidebar:hover {
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* 鼠标悬停时增强阴影 */
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-inner {
-    position: sticky;
-    top: 5vh;
-    overflow-y: auto;
-    max-height: calc(90vh - 40px); /* 固定高度 */
+    /* 移除滚动样式 */
+    position: static;
+    top: auto;
+    overflow-y: visible;
 }
+
 .heatmap {
     background-color: #f9f6ff;
     padding: 10px;
     border-radius: 5px;
     transition: all 0.3s ease;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* 增加阴影 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .heatmap:hover {
-    transform: translateY(-2px); /* 鼠标悬停时上移 */
+    transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -80,7 +82,7 @@ body {
     background-color: #eee;
     margin-top: 10px;
     border-radius: 5px;
-    overflow: hidden; /* 防止内容溢出 */
+    overflow: hidden;
 }
 
 .category {
@@ -169,7 +171,7 @@ body {
 }
 
 .category li:hover {
-    color: #6f42c1; /* 紫色 */
+    color: #6f42c1;
     background-color: #e9e1f9;
     border-radius: 3px;
 }
@@ -177,38 +179,45 @@ body {
 .search-box {
     margin-top: 20px;
     display: flex;
+    width: 100%;
+    /* 确保搜索框和按钮在同一行 */
+    flex-wrap: nowrap;
 }
 
 .search-box input {
     flex: 1;
-    padding: 10px;
+    padding: 12px 15px;
     border: none;
-    border-radius: 5px 0 0 5px;
+    border-radius: 8px 0 0 8px;
     background-color: #fff;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    outline: none; /* 去除默认聚焦边框 */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    outline: none;
     transition: box-shadow 0.3s ease;
+    font-size: 14px;
 }
 
 .search-box input:focus {
-    box-shadow: 0 0 5px rgba(111, 66, 193, 0.5); /* 聚焦时的阴影效果 */
+    box-shadow: 0 0 8px rgba(111, 66, 193, 0.5);
 }
 
 .search-box button {
-    padding: 10px 15px;
-    background-color: #6f42c1; /* 紫色 */
+    padding: 12px 20px;
+    background-color: #6f42c1;
     color: #fff;
     border: none;
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 8px 8px 0;
     cursor: pointer;
     transition: background-color 0.3s ease;
     outline: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .search-box button:hover {
-    background-color: #5a32a3; /* 深紫色 */
+    background-color: #5a32a3;
+    transform: scale(1.02);
 }
-
 
 .login-register {
     align-self: flex-end;
