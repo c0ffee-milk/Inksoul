@@ -109,11 +109,11 @@ def mine():
     for day in range(1, days_in_month + 1):
         count = daily_counts.get(day, 0)
         # 计算颜色强度（0~1）
-        intensity = count / max_count if max_count > 0 else 0
+        intensity = count / 2.5
 
         # RGB分量计算
         base_r, base_g, base_b = 230, 230, 250  # #e6e6fa
-        target_r, target_g, target_b = 75, 0, 130  # #4b0082
+        target_r, target_g, target_b = 106, 0, 181  # #4b0082
 
         r = int(base_r + (target_r - base_r) * intensity)
         g = int(base_g + (target_g - base_g) * intensity)
