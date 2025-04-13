@@ -315,7 +315,7 @@ def generate_weekly_report():
                 author_id=current_user.id,  
                 content=encrypted_report,
                 start_time=start_date,  
-                end_time=end_date, 
+                 end_time=end_date - timedelta(days=1),  # 确保结束时间是前一天
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
