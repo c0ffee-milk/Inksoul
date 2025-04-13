@@ -91,7 +91,7 @@ def register():
                     title=diary_data["title"],
                     content='',  # 临时占位
                     author_id=user.id,
-                    create_time=datetime.strptime(diary_data["create_time"], "%Y-%m-%d")
+                    # create_time=datetime.strptime(diary_data["create_time"], "%Y-%m-%d")
                 )
                 db.session.add(diary)
                 db.session.flush()  # 生成create_time但不提交事务
