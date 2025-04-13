@@ -13,23 +13,39 @@ from logging import Logger
 from dotenv import load_dotenv
 
 
+# 加载环境变量配置
 load_dotenv()  # 加载.env文件
 os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
 
-# 配置参数
-ZHIPUAI_API_KEY = os.getenv("ZHIPUAI_API_KEY")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")
+# API密钥配置
+ZHIPUAI_API_KEY = os.getenv("ZHIPUAI_API_KEY")  # 智谱AI API密钥
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")  # DeepSeek API密钥
+TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")  # 通义API密钥
 
 # ================== 增强型数据库管理器 ==================
 class VectorDBManager:
+    """
+    向量数据库管理器
+    负责管理知识库和用户日记库的存储、检索和删除操作
+    使用Chroma向量数据库实现文本的向量化存储和检索
+    """
     def __init__(self):
+        """
+        初始化向量数据库管理器
+        设置嵌入模型和日志记录器
+        """
         self.embedding = ZhipuAIEmbeddings(zhipuai_api_key=ZHIPUAI_API_KEY)
         self.logger = logging.getLogger("VectorDBManager")
         self.logger.addHandler(logging.NullHandler())
         
     def get_knowledge_db(self) -> Chroma:
-        """心理学知识库（长期存储）"""
+        """
+        获取心理学知识库
+        用于存储和检索心理学相关的知识内容
+        
+        Returns:
+            Chroma: 知识库实例
+        """
         return Chroma(
             persist_directory='data_base/knowledge_db',
             embedding_function=self.embedding,
@@ -37,7 +53,19 @@ class VectorDBManager:
         )
     
     def get_diary_db(self, user_id: str) -> Chroma:
-        """用户日记库（基于用户隔离）"""
+        """
+        获取用户日记库
+        为每个用户创建独立的日记存储空间
+        
+        Args:
+            user_id (str): 用户ID，格式为"U"开头加数字
+            
+        Returns:
+            Chroma: 用户专属的日记库实例
+            
+        Raises:
+            PermissionError: 当目录无写入权限时抛出
+        """
         # 创建用户专属目录
         base_dir = os.path.abspath('data_base/diary_db')
         user_dir = os.path.join(base_dir, user_id)
@@ -58,12 +86,18 @@ class VectorDBManager:
         )
     
     def delete_diary_by_timestamp(self, user_id: str, timestamp: float) -> bool:
-        """根据精确时间戳删除日记（精确到秒）
+        """
+        根据精确时间戳删除日记
+        
         Args:
-            user_id: 用户ID
-            timestamp: 精确到秒的时间戳
+            user_id (str): 用户ID
+            timestamp (float): 精确到秒的时间戳
+            
         Returns:
-            bool: 是否删除成功
+            bool: 删除是否成功
+            
+        Note:
+            使用精确匹配确保只删除指定时间的日记
         """
         try:
             diary_db = self.get_diary_db(user_id)
@@ -100,14 +134,28 @@ class VectorDBManager:
 
 # ================== 智能分析引擎 ==================
 class EmotionAnalyzer:
+    """
+    情感分析引擎
+    基于大语言模型和心理学理论，对用户日记进行深度情感分析
+    支持日常分析和周期性分析两种模式
+    """
     def __init__(self, user_id: str):
+        """
+        初始化情感分析引擎
+        
+        Args:
+            user_id (str): 用户ID，格式为"U"开头加数字
+            
+        Raises:
+            ValueError: 当用户ID格式不正确时抛出
+        """
         self.user_id = user_id
         
         # 验证用户ID格式
         if not re.match(r"^U\d+$", self.user_id):
             raise ValueError("用户ID格式应为 U+数字")
         
-         # 新增日志配置
+        # 配置日志记录器
         self.logger = logging.getLogger(f"EmotionAnalyzer.{user_id}")
         self.logger.setLevel(logging.INFO)
         
@@ -120,6 +168,7 @@ class EmotionAnalyzer:
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
         
+        # 初始化数据库和语言模型
         self.db = VectorDBManager()
         self.llm = ChatOpenAI(
             temperature=0,
@@ -128,19 +177,17 @@ class EmotionAnalyzer:
             base_url="https://api.deepseek.com"
         )
         
-        # 初始化带用户隔离的日记库
+        # 初始化数据库连接
         self.knowledge_db = self.db.get_knowledge_db()
-        self.diary_db = self.db.get_diary_db(self.user_id)  # 传入用户ID
+        self.diary_db = self.db.get_diary_db(self.user_id)
 
-        # 添加存在性检查
+        # 验证数据库目录
         assert os.path.exists(self.diary_db._persist_directory), "用户数据库目录未创建"
-
         
-        # 双模式提示模板
+        # 初始化提示模板
         self.templates = {
             "daily": PromptTemplate(
                 input_variables=["knowledge", "current_diary"],
-
                 template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对用户日记进行结构化心理分析：
                 
                 【专业知识】
@@ -203,7 +250,6 @@ class EmotionAnalyzer:
                 {{'overall_analysis': '您的日记展现了一种细腻的生活观察与复杂的情感交织。晨跑时的太极老人、早餐铺的温暖互动、旧书店的怀旧时光，都透露出对生活细节的敏感捕捉。然而，升舱短信触发的记忆、帮邻居修门锁时的代际差异，以及电梯里的疲惫面孔，又暗示着某种对时间流逝和现代生活疏离感的微妙焦虑。整体上，您的情感基调是平和中有波澜，温暖里带沉思。', 'emotional_basis': {{'喜悦': 65, '信任': 70, '害怕': 20, '惊讶': 30, '难过': 40, '厌恶': 10, '生气': 5, '期待': 50}}, 'emotion_label': ['怀旧的慰藉', '温柔的疏离', '时光焦虑'], 'emotion_type': '平和', 'keywords': {{'晨跑太极': 85, '早餐铺人情': 90, '旧书店怀旧': 75, '里程过期': 60, '赛博弄堂': 50, '电梯疲惫': 40}}, 'immediate_suggestion': {{'music': {{'music_suggestion1': '《Rainy Day》- Coldplay，舒缓的旋律适合雨天放松心情', 'music_suggestion2': '《A Thousand Years》- Christina Perri，温柔的节奏帮助您平静思考'}}, 'books': '《看不见的城市》- 卡尔维诺，关于记忆与城市的诗意叙述，与您发现的粮票形成互文', 'activities': '今晚适合用老式信纸给三年后的自己写封信，定格此刻对时间流逝的感悟', 'techniques': '明早买早餐时专注记录三种声音、两种质地，用感官体验对抗抽象焦虑'}}, 'history_moment': '1935年，本雅明在巴黎旧书摊淘到一张19世纪明信片时同样怔住——那些被遗忘的通讯地址，与您发现的粮票一样，都是时光洪流中的漂流瓶。'}}
                 """
             ),
-
             "weekly": PromptTemplate(
                 input_variables=["knowledge", "diaries"],
                 template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对过去一段时间的日记进行周期性分析：
@@ -270,6 +316,17 @@ class EmotionAnalyzer:
         }
 
     def _get_time_range(self, start: datetime = None, end: datetime = None, days: int = 7) -> dict:
+        """
+        生成时间范围查询条件
+        
+        Args:
+            start (datetime, optional): 开始时间
+            end (datetime, optional): 结束时间
+            days (int, optional): 天数，默认7天
+            
+        Returns:
+            dict: MongoDB查询条件
+        """
         end = end or datetime.now()
         start = start or (end - timedelta(days=days))
         return {
@@ -280,7 +337,21 @@ class EmotionAnalyzer:
         }
 
     def safe_retrieve(self, collection, query: str, k: int, filter_: dict = None) -> list:
-        """安全检索方法"""
+        """
+        安全的向量检索方法
+        
+        Args:
+            collection: 向量数据库集合
+            query (str): 查询文本
+            k (int): 返回结果数量
+            filter_ (dict, optional): 过滤条件
+            
+        Returns:
+            list: 检索结果列表
+            
+        Note:
+            包含错误处理和结果数量调整
+        """
         try:
             # 添加类型检查
             if hasattr(collection, '_collection'):
@@ -304,11 +375,22 @@ class EmotionAnalyzer:
             print(f"检索失败: {str(e)}")
             return []
 
-
-
     def _retrieve_diaries(self, mode: Literal["daily", "weekly"], 
                      query: str = None, start: datetime = None, 
                      end: datetime = None, days: int = None) -> str:
+        """
+        检索用户日记
+        
+        Args:
+            mode (Literal["daily", "weekly"]): 检索模式
+            query (str, optional): 查询文本
+            start (datetime, optional): 开始时间
+            end (datetime, optional): 结束时间
+            days (int, optional): 天数
+            
+        Returns:
+            str: 合并后的日记文本
+        """
         # 添加用户过滤条件
         base_filter = {"user_id": self.user_id}
         
@@ -336,12 +418,16 @@ class EmotionAnalyzer:
         
         return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
 
-
     def log_diary(self, text: str, timestamp: float = None):
-        """保存单条日记到向量数据库（时间戳由后端精确控制）
+        """
+        保存日记到向量数据库
+        
         Args:
-            text: 日记内容
-            timestamp: 精确到秒的时间戳（可选，不传则使用当前时间戳）
+            text (str): 日记内容
+            timestamp (float, optional): 时间戳，精确到秒
+            
+        Note:
+            会检查重复日记，避免重复保存
         """
         try:
             # 强制时间戳精确到秒（去掉毫秒部分）
@@ -372,14 +458,21 @@ class EmotionAnalyzer:
                     "date": int(timestamp)
                 }]
             )
-            # self.diary_db.persist()
             self.logger.info(f"[SUCCESS] 日记已保存（时间：{datetime.fromtimestamp(timestamp)}）")
         except Exception as e:
             self.logger.error(f"[ERROR] 保存失败: {str(e)}")
             raise
 
     def get_diary_dates(self) -> list:
-        """获取用户所有日记的日期列表（按时间排序）"""
+        """
+        获取用户所有日记的日期列表
+        
+        Returns:
+            list: 按时间排序的日期列表
+            
+        Note:
+            返回的日期格式为 "YYYY-MM-DD"
+        """
         try:
             # 获取所有元数据
             collection = self.diary_db.get()
@@ -401,9 +494,23 @@ class EmotionAnalyzer:
             self.logger.error(f"[ERROR] 获取日期失败: {str(e)}")
             return []
 
-
     def analyze(self, mode: Literal["daily", "weekly"], diary: str = None, timestamp: float = None, start_date: datetime = None, end_date: datetime = None) -> dict:
-        """执行分析（双模式入口）"""
+        """
+        执行情感分析
+        
+        Args:
+            mode (Literal["daily", "weekly"]): 分析模式
+            diary (str, optional): 日记内容（日常模式需要）
+            timestamp (float, optional): 时间戳
+            start_date (datetime, optional): 开始日期（周期模式需要）
+            end_date (datetime, optional): 结束日期（周期模式需要）
+            
+        Returns:
+            dict: 分析结果
+            
+        Note:
+            支持日常分析和周期分析两种模式
+        """
         # 知识检索（不同模式使用不同查询策略）
         knowledge_query = "情绪分析" if mode == "daily" else "长期情绪分析与管理"
         knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 5})
@@ -437,21 +544,23 @@ class EmotionAnalyzer:
             return {"error": "分析结果解析失败"}
         
     def delete_diary(self, target_datetime: datetime) -> dict:
-        """删除指定精确时间的日记（支持到秒）
+        """
+        删除指定时间的日记
+        
         Args:
-            target_datetime: 包含具体时间的datetime对象
+            target_datetime (datetime): 目标时间
+            
         Returns:
             dict: 操作结果
-        """
-        
-        try:
             
+        Note:
+            支持精确到秒的删除操作
+        """
+        try:
             if not isinstance(target_datetime, datetime):
                 raise ValueError("target_datetime 必须是 datetime 类型")
                 
             timestamp = int(target_datetime.timestamp())
-
-            
             
             # 验证日记存在
             collection = self.diary_db._collection
@@ -471,21 +580,17 @@ class EmotionAnalyzer:
                     "message": "指定时间的日记不存在"
                 }
             
-            # 使用 ids 执行删除
             result = collection.delete(ids=ids_to_delete)
-            # self.diary_db.persist()  # 确保持久化
             
             if result is None or (isinstance(result, dict) and not result.get('ids')):
-                # 在这种情况下，我们假设删除已经成功，因为先前已确认了 ids_to_delete 非空
                 self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {ids_to_delete})")
                 return {
                     "status": "success",
                     "message": "日记删除成功",
                     "deleted_time": target_datetime.isoformat(),
-                    "deleted_ids": ids_to_delete  # 添加删除的 ID 信息以便跟踪
+                    "deleted_ids": ids_to_delete
                 }
             else:
-                # 如果 result 中有 ids 信息，使用它们
                 deleted_ids = result.get('ids', []) if isinstance(result, dict) else []
                 self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {deleted_ids})")
                 return {
