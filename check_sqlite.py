@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('d:/webapp/web_for_Inksoul/data_base/diary_db/U16/chroma.sqlite3')
+conn = sqlite3.connect('d:/webapp/web_for_Inksoul/data_base/diary_db/U17/chroma.sqlite3')
 cursor = conn.cursor()
 
 # 只查询键为chroma:document的元数据
