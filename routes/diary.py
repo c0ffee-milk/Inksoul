@@ -283,7 +283,13 @@ def weekly_report_detail(report_id):
 @bp.route('/generate_weekly_report', methods=['POST','GET'])
 @login_required
 def generate_weekly_report():
-    form = TimeForm(request.form)
+    # 检查请求内容类型
+    if request.is_json:
+        data = request.get_json()
+        form = TimeForm(data=data)  # 使用JSON数据初始化表单
+    else:
+        form = TimeForm(request.form)  # 传统表单提交
+    
     if form.validate_on_submit():
         try:
             # 验证表单输入
@@ -293,8 +299,10 @@ def generate_weekly_report():
             try:
                 start_date = datetime.strptime(form.start_time.data, '%Y-%m-%d')
                 end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d') + timedelta(days=1)
+                # 测试前端是否传参成功
+                print("接收到的日期参数:", start_date, end_date)
             except ValueError as e:
-                return jsonify(success=False, message=f"Invalid date format: {str(e)}"), 400
+                return jsonify(success=False, message=f"日期格式无效: {str(e)}"), 400
 
             # 获取该时间范围内的日记数量
             diary_count = DiaryModel.query.filter(
@@ -310,7 +318,7 @@ def generate_weekly_report():
 
             # 生成周报内容
             analyzer = EmotionAnalyzer(f"U{current_user.id}")
-            report_data = analyzer.analyze('weekly', start_date, end_date)  
+            report_data = analyzer.analyze(mode='weekly', start_date=start_date, end_date=end_date)  
             
             # 加密存储到数据库
             encrypted_report = cipher.encrypt(json.dumps(report_data))
