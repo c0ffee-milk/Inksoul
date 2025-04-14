@@ -315,7 +315,6 @@ def generate_weekly_report():
             if diary_count == 0:
                 return jsonify(success=False, message="该时间段内没有日记记录"), 400
 
-
             # 生成周报内容
             analyzer = EmotionAnalyzer(f"U{current_user.id}")
             report_data = analyzer.analyze(mode='weekly', start_date=start_date, end_date=end_date)  

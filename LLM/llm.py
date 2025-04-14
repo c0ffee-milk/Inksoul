@@ -11,6 +11,9 @@ import os
 import logging
 from logging import Logger
 from dotenv import load_dotenv
+from Cryptodome.Cipher import AES
+from Cryptodome.Random import get_random_bytes
+import base64
 
 
 # 加载环境变量配置
@@ -21,6 +24,17 @@ os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
 ZHIPUAI_API_KEY = os.getenv("ZHIPUAI_API_KEY")  # 智谱AI API密钥
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")  # DeepSeek API密钥
 TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")  # 通义API密钥
+
+# 加密密钥配置
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "").encode('utf-8')
+if not ENCRYPTION_KEY:
+    raise ValueError("ENCRYPTION_KEY 未在环境变量中设置")
+
+if len(ENCRYPTION_KEY) < 32:
+    ENCRYPTION_KEY = ENCRYPTION_KEY.ljust(32, b'\0')
+elif len(ENCRYPTION_KEY) > 32:
+    ENCRYPTION_KEY = ENCRYPTION_KEY[:32]
+
 
 # ================== 增强型数据库管理器 ==================
 class VectorDBManager:
@@ -128,6 +142,62 @@ class VectorDBManager:
         except Exception as e:
             self.logger.error(f"删除日记失败: {str(e)}", exc_info=True)
             return False
+        
+    def _encrypt_text(self, text: str) -> str:
+        """
+        加密文本
+        
+        Args:
+            text (str): 要加密的文本
+            
+        Returns:
+            str: 加密后的文本（JSON格式）
+        """
+        try:
+            cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM)
+            nonce = cipher.nonce
+            
+            # 加密数据
+            ciphertext, tag = cipher.encrypt_and_digest(text.encode('utf-8'))
+            
+            encrypted_dict = {
+                "nonce": base64.b64encode(nonce).decode('utf-8'),
+                "ciphertext": base64.b64encode(ciphertext).decode('utf-8'),
+                "tag": base64.b64encode(tag).decode('utf-8')
+            }
+            
+            return json.dumps(encrypted_dict)
+        except Exception as e:
+            self.logger.error(f"加密失败: {str(e)}")
+            raise
+            
+    def _decrypt_text(self, encrypted_text: str) -> str:
+        """
+        解密文本
+        
+        Args:
+            encrypted_text (str): 加密的文本（JSON格式）
+            
+        Returns:
+            str: 解密后的文本
+        """
+        try:
+            encrypted_dict = json.loads(encrypted_text)
+            
+            nonce = base64.b64decode(encrypted_dict['nonce'])
+            ciphertext = base64.b64decode(encrypted_dict['ciphertext'])
+            tag = base64.b64decode(encrypted_dict['tag'])
+            
+            cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM, nonce=nonce)
+            decrypted_text = cipher.decrypt_and_verify(ciphertext, tag)
+            
+            return decrypted_text.decode('utf-8')
+        except json.JSONDecodeError:
+            self.logger.error("解密失败：无效的JSON格式")
+            raise
+        except Exception as e:
+            self.logger.error(f"解密失败: {str(e)}")
+            raise
 
 
 
@@ -415,8 +485,20 @@ class EmotionAnalyzer:
             docs = self.safe_retrieve(self.diary_db, query, 3, combined_filter)
         else:
             docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, combined_filter)
+
+        decrypted_texts = []
+        for doc in docs:
+            try:
+                if doc.metadata.get("is_encrypted", False):
+                    decrypted_text = self.db._decrypt_text(doc.page_content)
+                    decrypted_texts.append(decrypted_text)
+                else:
+                    decrypted_texts.append(doc.page_content)
+            except Exception as e:
+                self.logger.error(f"解密失败: {str(e)}")
+                continue
         
-        return "\n".join([d.page_content for d in docs]) if docs else "无日记记录"
+        return "\n".join(decrypted_texts) if decrypted_texts else "无日记记录"
 
     def log_diary(self, text: str, timestamp: float = None):
         """
@@ -430,8 +512,10 @@ class EmotionAnalyzer:
             会检查重复日记，避免重复保存
         """
         try:
-            # 强制时间戳精确到秒（去掉毫秒部分）
             timestamp = int(timestamp if timestamp is not None else time.time())
+
+            # 加密文本
+            encrypted_text = self.db._encrypt_text(text)
             
             # 检查是否存在相似日记（相同时间戳+相同用户视为重复）
             existing = self.diary_db.similarity_search(
@@ -451,11 +535,12 @@ class EmotionAnalyzer:
 
             # 添加日记到数据库
             self.diary_db.add_texts(
-                texts=[text],
+                texts=[encrypted_text],
                 metadatas=[{
                     "user_id": self.user_id,
                     "source": "user_diary",
-                    "date": int(timestamp)
+                    "date": int(timestamp),
+                    "is_encrypted": True
                 }]
             )
             self.logger.info(f"[SUCCESS] 日记已保存（时间：{datetime.fromtimestamp(timestamp)}）")
