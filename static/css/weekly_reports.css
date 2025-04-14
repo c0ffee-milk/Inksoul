@@ -75,7 +75,11 @@
 }
 
 .date-range {
-    color: #888;
+    color: black;
+    font-size: 1.2em; /* 字体变大 */
+    font-weight: bold; /* 字体加粗 */
+    letter-spacing: 1px; /* 增加字母间距 */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* 添加文字阴影 */
 }
 
 .diary-count {
@@ -107,4 +111,18 @@
 .no-reports {
     color: #666;
     font-size: 0.95em;
+}
+
+/* 删除按钮样式 */
+.delete-report-btn {
+    align-self: flex-end;
+    background: #8a63d2;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s ease;
+    margin-left: 10px;
 }

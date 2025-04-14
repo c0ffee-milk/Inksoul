@@ -86,7 +86,7 @@
     -webkit-overflow-scrolling: touch; /* 为了在 iOS 设备上实现流畅滚动 */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .report-grid {
         grid-template-columns: 1fr;
     }
@@ -126,4 +126,33 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* 美化推荐卡片图标 */
+.recommend-card i {
+    font-size: 24px;
+    color: #6f42c1;
+    margin-bottom: 10px;
+}
+
+/* 美化推荐内容 */
+.recommend-content p {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #f9f6ff;
+    transition: background-color 0.3s ease;
+    color: #6f42c1;
+    font-size: 16px;
+}
+
+.recommend-content p:hover {
+    background-color: #e9e1f9;
+}
+
+/* 推荐网格布局 */
+.recommend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
 }

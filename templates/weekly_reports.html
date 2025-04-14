@@ -4,6 +4,13 @@
     <title>历史周报</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/weekly_reports.css') }}">
+    <script>
+        function deleteReport(reportId) {
+            if (confirm('确定要删除这份周报吗？')) {
+                window.location.href = "{{ url_for('diary.delete_weekly_report', report_id=0) }}".replace('0', reportId);
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -18,8 +25,11 @@
                         <span class="date-range">{{ report.start }} 至 {{ report.end }}</span>
                         <span class="diary-count">包含{{ report.diary_count }}篇日记</span>
                     </div>
-                    <a href="{{ url_for('diary.weekly_report_detail', report_id=report.id) }}"
-                       class="view-report-btn">查看详情</a>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <a href="{{ url_for('diary.weekly_report_detail', report_id=report.id) }}"
+                           class="view-report-btn">查看详情</a>
+                        <button class="delete-report-btn" onclick="deleteReport({{ report.id }})">删除</button>
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
