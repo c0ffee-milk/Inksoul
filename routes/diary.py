@@ -107,9 +107,12 @@ def mine():
     heatmap_data = []
 
     for day in range(1, days_in_month + 1):
-        count = daily_counts.get(day, 0)
+        if daily_counts.get(day, 0)>5:
+            count = 5
+        else:
+            count = daily_counts.get(day,0)
         # 计算颜色强度（0~1）
-        intensity = count / 2.5
+        intensity = count / 2.7
 
         # RGB分量计算
         base_r, base_g, base_b = 230, 230, 250  # #e6e6fa

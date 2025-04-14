@@ -271,11 +271,11 @@
             <form id="weekly-form">
                 <div class="form-group">
                     <label>开始日期：</label>
-                    <input type="date" id="start-date" required>
+                    <input type="date" id="start-date" required min="1900-01-01">
                 </div>
                 <div class="form-group">
                     <label>结束日期：</label>
-                    <input type="date" id="end-date" required>
+                    <input type="date" id="end-date" required min="1900-01-01">
                 </div>
                 <button type="submit" class="analyze-btn" id="submit-weekly">生成报告</button>
                 <div id="weekly-error" style="color: red; margin-top: 10px;"></div>
