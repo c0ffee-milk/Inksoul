@@ -27,17 +27,6 @@ body {
     margin: 5vh auto;
 }
 
-/* 主内容区域样式 */
-.main-content {
-    width: 75%;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-   max-height: 90vh; /* 根据需要调整最大高度 */
-    overflow-y: auto;
-    box-sizing: border-box;
-}
 
 /* 导航栏样式 */
 .sidebar {
@@ -220,9 +209,36 @@ body {
     transform: scale(1.02);
 }
 
+/* 主内容区域样式 */
+.main-content {
+    width: 75%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+   max-height: 90vh; /* 根据需要调整最大高度 */
+    overflow-y: auto;
+    box-sizing: border-box;
+
+}
+
+.logo {
+    display: flex;
+    align-items: center; /* 垂直居中对齐 */
+    margin-left: -200px; /* 添加负值的 margin-left 左移 logo，可按需调整 */
+}
+
+.logo svg {
+    height: 60px; /* 设置 logo 的高度，可根据实际情况调整 */
+    width: auto; /* 保持图片的宽高比 */
+    margin-left: -600px;
+}
+
 .login-register {
     align-self: flex-end;
     margin-bottom: 20px;
+    display: flex;
+    align-items: center; /* 垂直居中对齐 */
 }
 
 .login-register button {
