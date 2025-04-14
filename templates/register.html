@@ -38,20 +38,32 @@
 
                 <div class="form-group">
                     <label class="form-label">用户名</label>
-                    <input class="form-input" type="text" name="username" placeholder="2 - 16位字符" required>
-                    <div class="error-msg" id="username-error"></div>
+                    <input class="form-input" type="text" name="username" placeholder="3 - 16位字符" required>
+                    {% if form.username.errors %}
+                        <div class="error-msg" id="username-error">{{ form.username.errors[0] }}</div>
+                    {% else %}
+                        <div class="error-msg" id="username-error"></div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">密码</label>
                     <input class="form-input" type="password" name="password" placeholder="至少6位" required>
-                    <div class="error-msg" id="password-error"></div>
+                    {% if form.password.errors %}
+                        <div class="error-msg" id="password-error">{{ form.password.errors[0] }}</div>
+                    {% else %}
+                        <div class="error-msg" id="password-error"></div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">确认密码</label>
                     <input class="form-input" type="password" name="password_confirm" placeholder="再次输入密码" required>
-                    <div class="error-msg" id="password-confirm-error"></div>
+                    {% if form.password_confirm.errors %}
+                        <div class="error-msg" id="password-confirm-error">{{ form.password_confirm.errors[0] }}</div>
+                    {% else %}
+                        <div class="error-msg" id="password-confirm-error"></div>
+                    {% endif %}
                 </div>
 
                 <button type="submit" class="auth-btn">立即注册</button>

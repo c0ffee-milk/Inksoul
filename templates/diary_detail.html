@@ -118,17 +118,15 @@
             </div>
         </div>
         <div class="recommend-book recommend-card">
-            <i class="fas fa-book-open"></i>
-            <div class="recommend-content">
-                {% if analysis.immediate_suggestion.book %}
-                    {% for key, value in analysis.immediate_suggestion.book.items() %}
-                        <p>{{ value }}</p>
-                    {% endfor %}
-                {% else %}
-                    <p>暂无书籍推荐</p>
-                {% endif %}
-            </div>
-        </div>
+    <i class="fas fa-book-open"></i>
+    <div class="recommend-content">
+        {% if analysis.immediate_suggestion.books %}
+            <p>{{ analysis.immediate_suggestion.books }}</p>
+        {% else %}
+            <p>暂无书籍推荐</p>
+        {% endif %}
+    </div>
+</div>
     </div>
 </div>
 
