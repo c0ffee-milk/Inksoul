@@ -91,7 +91,7 @@ def register():
                     title=diary_data["title"],
                     content='',  # 临时占位
                     author_id=user.id,
-                    # create_time=datetime.strptime(diary_data["create_time"], "%Y-%m-%d")
+                    create_time=datetime.strptime(diary_data["time"], "%Y-%m-%d")
                 )
                 db.session.add(diary)
                 db.session.flush()  # 生成create_time但不提交事务
@@ -99,7 +99,7 @@ def register():
                 # 记录日记到向量数据库(使用与SQL数据库相同的时间戳)
                 create_time_str = diary.create_time.strftime('%Y-%m-%d %H:%M:%S')
                 content_to_log = diary_data["content"]
-                analyzer.log_diary(text=f"[{create_time_str}]\n{content_to_log}", timestamp=int(diary.create_time.timestamp()))
+                analyzer.log_diary(text=f"[{create_time_str}]\n{content_to_log}", timestamp=int(datetime.strptime(diary_data["time"], "%Y-%m-%d").timestamp()))
                 
                 # 加密并更新日记内容
                 diary.content = cipher.encrypt(diary_data["content"])
