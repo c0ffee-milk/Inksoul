@@ -157,3 +157,4 @@ def change_password():
             return redirect(url_for('auth.login'))
         else:
             flash('邮箱未注册', 'error')
+    return render_template('change_password.html', form=form)
