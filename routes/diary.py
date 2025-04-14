@@ -375,7 +375,8 @@ def search_by_emotion(emotion_type):
                         'title': diary.title,
                         'content': decrypted_content,
                         'analyze': analysis,  # 使用已解析的分析结果
-                        'create_time': diary.create_time
+                        'create_time': diary.create_time,
+                        'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
                     })
         result_count = len(filtered_diaries)
         return render_template('index.html', diaries=filtered_diaries,
@@ -414,7 +415,8 @@ def search():
                     'title': diary.title,
                     'content': decrypted_content,
                     'analyze': decrypted_analysis,
-                    'create_time': diary.create_time
+                    'create_time': diary.create_time,
+                    'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
                 })
         
         # 计算搜索结果数量
@@ -453,7 +455,8 @@ def search_by_date(date_str):
                 'title': diary.title,
                 'content': decrypted_content,
                 'analyze': decrypted_analysis,
-                'create_time': diary.create_time
+                'create_time': diary.create_time,
+                'is_analyzed': diary.is_analyzed  # 添加 is_analyzed 状态
             })
         result_count = len(filtered_diaries)
         return render_template('index.html', diaries=filtered_diaries,
