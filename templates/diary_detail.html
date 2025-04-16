@@ -1,6 +1,6 @@
-<!-- diary_detail.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.4"></script>
@@ -14,26 +14,17 @@
             min-height: 400px;
             position: relative;
         }
+
         #wordcloud {
             min-height: 300px;
             border-radius: 12px;
             background: #f9f6ff;
         }
-        /* 新增样式：将日记内容和分析部分分隔为两列 */
-        .main-container {
-            display: flex;
-            gap: 20px;
-        }
-        .main-content,
-        .analysis-report {
-            flex: 1;
-            min-height: 80vh;
-            overflow-y: auto;
-        }
     </style>
     <script src="{{ url_for('static', filename='js/wordcloud2.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="main-container">
         <div class="main-content">
@@ -61,7 +52,7 @@
                     <h3><i class="fas fa-brain"></i> 情绪构成</h3>
                     <div class="chart-container">
                         <canvas id="emotionRadar"
-                                data-emotional-basis="{{ analysis.emotional_basis|tojson|forceescape }}"></canvas>
+                            data-emotional-basis="{{ analysis.emotional_basis|tojson|forceescape }}"></canvas>
                     </div>
                 </div>
 
@@ -91,45 +82,39 @@
                 <div class="report-card historical-card">
                     <h3><i class="fas fa-landmark"></i> 历史回响</h3>
                     <div class="history-content">
-
                         {{ analysis.history_moment }}
-
                     </div>
                 </div>
             </div>
 
             <!-- 推荐区 -->
-            <!-- 推荐区 -->
-<div class="recommendation-section">
-   <h3 style="color: #6f42c1;"><i class="fas fa-lightbulb"></i> 每日推荐</h3>
-             
-
-    <div class="recommend-grid">
-        <div class="recommend-card music">
-            <i class="fas fa-music"></i>
-            <div class="recommend-content">
-                {% if analysis.immediate_suggestion.music %}
-                    {% for key, value in analysis.immediate_suggestion.music.items() %}
-                        <p>{{ value }}</p>
-                    {% endfor %}
-                {% else %}
-                    <p>暂无音乐推荐</p>
-                {% endif %}
+            <div class="recommendation-section">
+                <h3 style="color: #6f42c1;"><i class="fas fa-lightbulb"></i> 每日推荐</h3>
+                <div class="recommend-grid">
+                    <div class="recommend-card music">
+                        <i class="fas fa-music"></i>
+                        <div class="recommend-content">
+                            {% if analysis.immediate_suggestion.music %}
+                            {% for key, value in analysis.immediate_suggestion.music.items() %}
+                            <p>{{ value }}</p>
+                            {% endfor %}
+                            {% else %}
+                            <p>暂无音乐推荐</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="recommend-book recommend-card">
+                        <i class="fas fa-book-open"></i>
+                        <div class="recommend-content">
+                            {% if analysis.immediate_suggestion.books %}
+                            <p>{{ analysis.immediate_suggestion.books }}</p>
+                            {% else %}
+                            <p>暂无书籍推荐</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="recommend-book recommend-card">
-    <i class="fas fa-book-open"></i>
-    <div class="recommend-content">
-        {% if analysis.immediate_suggestion.books %}
-            <p>{{ analysis.immediate_suggestion.books }}</p>
-        {% else %}
-            <p>暂无书籍推荐</p>
-        {% endif %}
-    </div>
-</div>
-    </div>
-</div>
-
         </div>
     </div>
     <script>
@@ -141,4 +126,5 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
     <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
 </body>
+
 </html>
