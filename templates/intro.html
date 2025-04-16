@@ -10,8 +10,89 @@
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
     <style>
         /* 设置标题使用更优美的字体 */
-        h1, h2 {
+        h1,
+        h2 {
             font-family: 'Lobster', cursive;
+        }
+
+        /* 图片轮播样式 */
+       .slider {
+            width: 100%;
+            max-width: 700px; /* 设置图片容器最大宽度 */
+            overflow: hidden;
+            margin: 0 auto; /* 水平居中 */
+        }
+
+       .slider img {
+            width: 100%;
+            height: auto; /* 保持图片比例 */
+            display: none;
+            animation: fadeInOut 5s linear infinite;
+        }
+
+       .slider img.active {
+            display: block;
+        }
+
+        @keyframes fadeInOut {
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            10%,
+            90% {
+                opacity: 1;
+            }
+        }
+
+        /* 特色区域内容布局 */
+       .feature-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+       .left-content {
+            flex: 1;
+            min-width: 400px;
+            padding: 0 20px;
+        }
+
+       .right-image {
+            flex: 1;
+            min-width: 600px; /* 设置右侧图片最小宽度 */
+        }
+
+        /* 调整文字介绍的样式 */
+       .feature-subtitle {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 修改字体 */
+            color: #007BFF; /* 修改颜色为蓝色，你可以按需调整 */
+        }
+
+       .feature-text p {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        /* 修改 body 背景颜色 */
+        body {
+            background-color: #f5f0ff; /* 这里设置为浅灰色，你可以根据喜好调整 */
+            /* 或者使用背景图片 */
+            /* background-image: url('your-image-url.jpg'); */
+            /* background-repeat: no-repeat; */
+            /* background-size: cover; */
+
+            /* 添加以下样式来调窄页面宽度并居中 */
+            max-width: 1200px; /* 你可以根据需要调整这个值 */
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -42,14 +123,15 @@
         </div>
         <div class="feature-content">
             <div class="left-content">
-                <div class="feature-subtitle">特色</div>
+                <div class="feature-subtitle">自由自在</div>
                 <div class="feature-text">
-                    <p>自由挥洒笔墨，记录生活点滴🎨。简洁界面，轻松输入文字、添加图片和附件，打造专属心灵画卷🖼️。</p>
+                    <p>自由挥洒笔墨，记录生活点滴🎨。</p>
+                    <p>简洁界面，轻松输入文字、添加图片和附件，打造专属心灵画卷🖼️。</p>
                     <p>自主记录，与内心深度对话💬，洞察情绪变化，见证成长历程📈。</p>
                 </div>
             </div>
-            <div class="right-image">
-                <img src="{{ url_for('static', filename='images/self-record.png') }}" alt="自主记录">
+            <div class="right-image slider">
+                <img src="{{ url_for('static', filename='images/self-record.png') }}" alt="自主记录" class="active">
             </div>
         </div>
     </section>
@@ -60,14 +142,18 @@
         </div>
         <div class="feature-content">
             <div class="left-content">
-                <div class="feature-subtitle">特色</div>
+                <div class="feature-subtitle">情感洞察</div>
                 <div class="feature-text">
-                    <p>AI 智慧剖析，生成精准报告📊。识别情绪倾向、关键词和主题，助你理解内心世界🧐。</p>
+                    <p>AI 智慧剖析，生成精准报告📊。</p>
+                    <p>识别情绪倾向、关键词和主题，助你理解内心世界🧐。</p>
                     <p>分析报告提供建议启示💡，助你调整心态，保持心理健康🌈。</p>
                 </div>
             </div>
-            <div class="right-image">
-                <img src="{{ url_for('static', filename='images/ai-analysis.png') }}" alt="AI 分析">
+            <div class="right-image slider">
+                <img src="{{ url_for('static', filename='images/ai-analysis1.png') }}" alt="AI 分析" class="active">
+                <img src="{{ url_for('static', filename='images/ai-analysis2.png') }}" alt="AI 分析">
+                <img src="{{ url_for('static', filename='images/ai-analysis3.png') }}" alt="AI 分析">
+                <img src="{{ url_for('static', filename='images/ai-analysis4.png') }}" alt="AI 分析">
             </div>
         </div>
     </section>
@@ -78,14 +164,16 @@
         </div>
         <div class="feature-content">
             <div class="left-content">
-                <div class="feature-subtitle">特色</div>
+                <div class="feature-subtitle">阶段性总结</div>
                 <div class="feature-text">
-                    <p>每周自动总结，呈现情绪波动曲线📈、关键词和主题变化。助你回顾成长，发现改进方向🔍。</p>
+                    <p>自主生成总结，呈现情绪波动曲线📈、关键词和主题变化。</p>
+                    <p>助你回顾成长，发现改进方向🔍。</p>
                     <p>周报提供个性化建议💡，助你优化生活方式，提升生活质量🥰。</p>
                 </div>
             </div>
-            <div class="right-image">
-                <img src="{{ url_for('static', filename='images/weekly-report.png') }}" alt="周报">
+            <div class="right-image slider">
+                <img src="{{ url_for('static', filename='images/weekly-report.png') }}" alt="周报" class="active">
+                <img src="{{ url_for('static', filename='images/weekly-report2.png') }}" alt="周报">
             </div>
         </div>
     </section>
@@ -98,7 +186,6 @@
         </div>
     </section>
 
-
     <!-- 末尾注册按钮 -->
     <section class="end-register">
         <a href="{{ url_for('auth.register') }}"><button class="cta-button">立即注册</button></a>
@@ -106,8 +193,29 @@
 
     <!-- 页脚 -->
     <footer>
-        <p>&copy; 2024 心灵墨迹. 保留所有权利.</p>
+        <p>&copy; 2025 心灵墨迹. 保留所有权利.</p>
     </footer>
+
+    <script>
+        // 初始化图片轮播
+        const sliders = document.querySelectorAll('.slider');
+        sliders.forEach(slider => {
+            const images = slider.querySelectorAll('img');
+            let currentIndex = 0;
+            function showImage() {
+                images.forEach((img, index) => {
+                    if (index === currentIndex) {
+                        img.classList.add('active');
+                    } else {
+                        img.classList.remove('active');
+                    }
+                });
+                currentIndex = (currentIndex + 1) % images.length;
+            }
+            setInterval(showImage, 5000); // 每 5 秒切换一次图片
+            showImage();
+        });
+    </script>
 </body>
 
 </html>
