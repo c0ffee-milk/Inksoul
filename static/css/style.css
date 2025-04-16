@@ -1,7 +1,4 @@
-/* 全局设置，确保所有元素都使用 border-box 盒模型 */
-* {
-    box-sizing: border-box;
-}
+
 /* 增加字体回退 */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -26,13 +23,6 @@ input, textarea, button {
     appearance: none;
     border-radius: 0;
 }
-
-input[type="date"]::-webkit-inner-spin-button,
-input[type="date"]::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
-}
-
 /* 旧版浏览器渐变回退 */
 .gradient-bar {
     background: #e6e6fa;
