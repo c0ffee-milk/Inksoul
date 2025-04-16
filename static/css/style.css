@@ -1,4 +1,3 @@
-
 /* 增加字体回退 */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -15,13 +14,6 @@ body {
     font-variant: normal;
     text-transform: none;
     line-height: 1;
-}
-/* 统一表单控件样式 */
-input, textarea, button {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 0;
 }
 /* 旧版浏览器渐变回退 */
 .gradient-bar {
@@ -792,58 +784,4 @@ body {
     transform: translateY(-2px);
 }
 
-/* 增加媒体查询 */
-@media (max-width: 768px) {
-    .main-container {
-        flex-direction: column;
-        width: 95%;
-        margin: 2vh auto;
-    }
 
-    .sidebar, .main-content {
-        width: 100%;
-        max-height: none;
-    }
-
-    .heatmap-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
-
-    .diary-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .login-register {
-        flex-direction: column;
-        align-items: flex-end;
-    }
-
-    .logo {
-        margin-right: 0;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .heatmap-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    .category ul {
-        grid-template-columns: 1fr;
-    }
-
-    .weekly-buttons {
-        flex-direction: column;
-    }
-}
-
-/* 增加浏览器前缀 */
-.diary-card {
-    -webkit-transform: translateY(0);
-    -moz-transform: translateY(0);
-    transform: translateY(0);
-    -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    -moz-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
