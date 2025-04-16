@@ -298,7 +298,7 @@ def generate_weekly_report():
                 
             try:
                 start_date = datetime.strptime(form.start_time.data, '%Y-%m-%d')
-                end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d') + timedelta(days=1)
+                end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d')
                 # 测试前端是否传参成功
                 print("接收到的日期参数:", start_date, end_date)
             except ValueError as e:
@@ -308,7 +308,7 @@ def generate_weekly_report():
             diary_count = DiaryModel.query.filter(
                 DiaryModel.author_id == current_user.id,
                 DiaryModel.create_time >= start_date,
-                DiaryModel.create_time < end_date
+                DiaryModel.create_time <= end_date
             ).count()
 
             # 检查是否有日记记录
@@ -325,7 +325,7 @@ def generate_weekly_report():
                 author_id=current_user.id,  
                 content=encrypted_report,
                 start_time=start_date,  
-                 end_time=end_date - timedelta(days=1),  # 确保结束时间是前一天
+                 end_time=end_date,  # 确保结束时间是前一天
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
