@@ -298,7 +298,7 @@ def generate_weekly_report():
                 
             try:
                 start_date = datetime.strptime(form.start_time.data, '%Y-%m-%d')
-                end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d')
+                end_date = datetime.strptime(form.end_time.data, '%Y-%m-%d') + timedelta(days=1)
                 # 测试前端是否传参成功
                 print("接收到的日期参数:", start_date, end_date)
             except ValueError as e:
@@ -325,7 +325,7 @@ def generate_weekly_report():
                 author_id=current_user.id,  
                 content=encrypted_report,
                 start_time=start_date,  
-                 end_time=end_date,  # 确保结束时间是前一天
+                end_time=end_date - timedelta(days=1),  # 存储时减去一天，保持原始选择的结束日期
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
