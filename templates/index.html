@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>心灵墨迹</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        <!-- 使用rem单位增强字体兼容性 -->
+        html {
+            font-size: 16px;
+            font-size: calc(16px + 0.1vw);
+        }
         /* 为按钮添加悬停效果 */
         button:hover {
             background-color: #e0e0e0;
@@ -100,6 +105,21 @@
             background: linear-gradient(to right, #e6e6fa, #4b0082);
             border-radius: 5px;
         }
+
+        /* 定义 flash 消息的样式 */
+       .flash-message-fixed {
+            position: fixed;
+            top: 12%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
     </style>
 </head>
 <body>
@@ -190,6 +210,7 @@
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="{{ category }} flash-message-fixed">{{ message }}</div>
+
                     {% endfor %}
                 {% endif %}
             {% endwith %}

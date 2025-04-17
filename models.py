@@ -54,13 +54,14 @@ class DiaryModel(db.Model):
     analyze = db.Column(JSON)
     emotion_type = db.Column(db.String(100), nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    is_analyzed = db.Column(db.Boolean, default=False)  # 新增字段，用于标记是否已分析
+    is_analyzed = db.Column(db.Boolean, default=False)  # 用于标记是否已分析
 
     # 添加日期访问器（兼容原热力图逻辑）
     @property
     def date(self):
         return self.create_time.date()
 
+# 周报模型
 class WeeklyModel(db.Model):
     __tablename__ = "weekly_report"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

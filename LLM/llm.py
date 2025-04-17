@@ -96,7 +96,7 @@ class VectorDBManager:
         return Chroma(
             persist_directory=user_dir,
             embedding_function=self.embedding,
-            collection_name=f"diary_{user_id}"  # 确保集合名称唯一
+            collection_name=f"diary_{user_id}"
         )
     
     def delete_diary_by_timestamp(self, user_id: str, timestamp: float) -> bool:
@@ -135,7 +135,7 @@ class VectorDBManager:
             
             ids_to_delete = existing.get('ids', [])
             if ids_to_delete:
-                collection.delete(ids=ids_to_delete)  # 使用 ids 而不是 where 查询
+                collection.delete(ids=ids_to_delete)
                 diary_db.persist()
                 return True
             return False
@@ -144,15 +144,6 @@ class VectorDBManager:
             return False
         
     def _encrypt_text(self, text: str) -> str:
-        """
-        加密文本
-        
-        Args:
-            text (str): 要加密的文本
-            
-        Returns:
-            str: 加密后的文本（JSON格式）
-        """
         try:
             cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM)
             nonce = cipher.nonce
@@ -477,7 +468,7 @@ class EmotionAnalyzer:
         combined_filter = {
             "$and": [
                 {"user_id": self.user_id},
-                time_filter  # time_filter 本身已经是带有 $gte/$lte 的条件
+                time_filter
             ]
         }
         
@@ -568,7 +559,7 @@ class EmotionAnalyzer:
             for meta in metadatas:
                 if 'date' in meta:
                     dt = datetime.fromtimestamp(meta['date'])
-                    dates.append(dt.strftime("%Y-%m-%d"))  # 格式化为日期字符串
+                    dates.append(dt.strftime("%Y-%m-%d"))
                     
             # 去重并排序
             unique_dates = sorted(list(set(dates)), 

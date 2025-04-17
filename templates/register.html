@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 心灵日记</title>
+    <title>注册 - 心灵墨迹</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -17,7 +17,7 @@
     {% endwith %}
     <div class="auth-container">
         <div class="auth-card">
-            <h2 class="auth-title">加入心灵日记</h2>
+            <h2 class="auth-title">加入心灵墨迹</h2>
             <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
                 {{ form.hidden_tag() }}
 

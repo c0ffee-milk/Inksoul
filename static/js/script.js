@@ -1,3 +1,18 @@
+// 增加fetch polyfill
+if (!window.fetch) {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js"><\/script>');
+}
+
+// 事件监听兼容性处理
+function addEvent(element, event, handler) {
+    if (element.addEventListener) {
+        element.addEventListener(event, handler, false);
+    } else if (element.attachEvent) {
+        element.attachEvent('on' + event, handler);
+    } else {
+        element['on' + event] = handler;
+    }
+}
 // 修改script.js开头部分
 document.addEventListener('DOMContentLoaded', function() {
     // 日记卡片交互

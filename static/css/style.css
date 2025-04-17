@@ -1,3 +1,26 @@
+/* 增加字体回退 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+               'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+/* 图标兼容性处理 */
+[class^="fas"] {
+    font-family: 'Font Awesome 5 Free' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: 900;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+}
+/* 旧版浏览器渐变回退 */
+.gradient-bar {
+    background: #e6e6fa;
+    background: -webkit-linear-gradient(left, #e6e6fa, #4b0082);
+    background: linear-gradient(to right, #e6e6fa, #4b0082);
+}
 /* 全局样式 */
 html, body {
 
@@ -219,19 +242,29 @@ body {
    max-height: 90vh; /* 根据需要调整最大高度 */
     overflow-y: auto;
     box-sizing: border-box;
-
+    position: relative; /* 添加相对定位 */
 }
 
 .logo {
+    position: absolute; /* 绝对定位 */
+    left: 30px; /* 距离主内容区左框线 20px */
+    top: 20px; /* 距离主内容区上框线 20px */
     display: flex;
     align-items: center; /* 垂直居中对齐 */
-    margin-left: -200px; /* 添加负值的 margin-left 左移 logo，可按需调整 */
 }
 
 .logo svg {
     height: 60px; /* 设置 logo 的高度，可根据实际情况调整 */
     width: auto; /* 保持图片的宽高比 */
-    margin-left: -600px;
+}
+
+/* 高DPI设备优化 */
+@media
+(-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    .logo svg {
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+    }
 }
 
 .login-register {
@@ -750,3 +783,5 @@ body {
     background-color: #5a32a3;
     transform: translateY(-2px);
 }
+
+
