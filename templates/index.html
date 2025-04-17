@@ -182,7 +182,7 @@
                     {% endif %}
                 </div>
                 <!-- 情绪分类部分 -->
-                {% if not is_search %}
+                
                 <div class="category">
                     <h3>情绪分类</h3>
                     <ul>
@@ -194,7 +194,7 @@
                         <li><a href="{{ url_for('diary.search_by_emotion', emotion_type='烦闷') }}">😤 烦闷</a></li>
                     </ul>
                 </div>
-                {% endif %}
+                
                 <!-- 搜索框部分 -->
                 <div class="search-box">
                     <form action="{{ url_for('diary.search') }}" method="GET">
