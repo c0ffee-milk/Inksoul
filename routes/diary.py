@@ -308,7 +308,7 @@ def generate_weekly_report():
             diary_count = DiaryModel.query.filter(
                 DiaryModel.author_id == current_user.id,
                 DiaryModel.create_time >= start_date,
-                DiaryModel.create_time < end_date
+                DiaryModel.create_time <= end_date
             ).count()
 
             # 检查是否有日记记录
@@ -325,7 +325,7 @@ def generate_weekly_report():
                 author_id=current_user.id,  
                 content=encrypted_report,
                 start_time=start_date,  
-                 end_time=end_date - timedelta(days=1),  # 确保结束时间是前一天
+                end_time=end_date - timedelta(days=1),  # 存储时减去一天，保持原始选择的结束日期
                 diary_nums=diary_count     
             )
             db.session.add(new_report)
