@@ -144,15 +144,6 @@ class VectorDBManager:
             return False
         
     def _encrypt_text(self, text: str) -> str:
-        """
-        加密文本
-        
-        Args:
-            text (str): 要加密的文本
-            
-        Returns:
-            str: 加密后的文本（JSON格式）
-        """
         try:
             cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM)
             nonce = cipher.nonce
