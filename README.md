@@ -27,7 +27,7 @@ Inksoul是一个基于AI的情感日记平台，结合了现代心理学理论�
 ## 安装部署
 1. 克隆仓库
 ```bash
-git clone https://github.com/yourusername/web_for_Inksoul.git
+git clone git@github.com:c0ffee-milk/web_for_Inksoul.git
 cd web_for_Inksoul
 ```
 2. 安装依赖
