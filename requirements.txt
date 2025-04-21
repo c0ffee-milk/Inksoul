@@ -8,6 +8,7 @@ asposestorage==1.0.2
 async-timeout==4.0.3
 attrs==25.2.0
 blinker==1.8.2
+chromadb==0.6.3
 cachetools==5.5.2
 certifi==2025.1.31
 charset-normalizer==3.4.1
