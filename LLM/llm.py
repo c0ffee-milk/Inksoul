@@ -1,411 +1,688 @@
-# LLM/llm.py
-# 日记情绪分析与周报生成。
-#
-# 调用点只有 routes/auth.py 与 routes/diary.py，它们用到四个接口：
-#     analyzer = EmotionAnalyzer("U12")
-#     analyzer.log_diary(text=..., timestamp=int)            # 写向量库
-#     analyzer.delete_diary(int)                             # 按时间戳删
-#     analyzer.analyze("daily", content, int)                # 日报
-#     analyzer.analyze(mode="weekly", start_date=..., end_date=...)   # 周报
-# 返回值会被 routes 直接塞进 templates/diary_detail.html 与
-# templates/weekly_report_detail.html，所以键名和类型必须和模板对得上：
-#   daily  : emotion_type / emotion_label(JSON 字符串) / emotional_basis(雷达八维)
-#            / keywords(词云 dict) / overall_analysis / history_moment
-#            / immediate_suggestion{music{曲名:说明}, books}
-#   weekly : diary_review / emotional_basis / domain_event{日期:{event,emotion}}
-#            / emotion_trend / weekly_advice / event_key_words / emotion_key_words
-#            / famous_quote
-from __future__ import annotations
-
-import json
-import logging
-import os
-import re
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
-
-import chromadb
+from typing import Literal
+from .zhipuai_embedding import ZhipuAIEmbeddings
+from langchain_chroma import Chroma
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+import json
+import time
+import re
+import os
+import logging
+from logging import Logger
 from dotenv import load_dotenv
-
-from LLM.zhipuai_embedding import ZhipuAIEmbeddings
-
-load_dotenv()
-
-logger = logging.getLogger(__name__)
-
-# 目录与模型都可以用环境变量覆盖；默认值对应 .gitignore 里已经预留的路径
-DIARY_DB_DIR = os.getenv("DIARY_DB_DIR", "data_base/diary_db")
-KNOWLEDGE_DB_DIR = os.getenv("KNOWLEDGE_DB_DIR", "data_base/knowledge_db")
-KNOWLEDGE_COLLECTION = os.getenv("KNOWLEDGE_COLLECTION", "langchain")
-CHAT_MODEL = os.getenv("ZAI_CHAT_MODEL", "glm-4-flash")
-
-# 六类情绪，index.html 的情绪搜索按钮用的就是这六个
-EMOTION_TYPES = ["振奋", "愉悦", "平和", "焦虑", "低落", "烦闷"]
-# 雷达图八维，对应 static/js/analysis.js 里的 newOrder
-RADAR_EMOTIONS = ["喜悦", "期待", "信任", "惊讶", "生气", "厌恶", "难过", "害怕"]
-
-DAILY_SYSTEM_PROMPT = """你是一位兼具心理学素养与文学修养的日记分析助手。
-你需要阅读用户的日记，输出一份中文 JSON 分析报告，且只输出 JSON，不要输出任何解释或代码块标记。
-
-JSON 字段要求：
-- emotion_type: 字符串，必须从这六个里选一个最贴切的：{emotion_types}
-- emotion_label: 字符串数组，1~4 个情绪词，按主次排序，用来描述情绪流动
-- emotional_basis: 对象，键必须是 {radar_emotions}，值为 0~100 的整数，表示该情绪在日记中的强度（没有体现的维度给 0）
-- keywords: 对象，5~15 个词，键是日记里的关键词（2~6 字），值是 0~100 的权重
-- overall_analysis: 字符串，200 字以内的综合分析，第二人称、温和具体
-- history_moment: 字符串，150 字以内，围绕日记里的处境给一段历史掌故或名人经历作对照
-- immediate_suggestion: 对象，含两个字段：
-    - music: 对象，1~3 项，键是曲名，值是一句话说明为什么推荐
-    - books: 字符串，1~2 本书的书名加一句话推荐理由
-""".format(emotion_types="、".join(EMOTION_TYPES), radar_emotions="、".join(RADAR_EMOTIONS))
-
-WEEKLY_SYSTEM_PROMPT = """你是一位兼具心理学素养与文学修养的周记分析助手。
-你需要阅读用户一周内的全部日记，输出一份中文 JSON 周报，且只输出 JSON，不要输出任何解释或代码块标记。
-
-JSON 字段要求：
-- diary_review: 字符串，200 字以内的一周回顾，第二人称
-- emotional_basis: 对象，键是情绪类别（从 {emotion_types} 里选 2~6 个），值为该情绪在本周占比（0~100 的整数）
-- domain_event: 对象，键是日期（格式 YYYY-MM-DD），值是对象 {{"event": "当天主导事件", "emotion": "当天主导情绪"}}
-- emotion_trend: 字符串，150 字以内的情绪变化趋势分析
-- weekly_advice: 字符串，150 字以内的一周长期建议
-- event_key_words: 对象，5~15 个事件关键词，值是 0~100 的权重
-- emotion_key_words: 对象，5~15 个情绪关键词，值是 0~100 的权重
-- famous_quote: 字符串，一句贴合本周心境的名言，附出处
-""".format(emotion_types="、".join(EMOTION_TYPES))
+from Cryptodome.Cipher import AES
+from Cryptodome.Random import get_random_bytes
+import base64
 
 
-class EmotionAnalyzer:
-    """按用户维度读写日记向量库，并调用大模型产出日报/周报。"""
+# 加载环境变量配置
+load_dotenv()  # 加载.env文件
+os.environ["LANGCHAIN_DISABLE_PYDANTIC_WARNINGS"] = "1"
 
-    def __init__(self, user_id: str):
-        user_id = str(user_id or "").strip()
-        if not user_id.startswith("U"):
-            # 调用手册与所有调用点都约定 user_id 形如 "U12"
-            raise ValueError(f"user_id 必须以 U 开头，收到：{user_id!r}")
-        self.user_id = user_id
-        self._chat_client_obj = None
-        self._embedding_obj = None
-        self._diary_collection_obj = None
-        self._knowledge_collection_obj = None
+# API密钥配置
+ZHIPUAI_API_KEY = os.getenv("ZHIPUAI_API_KEY")  # 智谱AI API密钥
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")  # DeepSeek API密钥
+TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")  # 通义API密钥
 
-    # ------------------------------------------------------------------ 资源
-    @property
-    def api_key(self) -> str:
-        key = os.getenv("ZHIPUAI_API_KEY") or os.getenv("ZAI_API_KEY")
-        if not key:
-            raise RuntimeError(
-                "未配置 API Key：请设置环境变量 ZHIPUAI_API_KEY（或新 SDK 的 ZAI_API_KEY）"
-            )
-        return key
+# 加密密钥配置
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "").encode('utf-8')
+if not ENCRYPTION_KEY:
+    raise ValueError("ENCRYPTION_KEY 未在环境变量中设置")
 
-    @property
-    def embedding(self) -> ZhipuAIEmbeddings:
-        if self._embedding_obj is None:
-            self._embedding_obj = ZhipuAIEmbeddings(zhipuai_api_key=self.api_key)
-        return self._embedding_obj
+if len(ENCRYPTION_KEY) < 32:
+    ENCRYPTION_KEY = ENCRYPTION_KEY.ljust(32, b'\0')
+elif len(ENCRYPTION_KEY) > 32:
+    ENCRYPTION_KEY = ENCRYPTION_KEY[:32]
 
-    @property
-    def chat_client(self):
-        if self._chat_client_obj is None:
-            from zai import ZaiClient
 
-            self._chat_client_obj = ZaiClient(api_key=self.api_key)
-        return self._chat_client_obj
-
-    @property
-    def collection(self):
-        if self._diary_collection_obj is None:
-            safe_id = re.sub(r"[^a-zA-Z0-9._-]", "_", self.user_id)
-            client = chromadb.PersistentClient(path=DIARY_DB_DIR)
-            self._diary_collection_obj = client.get_or_create_collection(
-                name=f"diary_{safe_id}"
-            )
-        return self._diary_collection_obj
-
-    # -------------------------------------------------------------- 向量库读写
-    @staticmethod
-    def _to_timestamp(value: Union[int, float, datetime, None]) -> int:
-        if value is None:
-            return int(datetime.now().timestamp())
-        if isinstance(value, datetime):
-            return int(value.timestamp())
-        if isinstance(value, (int, float)):
-            return int(value)
-        # 兼容调用手册里写的字符串时间
-        return int(datetime.fromisoformat(str(value)).timestamp())
-
-    @staticmethod
-    def _entry_id(user_id: str, timestamp: int) -> str:
-        return f"{user_id}-{timestamp}"
-
-    def log_diary(self, text: str, timestamp: Union[int, float, datetime, None] = None) -> Dict[str, Any]:
-        """把一篇日记写进该用户的向量库（同一时间戳重复写入会覆盖）。"""
-        if not text or not str(text).strip():
-            raise ValueError("日记内容不能为空")
-        ts = self._to_timestamp(timestamp)
-        self.collection.upsert(
-            ids=[self._entry_id(self.user_id, ts)],
-            documents=[str(text)],
-            embeddings=[self.embedding.embed_query(str(text))],
-            metadatas=[{"timestamp": ts, "datetime": datetime.fromtimestamp(ts).isoformat(timespec="seconds")}],
+# ================== 增强型数据库管理器 ==================
+class VectorDBManager:
+    """
+    向量数据库管理器
+    负责管理知识库和用户日记库的存储、检索和删除操作
+    使用Chroma向量数据库实现文本的向量化存储和检索
+    """
+    def __init__(self):
+        """
+        初始化向量数据库管理器
+        设置嵌入模型和日志记录器
+        """
+        self.embedding = ZhipuAIEmbeddings(zhipuai_api_key=ZHIPUAI_API_KEY)
+        self.logger = logging.getLogger("VectorDBManager")
+        self.logger.addHandler(logging.NullHandler())
+        self.user_dirs = {}
+        
+    def get_knowledge_db(self) -> Chroma:
+        """
+        获取心理学知识库
+        用于存储和检索心理学相关的知识内容
+        
+        Returns:
+            Chroma: 知识库实例
+        """
+        return Chroma(
+            persist_directory='data_base/knowledge_db',
+            embedding_function=self.embedding,
+            collection_name="knowledge"
         )
-        return {"success": True, "timestamp": ts, "count": self.collection.count()}
+    
+    def get_diary_db(self, user_id: str) -> Chroma:
+        """
+        获取用户日记库
+        为每个用户创建独立的日记存储空间
+        
+        Args:
+            user_id (str): 用户ID，格式为"U"开头加数字
+            
+        Returns:
+            Chroma: 用户专属的日记库实例
+            
+        Raises:
+            PermissionError: 当目录无写入权限时抛出
+        """
+        # 创建用户专属目录
+        base_dir = os.path.abspath('data_base/diary_db')
+        user_dir = os.path.join(base_dir, user_id)
+        
+        # 调试输出路径信息
+        print(f"[DEBUG] 正在创建/访问用户目录：{user_dir}")
 
-    def delete_diary(self, timestamp: Union[int, float, datetime, None] = None) -> Dict[str, Any]:
-        """按时间戳删除向量库里的日记。没有匹配项时返回 deleted=0，不抛异常。"""
-        ts = self._to_timestamp(timestamp)
-        before = self.collection.count()
-        self.collection.delete(where={"timestamp": {"$eq": ts}})
-        after = self.collection.count()
-        return {"success": True, "timestamp": ts, "deleted": before - after}
+        os.makedirs(user_dir, exist_ok=True)
+        
+        # 验证目录权限
+        if not os.access(user_dir, os.W_OK):
+            raise PermissionError(f"无写入权限：{user_dir}")
 
-    def _entries_between(self, start: datetime, end: datetime) -> List[Dict[str, Any]]:
-        data = self.collection.get(
-            where={"$and": [
-                {"timestamp": {"$gte": int(start.timestamp())}},
-                {"timestamp": {"$lte": int(end.timestamp())}},
-            ]},
-            include=["documents", "metadatas"],
+        # langchain-chroma 1.x 的 Chroma 不再暴露持久化目录，这里自己记一份
+        self.user_dirs[user_id] = user_dir
+
+        return Chroma(
+            persist_directory=user_dir,
+            embedding_function=self.embedding,
+            collection_name=f"diary_{user_id}"
         )
-        entries = []
-        for doc, meta in zip(data.get("documents") or [], data.get("metadatas") or []):
-            ts = int((meta or {}).get("timestamp", 0))
-            entries.append({
-                "timestamp": ts,
-                "datetime": datetime.fromtimestamp(ts),
-                "text": doc or "",
-            })
-        return sorted(entries, key=lambda e: e["timestamp"])
-
-    def _knowledge_context(self, query: str, k: int = 3) -> str:
-        """从心理学知识库取参考段落。知识库不存在或没建索引时静默跳过。"""
+    
+    def delete_diary_by_timestamp(self, user_id: str, timestamp: float) -> bool:
+        """
+        根据精确时间戳删除日记
+        
+        Args:
+            user_id (str): 用户ID
+            timestamp (float): 精确到秒的时间戳
+            
+        Returns:
+            bool: 删除是否成功
+            
+        Note:
+            使用精确匹配确保只删除指定时间的日记
+        """
         try:
-            if self._knowledge_collection_obj is None:
-                client = chromadb.PersistentClient(path=KNOWLEDGE_DB_DIR)
-                self._knowledge_collection_obj = client.get_collection(KNOWLEDGE_COLLECTION)
-            if self._knowledge_collection_obj.count() == 0:
-                return ""
-            result = self._knowledge_collection_obj.query(
-                query_embeddings=[self.embedding.embed_query(query)], n_results=k
-            )
-            docs = [d for d in (result.get("documents") or [[]])[0] if d]
-            return "\n\n".join(docs)
-        except Exception as exc:  # 知识库是可选增强，失败不影响分析
-            logger.warning("知识库检索跳过：%s", exc)
-            return ""
+            diary_db = self.get_diary_db(user_id)
+            collection = diary_db._collection
+            
+            # 精确匹配查询
+            query = {
+                "$and": [
+                    {"user_id": user_id},
+                    {"date": int(timestamp)}
+                ]
+            }
 
-    # ------------------------------------------------------------------ 大模型
-    def _chat_json(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
-        response = self.chat_client.chat.completions.create(
-            model=CHAT_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.7,
-            response_format={"type": "json_object"},
-        )
-        content = response.choices[0].message.content or ""
-        return self._parse_json(content)
-
-    @staticmethod
-    def _parse_json(content: str) -> Dict[str, Any]:
-        text = content.strip()
-        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.S)
+            existing = collection.get(where=query)
+            if not existing.get('ids'):
+                return False
+            
+            # 在查询后添加调试日志
+            if self.logger.isEnabledFor(logging.DEBUG):
+                self.logger.debug(f"查询条件：{query}, 找到记录：{len(existing.get('ids', []))}条")
+            
+            ids_to_delete = existing.get('ids', [])
+            if ids_to_delete:
+                collection.delete(ids=ids_to_delete)
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"删除日记失败: {str(e)}", exc_info=True)
+            return False
+        
+    def _encrypt_text(self, text: str) -> str:
         try:
-            data = json.loads(text)
+            cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM)
+            nonce = cipher.nonce
+            
+            # 加密数据
+            ciphertext, tag = cipher.encrypt_and_digest(text.encode('utf-8'))
+            
+            encrypted_dict = {
+                "nonce": base64.b64encode(nonce).decode('utf-8'),
+                "ciphertext": base64.b64encode(ciphertext).decode('utf-8'),
+                "tag": base64.b64encode(tag).decode('utf-8')
+            }
+            
+            return json.dumps(encrypted_dict)
+        except Exception as e:
+            self.logger.error(f"加密失败: {str(e)}")
+            raise
+            
+    def _decrypt_text(self, encrypted_text: str) -> str:
+        """
+        解密文本
+        
+        Args:
+            encrypted_text (str): 加密的文本（JSON格式）
+            
+        Returns:
+            str: 解密后的文本
+        """
+        try:
+            encrypted_dict = json.loads(encrypted_text)
+            
+            nonce = base64.b64decode(encrypted_dict['nonce'])
+            ciphertext = base64.b64decode(encrypted_dict['ciphertext'])
+            tag = base64.b64decode(encrypted_dict['tag'])
+            
+            cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM, nonce=nonce)
+            decrypted_text = cipher.decrypt_and_verify(ciphertext, tag)
+            
+            return decrypted_text.decode('utf-8')
         except json.JSONDecodeError:
-            match = re.search(r"\{.*\}", text, flags=re.S)
-            if not match:
-                raise ValueError(f"模型没有返回 JSON：{content[:200]}")
-            try:
-                data = json.loads(match.group(0))
-            except json.JSONDecodeError:
-                raise ValueError(f"模型返回的 JSON 无法解析：{content[:200]}")
-        if not isinstance(data, dict):
-            raise ValueError(f"模型返回的 JSON 不是对象：{content[:200]}")
-        return data
+            self.logger.error("解密失败：无效的JSON格式")
+            raise
+        except Exception as e:
+            self.logger.error(f"解密失败: {str(e)}")
+            raise
 
-    # ------------------------------------------------------------------ 规范化
-    @staticmethod
-    def _as_text(value: Any) -> str:
-        if value is None:
-            return ""
-        if isinstance(value, str):
-            return value.strip()
-        return json.dumps(value, ensure_ascii=False)
 
-    @staticmethod
-    def _as_number(value: Any) -> float:
-        if isinstance(value, bool):
-            return 0.0
-        if isinstance(value, (int, float)):
-            return float(value)
-        if isinstance(value, str):
-            match = re.search(r"-?\d+(?:\.\d+)?", value)
-            if match:
-                return float(match.group(0))
-        return 0.0
 
-    @classmethod
-    def _as_weight_map(cls, value: Any, limit: int = 20) -> Dict[str, float]:
-        """词云数据：模板和 JS 都按 {词: 权重} 消费，这里把各种模型输出统一成这个形状。"""
-        result: Dict[str, float] = {}
-        if isinstance(value, dict):
-            items = value.items()
-        elif isinstance(value, list):
-            items = []
-            for item in value:
-                if isinstance(item, dict):
-                    word = item.get("word") or item.get("keyword") or item.get("name") or item.get("text")
-                    weight = item.get("weight") or item.get("value") or item.get("score") or 50
-                    items.append((word, weight))
-                elif isinstance(item, str):
-                    items.append((item, 50))
-        else:
-            items = []
-        for word, weight in items:
-            word = cls._as_text(word)
-            if word:
-                result[word] = cls._as_number(weight)
-        return dict(list(result.items())[:limit])
 
-    @classmethod
-    def _as_json_string_list(cls, value: Any) -> str:
-        """模板用 |fromjson 解析 emotion_label，所以这里必须返回 JSON 字符串。"""
-        if isinstance(value, str):
-            stripped = value.strip()
-            try:
-                parsed = json.loads(stripped)
-            except json.JSONDecodeError:
-                parsed = [p for p in re.split(r"[、,，/\s]+", stripped) if p]
-        elif isinstance(value, (list, tuple)):
-            parsed = list(value)
-        else:
-            parsed = []
-        cleaned = [cls._as_text(v) for v in parsed if cls._as_text(v)]
-        return json.dumps(cleaned, ensure_ascii=False)
+# ================== 智能分析引擎 ==================
+class EmotionAnalyzer:
+    """
+    情感分析引擎
+    基于大语言模型和心理学理论，对用户日记进行深度情感分析
+    支持日常分析和周期性分析两种模式
+    """
+    def __init__(self, user_id: str):
+        """
+        初始化情感分析引擎
+        
+        Args:
+            user_id (str): 用户ID，格式为"U"开头加数字
+            
+        Raises:
+            ValueError: 当用户ID格式不正确时抛出
+        """
+        self.user_id = user_id
+        
+        # 验证用户ID格式
+        if not re.match(r"^U\d+$", self.user_id):
+            raise ValueError("用户ID格式应为 U+数字")
+        
+        # 配置日志记录器
+        self.logger = logging.getLogger(f"EmotionAnalyzer.{user_id}")
+        self.logger.setLevel(logging.INFO)
+        
+        # 避免重复添加handler
+        if not self.logger.handlers:  
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        
+        # 初始化数据库和语言模型
+        self.db = VectorDBManager()
+        self.llm = ChatOpenAI(
+            temperature=0,
+            openai_api_key=DEEPSEEK_API_KEY,
+            model_name="deepseek-chat",
+            base_url="https://api.deepseek.com"
+        )
+        
+        # 初始化数据库连接
+        self.knowledge_db = self.db.get_knowledge_db()
+        self.diary_db = self.db.get_diary_db(self.user_id)
 
-    @classmethod
-    def _radar_basis(cls, value: Any) -> Dict[str, int]:
-        raw = cls._as_weight_map(value, limit=len(RADAR_EMOTIONS) + 8)
-        basis = {}
-        for emotion in RADAR_EMOTIONS:
-            number = cls._as_number(raw.get(emotion, 0))
-            basis[emotion] = max(0, min(100, int(round(number))))
-        return basis
+        # 验证数据库目录
+        assert os.path.exists(self.db.user_dirs[self.user_id]), "用户数据库目录未创建"
+        
+        # 初始化提示模板
+        self.templates = {
+            "daily": PromptTemplate(
+                input_variables=["knowledge", "current_diary"],
+                template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对用户日记进行结构化心理分析：
+                
+                【专业知识】
+                {knowledge}
+                
+                【用户当日日记】
+                {current_diary}
+                
+                请输出JSON格式包含：
+                1. 综合分析用户当日日记：overall_analysis(综合分析)
+                2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                3. 根据这几种基本情感的含量与组合效果和原文本细致分析出几个复合情绪的种类：emotion_lable（复杂情绪）
+                4. 根据用户日记体现的情绪，将本日记分为以下六种中的一种(振奋、愉悦、平和、焦虑、低落、烦闷)：emotion_type（情绪类型）
+                5. 在原文中提取当日事件的关键词及其关键程度：keywords（5个以上个关键词）
+                6. 根据用户的当日情绪，在以下几个方面中选择其中几个提出一些心理建议：音乐推荐、电影/书籍推荐、活动建议（如“今天适合散步”）、心理调节小技巧（如呼吸练习）。immediate_suggestion（即时建议）
+                7. 根据用户的经历，从百年文学/电影/历史中抓取相似瞬间，结构类似："1926年海明威在巴黎的雨天同样丢失手稿，他喝了三杯威士忌后继续写作"（强调"也、同样"等表达相似的词，禁止直接引用前面的例子）：history_moment
+                
+                输出要求：
+                1.面向用户输出，注意人称用词必须用您
+                2.提出的建议要基于现实，容易实现
 
-    @classmethod
-    def _daily_result(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        emotion_type = cls._as_text(data.get("emotion_type"))
-        if emotion_type not in EMOTION_TYPES:
-            emotion_type = EMOTION_TYPES[2]  # 无法归类时落到“平和”
-        suggestion = data.get("immediate_suggestion") or {}
-        if not isinstance(suggestion, dict):
-            suggestion = {}
-        music = suggestion.get("music") or {}
-        if isinstance(music, list):
-            music = {cls._as_text(m.get("name") if isinstance(m, dict) else m):
-                     cls._as_text(m.get("reason")) if isinstance(m, dict) else ""
-                     for m in music}
-        elif not isinstance(music, dict):
-            music = {}
-        return {
-            "emotion_type": emotion_type,
-            "emotion_label": cls._as_json_string_list(data.get("emotion_label")),
-            "emotional_basis": cls._radar_basis(data.get("emotional_basis")),
-            "keywords": cls._as_weight_map(data.get("keywords")),
-            "overall_analysis": cls._as_text(data.get("overall_analysis")),
-            "history_moment": cls._as_text(data.get("history_moment")),
-            "immediate_suggestion": {
-                "music": {cls._as_text(k): cls._as_text(v) for k, v in music.items()},
-                "books": cls._as_text(suggestion.get("books")),
-            },
+                输出格式：
+                {{
+                    "overall_analysis": "分析内容",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "emotion_label": [
+                        "情绪1",
+                        "情绪2",
+                        ...
+                    ],
+                    "emotion_type": "情绪类型",
+                    "keywords": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ...
+                    }},
+                    "immediate_suggestion": {{
+                        "music":{{
+                            "music_suggestion1":"音乐推荐与推荐理由1",
+                            "music_suggestion2":"音乐推荐与推荐理由2"
+                        }}, 
+                        "books":"书籍推荐与推荐理由",
+                        "activities":"活动建议",
+                        "techniques":"心理调节技巧"
+                    }},
+                    "history_moment": "历史回响内容"
+                }}
+
+                输出示例：
+                {{'overall_analysis': '您的日记展现了一种细腻的生活观察与复杂的情感交织。晨跑时的太极老人、早餐铺的温暖互动、旧书店的怀旧时光，都透露出对生活细节的敏感捕捉。然而，升舱短信触发的记忆、帮邻居修门锁时的代际差异，以及电梯里的疲惫面孔，又暗示着某种对时间流逝和现代生活疏离感的微妙焦虑。整体上，您的情感基调是平和中有波澜，温暖里带沉思。', 'emotional_basis': {{'喜悦': 65, '信任': 70, '害怕': 20, '惊讶': 30, '难过': 40, '厌恶': 10, '生气': 5, '期待': 50}}, 'emotion_label': ['怀旧的慰藉', '温柔的疏离', '时光焦虑'], 'emotion_type': '平和', 'keywords': {{'晨跑太极': 85, '早餐铺人情': 90, '旧书店怀旧': 75, '里程过期': 60, '赛博弄堂': 50, '电梯疲惫': 40}}, 'immediate_suggestion': {{'music': {{'music_suggestion1': '《Rainy Day》，舒缓的旋律适合雨天放松心情', 'music_suggestion2': '《A Thousand Years》，温柔的节奏帮助您平静思考'}}, 'books': '《看不见的城市》，关于记忆与城市的诗意叙述，与您发现的粮票形成互文', 'activities': '今晚适合用老式信纸给三年后的自己写封信，定格此刻对时间流逝的感悟', 'techniques': '明早买早餐时专注记录三种声音、两种质地，用感官体验对抗抽象焦虑'}}, 'history_moment': '1935年，本雅明在巴黎旧书摊淘到一张19世纪明信片时同样怔住——那些被遗忘的通讯地址，与您发现的粮票一样，都是时光洪流中的漂流瓶。'}}
+                """
+            ),
+            "weekly": PromptTemplate(
+                input_variables=["knowledge", "diaries"],
+                template="""您是情绪分析专家，基于Robert Plutchik情感轮盘理论和当代复合情绪研究模型，对过去一段时间的日记进行周期性分析：
+                
+                【心理学理论】
+                {knowledge}
+                
+                【日记记录】
+                {diaries}
+                
+                请输出JSON包含：
+                1. 以第二人称讲述的形式回顾用户过去这段时间的经历：diary_review
+                2. 喜悦、信任、害怕、惊讶、难过、厌恶、生气、期待这八种基本感情的组成含量（0-100%）:emotional_basis(情感构成）
+                3. 提取这段时间内有日记记录的每天的一个主要事件（每篇日记的第一行为撰写日期，若一天有多篇日记则合并进行分析，不管一天有多少篇日记均只输出一个主导事件，按时间排序输出）：domain_event(主要事件)，
+                4. 分析这段时间的情绪变化趋势：emotion_trend（情绪变化趋势描述）
+                5. 针对这段时间的情绪提出给用户下一周的建议：weekly_advice（长期建议）
+                6. 总结这段时间的主导事件找出5-10个事件关键词及其关键程度：event_key_words
+                7. 总结这段时间的主导情绪找出5-10个情绪关键词及其关键程度：emotion_key_words
+                8. 结合用户这段时间的心理情绪找一段名人或名著的名言，作为总结的引言：famous_quote
+
+                输出要求：
+                1.面向用户输出，注意人称用词必须用您
+                2.提出的建议要基于现实，容易实现
+
+                输出格式：
+                {{
+                    "diary_review": "日记回顾",
+                    "emotional_basis": {{
+                        "喜悦": 0-100,
+                        "信任": 0-100,
+                        "害怕": 0-100,
+                        "惊讶": 0-100,
+                        "难过": 0-100,
+                        "厌恶": 0-100,
+                        "生气": 0-100,
+                        "期待": 0-100
+                    }},
+                    "domain_event": {{
+                        "day1": {{"event": "事件1", "emotion": "情绪1"}},
+                        "day2": {{"event": "事件2", "emotion": "情绪2"}},
+                        ......((每天只总结一个事件))
+                    }},
+                    "emotion_trend": "情绪变化趋势",
+                    "weekly_advice": "本周长期建议（一段话）",
+                    "event_key_words": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ......
+                    }},
+                    "emotion_key_words": {{
+                        "关键词1": 0-100,
+                        "关键词2": 0-100, 
+                        "关键词3": 0-100,
+                        ......
+                    }},
+                    "famous_quote": "名言引文"
+                }}
+
+                输出示例：
+                {{'diary_review': '过去几天里，您的生活充满了细腻的观察和微妙的情感波动。从雨中回忆童年，到与同事共享辣味午餐；从清晨被桂花香唤醒，到深夜弹奏生锈的吉他；从发现社区图书馆的温暖，到与发小跨越时空的对话——这些片段交织成您独特的情感图谱。您既在日常生活里捕捉诗意（如羊角包香气与钢琴声的交融），也在科技与传统的碰撞中思考（如元宇宙作业与石库门青苔的对比）。', 'emotional_basis': {{'喜悦': 35, '信任': 25, '害怕': 10, '惊讶': 20, '难过': 30, '厌恶': 5, '生气': 5, '期待': 40}}, 'domain_event': {{'2024-6-15': {{'event': '被桂花香唤醒并完成重要提案', 'emotion': '欣慰与成就感'}}, '2024-6-16': {{'event': '雨中回忆童年并与同事共进辣味午餐', 'emotion': '怀旧与温暖'}}, '2024-6-17': {{'event': '与发小跨时空对话并发现社区图书馆夜读区', 'emotion': '连接感与宁静'}}, '2024-6-18': {{'event': '发现旧书店粮票与收到里程过期提醒', 'emotion': '时光流逝的怅惘'}}}}, 'emotion_trend': '情绪呈现波浪式变化，从15日的积极满足，到16日加入怀旧色彩，17日达到情感连接的高点，18日因时间感知而产生轻微低落。期待感始终作为基底情绪存在，但后期混合了更多对时光流逝的敏感。', 'weekly_advice': "建议每天预留15分钟'感官时刻'：周一闻三种不同气味，周二触摸五种材质，周三记录三种声音，周四观察光线变化，周五重温旧物触感。周末可尝试将吉他送去换弦，或拜访那位读普鲁斯特的猫店主。这些微型仪式能锚定您对当下的感知，缓解时间焦虑。", 'event_key_words': {{'怀旧触发': 70, '跨代交流': 60, '感官记忆': 85, '时间感知': 75, '科技与传统碰撞': 50, '微小确幸': 65, '未完成计划': 40, '城市诗意': 55}}, 'emotion_key_words': {{'温柔的怅惘': 60, '克制的喜悦': 45, '悬浮的期待': 70, '疏离的观察': 35, '时光焦虑': 50, '连接渴望': 55, '审美触动': 65, '幽默化解': 30}}, 'famous_quote': '「记忆中的形象一旦被词语固定住，就会抹去其他可能的含义。」——卡尔维诺《看不见的城市》'}}
+                """
+            )
         }
 
-    @classmethod
-    def _weekly_result(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        domain_event = {}
-        raw_events = data.get("domain_event") or {}
-        if isinstance(raw_events, dict):
-            for day, value in raw_events.items():
-                if isinstance(value, dict):
-                    domain_event[cls._as_text(day)] = {
-                        "event": cls._as_text(value.get("event")),
-                        "emotion": cls._as_text(value.get("emotion")),
-                    }
-                else:
-                    domain_event[cls._as_text(day)] = {"event": cls._as_text(value), "emotion": ""}
+    def _get_time_range(self, start: datetime = None, end: datetime = None, days: int = 7) -> dict:
+        """
+        生成时间范围查询条件
+        
+        Args:
+            start (datetime, optional): 开始时间
+            end (datetime, optional): 结束时间
+            days (int, optional): 天数，默认7天
+            
+        Returns:
+            dict: MongoDB查询条件
+        """
+        end = end or datetime.now()
+        start = start or (end - timedelta(days=days))
         return {
-            "diary_review": cls._as_text(data.get("diary_review")),
-            "emotional_basis": cls._as_weight_map(data.get("emotional_basis")),
-            "domain_event": domain_event,
-            "emotion_trend": cls._as_text(data.get("emotion_trend")),
-            "weekly_advice": cls._as_text(data.get("weekly_advice")),
-            "event_key_words": cls._as_weight_map(data.get("event_key_words")),
-            "emotion_key_words": cls._as_weight_map(data.get("emotion_key_words")),
-            "famous_quote": cls._as_text(data.get("famous_quote")),
+            "$and": [
+                {"date": {"$gte": int(start.timestamp())}},
+                {"date": {"$lte": int(end.timestamp())}}
+            ]
         }
 
-    # -------------------------------------------------------------------- 分析
-    def analyze(
-        self,
-        mode: str = "daily",
-        diary: Optional[str] = None,
-        timestamp: Union[int, float, datetime, None] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
-        mode = (mode or "daily").strip().lower()
-        if mode == "daily":
-            return self._analyze_daily(diary, timestamp)
-        if mode == "weekly":
-            return self._analyze_weekly(start_date, end_date)
-        raise ValueError(f"未知的分析模式：{mode!r}（只支持 daily / weekly）")
-
-    def _analyze_daily(self, diary: Optional[str], timestamp) -> Dict[str, Any]:
-        if not diary or not str(diary).strip():
-            raise ValueError("daily 模式必须提供日记内容")
-        ts = self._to_timestamp(timestamp)
-
-        parts = [f"【日记】\n{diary}"]
-        context = self._knowledge_context(str(diary))
-        if context:
-            parts.append(f"【心理学参考资料（仅供理解，不要照抄）】\n{context}")
+    def safe_retrieve(self, collection, query: str, k: int, filter_: dict = None) -> list:
+        """
+        安全的向量检索方法
+        
+        Args:
+            collection: 向量数据库集合
+            query (str): 查询文本
+            k (int): 返回结果数量
+            filter_ (dict, optional): 过滤条件
+            
+        Returns:
+            list: 检索结果列表
+            
+        Note:
+            包含错误处理和结果数量调整
+        """
         try:
-            recent = self._entries_between(datetime.fromtimestamp(0), datetime.fromtimestamp(ts - 1))[-5:]
-        except Exception as exc:
-            logger.warning("读取历史日记失败：%s", exc)
-            recent = []
-        if recent:
-            history = "\n".join(f"[{e['datetime']:%Y-%m-%d}] {e['text'][:120]}" for e in recent)
-            parts.append(f"【该用户更早的日记（可作对照，不要复述）】\n{history}")
-        parts.append(f"今天是 {datetime.fromtimestamp(ts):%Y-%m-%d}，请按要求输出 JSON。")
+            # 添加类型检查
+            if hasattr(collection, '_collection'):
+                total = collection._collection.count()
+            elif hasattr(collection, 'vectorstore'):
+                # 处理检索器对象的情况
+                total = collection.vectorstore._collection.count()
+            else:
+                raise ValueError("不支持的集合类型")
 
-        data = self._chat_json(DAILY_SYSTEM_PROMPT, "\n\n".join(parts))
-        return self._daily_result(data)
+            adjusted_k = min(k, total) if total > 0 else 0
+            if adjusted_k <= 0:
+                return []
 
-    def _analyze_weekly(
-        self,
-        start_date: Optional[datetime],
-        end_date: Optional[datetime],
-    ) -> Dict[str, Any]:
-        end = end_date or datetime.now()
-        start = start_date or (end - timedelta(days=6))
-        if not isinstance(start, datetime):
-            start = datetime.combine(start, datetime.min.time())
-        if not isinstance(end, datetime):
-            end = datetime.combine(end, datetime.max.time())
+            return collection.max_marginal_relevance_search(
+                query=query,
+                k=adjusted_k,
+                filter=filter_
+            )
+        except Exception as e:
+            print(f"检索失败: {str(e)}")
+            return []
 
-        entries = self._entries_between(start, end)
-        if not entries:
-            raise ValueError("该时间段内没有日记记录")
-        diaries = "\n\n".join(
-            f"[{e['datetime']:%Y-%m-%d}] {e['text']}" for e in entries
-        )
-        user_prompt = (
-            f"【统计区间】{start:%Y-%m-%d} 至 {end:%Y-%m-%d}（共 {len(entries)} 篇日记）\n\n"
-            f"【日记原文】\n{diaries}\n\n请按要求输出 JSON 周报。"
-        )
-        data = self._chat_json(WEEKLY_SYSTEM_PROMPT, user_prompt)
-        return self._weekly_result(data)
+    def _retrieve_diaries(self, mode: Literal["daily", "weekly"], 
+                     query: str = None, start: datetime = None, 
+                     end: datetime = None, days: int = None) -> str:
+        """
+        检索用户日记
+        
+        Args:
+            mode (Literal["daily", "weekly"]): 检索模式
+            query (str, optional): 查询文本
+            start (datetime, optional): 开始时间
+            end (datetime, optional): 结束时间
+            days (int, optional): 天数
+            
+        Returns:
+            str: 合并后的日记文本
+        """
+        # 添加用户过滤条件
+        base_filter = {"user_id": self.user_id}
+        
+        if mode == "daily":
+            time_filter = self._get_time_range(days=1)
+        else:
+            # 当weekly模式时优先使用自定义参数
+            time_filter = self._get_time_range(
+                start=start, 
+                end=end,
+                days=days if days else 7  # 保持默认7天
+            )
+        
+        combined_filter = {
+            "$and": [
+                {"user_id": self.user_id},
+                time_filter
+            ]
+        }
+        
+        if mode == "daily":
+            docs = self.safe_retrieve(self.diary_db, query, 3, combined_filter)
+        else:
+            docs = self.safe_retrieve(self.diary_db, "总结本周情绪", 50, combined_filter)
+
+        decrypted_texts = []
+        for doc in docs:
+            try:
+                if doc.metadata.get("is_encrypted", False):
+                    decrypted_text = self.db._decrypt_text(doc.page_content)
+                    decrypted_texts.append(decrypted_text)
+                else:
+                    decrypted_texts.append(doc.page_content)
+            except Exception as e:
+                self.logger.error(f"解密失败: {str(e)}")
+                continue
+        
+        return "\n".join(decrypted_texts) if decrypted_texts else "无日记记录"
+
+    def log_diary(self, text: str, timestamp: float = None):
+        """
+        保存日记到向量数据库
+        
+        Args:
+            text (str): 日记内容
+            timestamp (float, optional): 时间戳，精确到秒
+            
+        Note:
+            会检查重复日记，避免重复保存
+        """
+        try:
+            timestamp = int(timestamp if timestamp is not None else time.time())
+
+            # 加密文本
+            encrypted_text = self.db._encrypt_text(text)
+            
+            # 检查是否存在相似日记（相同时间戳+相同用户视为重复）
+            existing = self.diary_db.similarity_search(
+                query=text,
+                k=1,
+                filter={
+                    "$and": [
+                        {"user_id": {"$eq": self.user_id}},
+                        {"date": {"$eq": timestamp}}
+                    ]
+                }
+            )
+            
+            if existing and existing[0].page_content == text:
+                self.logger.warning(f"[WARNING] 检测到重复日记（时间戳：{timestamp}），跳过保存")
+                return
+
+            # 添加日记到数据库
+            self.diary_db.add_texts(
+                texts=[encrypted_text],
+                metadatas=[{
+                    "user_id": self.user_id,
+                    "source": "user_diary",
+                    "date": int(timestamp),
+                    "is_encrypted": True
+                }]
+            )
+            self.logger.info(f"[SUCCESS] 日记已保存（时间：{datetime.fromtimestamp(timestamp)}）")
+        except Exception as e:
+            self.logger.error(f"[ERROR] 保存失败: {str(e)}")
+            raise
+
+    def get_diary_dates(self) -> list:
+        """
+        获取用户所有日记的日期列表
+        
+        Returns:
+            list: 按时间排序的日期列表
+            
+        Note:
+            返回的日期格式为 "YYYY-MM-DD"
+        """
+        try:
+            # 获取所有元数据
+            collection = self.diary_db.get()
+            metadatas = collection.get('metadatas', [])
+            
+            # 提取并转换时间戳
+            dates = []
+            for meta in metadatas:
+                if 'date' in meta:
+                    dt = datetime.fromtimestamp(meta['date'])
+                    dates.append(dt.strftime("%Y-%m-%d"))
+                    
+            # 去重并排序
+            unique_dates = sorted(list(set(dates)), 
+                                key=lambda x: datetime.strptime(x, "%Y-%m-%d"))
+            return unique_dates
+            
+        except Exception as e:
+            self.logger.error(f"[ERROR] 获取日期失败: {str(e)}")
+            return []
+
+    def analyze(self, mode: Literal["daily", "weekly"], diary: str = None, timestamp: float = None, start_date: datetime = None, end_date: datetime = None) -> dict:
+        """
+        执行情感分析
+        
+        Args:
+            mode (Literal["daily", "weekly"]): 分析模式
+            diary (str, optional): 日记内容（日常模式需要）
+            timestamp (float, optional): 时间戳
+            start_date (datetime, optional): 开始日期（周期模式需要）
+            end_date (datetime, optional): 结束日期（周期模式需要）
+            
+        Returns:
+            dict: 分析结果
+            
+        Note:
+            支持日常分析和周期分析两种模式
+        """
+        # 知识检索（不同模式使用不同查询策略）
+        knowledge_query = "情绪分析" if mode == "daily" else "长期情绪分析与管理"
+        knowledge_retriever = self.knowledge_db.as_retriever(search_kwargs={"k": 5})
+        real_knowledge_store = knowledge_retriever.vectorstore
+        knowledge_docs = self.safe_retrieve(real_knowledge_store, knowledge_query, 5)
+        knowledge_context = "\n".join([d.page_content for d in knowledge_docs]) if knowledge_docs else "暂无专业知识"
+
+        # 日记处理
+        if mode == "daily":
+            diary_context = self._retrieve_diaries("daily", query=diary)
+            prompt = self.templates["daily"].format(
+                knowledge=knowledge_context,
+                current_diary=diary
+            )
+        else:
+            print("start_date:", start_date, "end_date:", end_date)
+            diary_context = self._retrieve_diaries(
+                "weekly", 
+                start=start_date,
+                end=end_date
+            )
+            prompt = self.templates["weekly"].format(
+                knowledge=knowledge_context,
+                diaries=diary_context
+            )
+        
+        # 调用模型并解析
+        response = self.llm.invoke(prompt)
+        try:
+            return json.loads(response.content.strip("```json").strip())
+        except:
+            return {"error": "分析结果解析失败"}
+        
+    def delete_diary(self, target_datetime: datetime) -> dict:
+        """
+        删除指定时间的日记
+        
+        Args:
+            target_datetime (datetime): 目标时间
+            
+        Returns:
+            dict: 操作结果
+            
+        Note:
+            支持精确到秒的删除操作
+        """
+        try:
+            if not isinstance(target_datetime, datetime):
+                raise ValueError("target_datetime 必须是 datetime 类型")
+                
+            timestamp = int(target_datetime.timestamp())
+            
+            # 验证日记存在
+            collection = self.diary_db._collection
+            query = {
+                "$and": [
+                    {"user_id": {"$eq": self.user_id}},
+                    {"date": {"$eq": timestamp}}
+                ]
+            }
+
+            existing = collection.get(where=query)
+            ids_to_delete = existing.get('ids', [])
+            
+            if not ids_to_delete:
+                return {
+                    "status": "error",
+                    "message": "指定时间的日记不存在"
+                }
+            
+            result = collection.delete(ids=ids_to_delete)
+            
+            if result is None or (isinstance(result, dict) and not result.get('ids')):
+                self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {ids_to_delete})")
+                return {
+                    "status": "success",
+                    "message": "日记删除成功",
+                    "deleted_time": target_datetime.isoformat(),
+                    "deleted_ids": ids_to_delete
+                }
+            else:
+                deleted_ids = result.get('ids', []) if isinstance(result, dict) else []
+                self.logger.info(f"[SUCCESS] 已删除 {target_datetime} 的日记 (ID: {deleted_ids})")
+                return {
+                    "status": "success",
+                    "message": "日记删除成功",
+                    "deleted_time": target_datetime.isoformat(),
+                    "deleted_ids": deleted_ids
+                }
+                    
+        except Exception as e:
+            self.logger.error(f"[ERROR] 删除日记失败: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"删除操作异常: {str(e)}"
+            }
