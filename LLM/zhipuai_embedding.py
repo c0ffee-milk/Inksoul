@@ -17,24 +17,28 @@ class ZhipuAIEmbeddings(BaseModel, Embeddings):
     @classmethod
     def validate_environment(cls, values: Dict) -> Dict:
         """添加API Key验证和客户端初始化"""
-        api_key = values.get("zhipuai_api_key") or os.getenv("ZHIPUAI_API_KEY")
+        api_key = (
+            values.get("zhipuai_api_key")
+            or os.getenv("ZHIPUAI_API_KEY")
+            or os.getenv("ZAI_API_KEY")
+        )
         
         if not api_key:
             raise ValueError(
                 "必须提供ZhipuAI API Key。"
                 "可通过以下方式之一设置："
                 "1. 构造函数参数 zhipuai_api_key='your_key'"
-                "2. 环境变量 ZHIPUAI_API_KEY"
+                "2. 环境变量 ZHIPUAI_API_KEY（或新版 SDK 的 ZAI_API_KEY）"
             )
 
         values["zhipuai_api_key"] = api_key
         try:
-            from zhipuai import ZhipuAI
-            values["client"] = ZhipuAI(api_key=api_key)  # 注入API Key
+            from zai import ZaiClient
+            values["client"] = ZaiClient(api_key=api_key)  # 注入API Key
         except ImportError:
             raise ImportError(
-                "无法导入zhipuai模块，请通过 "
-                "`pip install zhipuai` 安装。"
+                "无法导入zai模块，请通过 "
+                "`pip install zai-sdk` 安装。"
             )
             
         return values

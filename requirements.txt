@@ -61,7 +61,7 @@ propcache==0.5.4
 pycryptodomex==3.22.0
 pydantic==2.10.6
 pydantic-core==2.27.2
-PyJWT==2.8.0
+PyJWT==2.15.1
 PyMySQL==1.1.1
 PyYAML==6.0.2
 regex==2024.11.6
@@ -78,5 +78,5 @@ urllib3==2.7.0
 werkzeug==3.1.5
 wtforms==3.1.2
 yarl==1.25.1
-zhipuai==2.1.5.20250106
+zai-sdk==0.2.3
 zipp==3.20.2
